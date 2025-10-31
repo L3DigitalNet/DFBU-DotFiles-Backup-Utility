@@ -26,6 +26,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.1] - 2025-10-31
+
+### Added
+
+### Changed
+
+- **Documentation Update**: Comprehensive documentation review and standardization
+- Updated all file headers to current date (2025-10-31) for documentation maintenance
+- Enhanced project documentation organization following repository guidelines
+- Standardized inline comments and docstring formatting across all modules
+- Updated README.md to maintain minimal, human-readable content per guidelines
+- Improved CHANGELOG.md formatting and version tracking accuracy
+- Enhanced PROJECT-DOC.md files with current implementation details
+- Updated GUI documentation to reflect latest MVVM implementation
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Corrected documentation inconsistencies across project files
+- Updated version tracking in pyproject.toml and all module headers
+
+### Security
+
 ## [0.3.0] - 2025-10-30
 
 ### Added

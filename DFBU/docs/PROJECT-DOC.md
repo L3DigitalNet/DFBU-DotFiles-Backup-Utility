@@ -5,9 +5,9 @@
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
 **GitHub:** <https://github.com/L3DigitalNet>
-**Version:** 0.3.0
+**Version:** 0.3.1
 **Date Created:** 10-18-2025
-**Date Changed:** 10-30-2025
+**Date Changed:** 10-31-2025
 
 ## Overview
 
@@ -19,8 +19,8 @@ This documentation provides comprehensive information about the Dotfiles Backup 
 - **Dual-Mode Operation**: Interactive backup and restore functionality with dedicated CLIHandler class
 - **Hostname-based Structure**: Organized backups by machine hostname managed by PathAssembler utility
 - **Python 3.14 Path.copy()**: Enhanced file copying with metadata preservation and symlink following
-- **ANSI Color Output**: Color-coded terminal output using `AnsiColor` class from `common_lib`
-- **Interactive CLI**: Fully separated UI concerns via CLIHandler with `CLIMenu.ynq()` integration
+- **ANSI Color Output**: Color-coded terminal output using embedded utility classes
+- **Interactive CLI**: Fully separated UI concerns via CLIHandler with interactive menu integration
 - **Robust Validation**: ConfigValidator class with comprehensive type checking and range validation
 - **Operation Classes**: MirrorBackup and ArchiveBackup classes for clean separation of concerns
 - **Command-line Arguments**: Support for `--dry-run` and `--force` flags via argparse

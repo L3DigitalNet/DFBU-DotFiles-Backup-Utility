@@ -35,6 +35,38 @@ git branch --show-current  # Must show "testing"
 
 ---
 
+## ⚠️ PUBLIC REPOSITORY RULES ⚠️
+
+**These rules are MANDATORY for public repositories:**
+
+1. **README.md Minimalism:**
+   - README.md files MUST be very basic and natural-sounding
+   - NEVER write README.md content that appears AI-generated
+   - Humans manually enter most information into README.md files
+   - These are front-facing documents for GitHub visitors
+   - Human maintainer retains full control over README.md contents
+
+2. **Markdown File Minimization:**
+   - Keep .md file creation to absolute minimum
+   - Avoid polluting the repository with excessive documentation files
+   - Only create .md files when absolutely necessary
+
+3. **Documentation Organization:**
+   - ALL general documentation goes in project's `/docs/` directory:
+     - Changelogs (CHANGELOG.md)
+     - Configuration guides
+     - Project documentation (PROJECT-DOC.md)
+     - Usage and functionality documentation
+     - Feature documentation
+   - NEVER create documentation .md files in root or scattered locations
+
+4. **Test Documentation:**
+   - ALL test files and test documentation go in project's `/tests/` directory
+   - Test summaries, test plans, and test results belong in `/tests/`
+   - NEVER create test documentation outside `/tests/` directory
+
+---
+
 ## Notes
 - Projects use Python 3.14+ features (e.g., `Path.copy()`)
 - #fetch https://docs.python.org/3.14/index.html for latest stdlib documentation
@@ -48,7 +80,7 @@ git branch --show-current  # Must show "testing"
 - **Key modules:** `pathlib`, `json`, `csv`, `datetime`, `collections`, `itertools`, `functools`
 
 ### 2. Code Architecture
-- **DRY principle:** Use `projects/common_lib/` for shared utilities
+- **DRY principle:** Eliminate duplication, centralize shared utilities
 - **Confident design:** Avoid defensive programming, prefer clear initialization
 - **Single source of truth:** Centralize logic, eliminate duplication
 - **Type safety:** Full type hints, modern union syntax (`str | None`)
@@ -70,7 +102,7 @@ git branch --show-current  # Must show "testing"
 ### File Structure (Required)
 - **MUST** include shebang and encoding: `#!/usr/bin/env python3` and `# -*- coding: utf-8 -*-`
 - **MUST** follow standard header format with project-specific Features section
-- **MUST** include inline comments for each significant code block for readability and AI autocompletion context
+- **MUST** include inline comments for each significant code block for readability and autocompletion context
 - **MUST** place comments at the top of code blocks explaining their purpose, preferably in one line
 - **MUST** add inline comments for complex logic, Linux-specific implementations, and important decisions
 
@@ -98,7 +130,6 @@ Features:
 Requirements:
     - Linux environment
     - Python 3.14+ for latest language features
-    - Custom libraries located at ../common_lib/
     - Additional technical requirements and dependencies
 
 Known Issues:
@@ -161,11 +192,10 @@ def example_function(param1: str, param2: int) -> str:
 ## Project Organization
 
 ### Structure
-- **Template:** Use `templates/my_project_folder_template/`
-- **Shared code:** `projects/common_lib/` for utilities
-- **Tests:** ALL test files in project's `/tests/` directory
+- **Tests:** ALL test files and test documentation in project's `/tests/` directory
 - **Config:** Separate files, never hardcode values
-- **Docs:** README.md (root), PROJECT-DOC.md & CHANGELOG.md in `/docs/`
+- **Docs:** ALL documentation in project's `/docs/` directory (PROJECT-DOC.md, CHANGELOG.md, configuration guides, usage docs, feature docs)
+- **README.md:** Basic, human-written content only - kept in project root, never AI-verbose
 
 ### Testing with pytest
 - **Framework:** pytest only, AAA pattern (Arrange-Act-Assert)
@@ -192,15 +222,18 @@ def example_function(param1: str, param2: int) -> str:
 When generating code:
 
 1. **Dependencies:** Standard library first, justify external dependencies
-2. **Reuse:** Check existing codebase, consolidate duplicates, use `projects/common_lib/`
-3. **Quality:** Complete examples, type hints for ALL elements, streamlined docstrings, proper headers
+3. **Quality:** Type hints for ALL elements, streamlined docstrings, proper headers
 4. **Architecture:** Follow patterns, SOLID principles, composition over inheritance
 5. **Confident Design:** Avoid defensive programming, use architectural solutions over scattered checks
-6. **Version Awareness:** Defer error handling/validation until v1.0.0, focus on clean architecture
-7. **Documentation:** Minimize .md file creation, avoid test summary docs, use README.md and single PROJECT-DOC.md per project
-8. **Testing:** Use pytest framework, write tests for all business logic, follow pytest conventions
+6. **Version Awareness:** Defer error handling/validation until around v0.8.0 (unless absolutely necessary), focus on clean architecture
+7. **Public Repository Rules:**
+   - Keep README.md basic and human-sounding
+   - Minimize .md file creation to avoid repository pollution
+   - Place all docs in `/docs/` directory, all tests in `/tests/` directory
+   - Never create scattered documentation files
+8. **Testing:** Use pytest framework, write tests for ALL logic, follow pytest conventions
 9. **Version Management:** Update CHANGELOG.md in `/docs/` folder when incrementing versions, document all changes
-10. **Inline Comments:** Include comments for each significant code block for readability and AI context
+10. **Inline Comments:** Include comments for each significant code block for readability and autocompletion context
 11. **Type Safety:** Verify runtime behavior matches type annotations, use contract testing
 12. **Architectural Patterns:** Implement proper separation of concerns and clear component boundaries
 

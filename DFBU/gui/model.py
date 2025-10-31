@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 DFBU Model - Data and Business Logic Layer
 
@@ -11,7 +12,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-30-2025
-Date Changed: 10-30-2025
+Date Changed: 10-31-2025
 License: MIT
 
 Features:
@@ -44,7 +45,6 @@ Functions:
 
 import os
 import shutil
-import sys
 import tarfile
 import time
 from dataclasses import dataclass, field
@@ -773,12 +773,8 @@ class DFBUModel:
                 if not self.create_directory(dest_path.parent):
                     return False
 
-            # Use Path.copy() if available (Python 3.14+), otherwise fallback to shutil.copy2
-            if sys.version_info >= (3, 14) and hasattr(Path, "copy"):
-                src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
-            else:
-                # Fallback to shutil.copy2 for Python < 3.14
-                shutil.copy2(src_path, dest_path, follow_symlinks=True)
+            # Use Path.copy() with metadata preservation (Python 3.14+ required)
+            src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
             return True
 
         except (OSError, PermissionError):
@@ -1173,20 +1169,19 @@ class DFBUModel:
         if not isinstance(max_archives, int) or max_archives < 1:
             max_archives = 5
 
-        # Explicit bool() conversions ensure type safety even if TOML contains
-        # numeric (1/0) or string ("true"/"false") representations
+        # Build validated options dictionary with proper types
         return {
-            "mirror": bool(raw_options.get("mirror", True)),
-            "archive": bool(raw_options.get("archive", False)),
-            "hostname_subdir": bool(raw_options.get("hostname_subdir", True)),
-            "date_subdir": bool(raw_options.get("date_subdir", False)),
+            "mirror": raw_options.get("mirror", True),
+            "archive": raw_options.get("archive", False),
+            "hostname_subdir": raw_options.get("hostname_subdir", True),
+            "date_subdir": raw_options.get("date_subdir", False),
             "archive_format": str(raw_options.get("archive_format", "tar.gz")),
             "archive_compression_level": compression_level,
-            "rotate_archives": bool(raw_options.get("rotate_archives", False)),
+            "rotate_archives": raw_options.get("rotate_archives", False),
             "max_archives": max_archives,
         }
 
-    def _validate_dotfile(self, raw_dotfile: dict[str, str]) -> DotFileDict:
+    def _validate_dotfile(self, raw_dotfile: dict[str, Any]) -> DotFileDict:
         """
         Validate individual dotfile entry.
 
@@ -1196,14 +1191,13 @@ class DFBUModel:
         Returns:
             Validated DotFileDict
         """
-        # Convert enabled field to bool if present, default to True
+        # Convert enabled field to bool with proper type handling
         enabled_value = raw_dotfile.get("enabled", "true")
         if isinstance(enabled_value, bool):
             enabled = enabled_value
-        elif isinstance(enabled_value, str):
-            enabled = enabled_value.lower() in ("true", "1", "yes")
         else:
-            enabled = True
+            # Handle string representations
+            enabled = str(enabled_value).lower() in ("true", "1", "yes")
 
         return {
             "category": raw_dotfile.get("category", "Unknown"),

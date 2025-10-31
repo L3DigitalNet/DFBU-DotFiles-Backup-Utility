@@ -12,7 +12,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-30-2025
-Date Changed: 10-30-2025
+Date Changed: 10-31-2025
 License: MIT
 
 Features:
@@ -112,7 +112,9 @@ class BackupWorker(QThread):
         self.mirror_mode = mirror
         self.archive_mode = archive
 
-    def _process_file(self, src_path: Path, dest_path: Path, skip_identical: bool = False) -> bool:
+    def _process_file(
+        self, src_path: Path, dest_path: Path, skip_identical: bool = False
+    ) -> bool:
         """
         Process individual file backup.
 
@@ -143,7 +145,9 @@ class BackupWorker(QThread):
             return True
 
         # Copy file with skip_identical optimization
-        success = self.model.copy_file(src_path, dest_path, create_parent=True, skip_identical=skip_identical)
+        success = self.model.copy_file(
+            src_path, dest_path, create_parent=True, skip_identical=skip_identical
+        )
 
         if success:
             elapsed = time.perf_counter() - start_time
@@ -155,7 +159,9 @@ class BackupWorker(QThread):
 
         return success
 
-    def _process_directory(self, src_path: Path, dest_path: Path, skip_identical: bool = False) -> int:
+    def _process_directory(
+        self, src_path: Path, dest_path: Path, skip_identical: bool = False
+    ) -> int:
         """
         Process directory backup recursively.
 
@@ -178,7 +184,9 @@ class BackupWorker(QThread):
             return 0
 
         # Copy directory with skip_identical optimization
-        results = self.model.copy_directory(src_path, dest_path, skip_identical=skip_identical)
+        results = self.model.copy_directory(
+            src_path, dest_path, skip_identical=skip_identical
+        )
 
         # Process results
         success_count = 0
@@ -242,7 +250,9 @@ class BackupWorker(QThread):
 
             # Process based on type with skip_identical optimization for mirror backups
             if is_dir:
-                file_count = self._process_directory(src_path, dest_path, skip_identical=True)
+                file_count = self._process_directory(
+                    src_path, dest_path, skip_identical=True
+                )
                 if file_count > 0:
                     processed_count += 1
             else:
@@ -833,20 +843,28 @@ class DFBUViewModel(QObject):
             Formatted statistics string
         """
         stats = self.model.statistics
-        message = "Operation completed!\n\n"
-        message += f"Items processed: {stats.processed_items}\n"
-        message += f"Items skipped: {stats.skipped_items}\n"
-        message += f"Items failed: {stats.failed_items}\n"
-        message += f"Total time: {stats.total_time:.2f} seconds\n"
+
+        # Build message using list and join for better performance
+        message_parts = [
+            "Operation completed!\n",
+            f"Items processed: {stats.processed_items}",
+            f"Items skipped: {stats.skipped_items}",
+            f"Items failed: {stats.failed_items}",
+            f"Total time: {stats.total_time:.2f} seconds",
+        ]
 
         # Add detailed timing statistics if available
         if stats.processing_times:
-            message += f"\nProcessing Statistics:\n"
-            message += f"  Average: {stats.average_time:.4f} seconds\n"
-            message += f"  Minimum: {stats.min_time:.4f} seconds\n"
-            message += f"  Maximum: {stats.max_time:.4f} seconds"
+            message_parts.extend(
+                [
+                    "\nProcessing Statistics:",
+                    f"  Average: {stats.average_time:.4f} seconds",
+                    f"  Minimum: {stats.min_time:.4f} seconds",
+                    f"  Maximum: {stats.max_time:.4f} seconds",
+                ]
+            )
 
-        return message
+        return "\n".join(message_parts)
 
     def get_options(self) -> dict[str, Any]:
         """
