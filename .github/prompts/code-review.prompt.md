@@ -21,7 +21,7 @@ Perform a complete code review of ${file} or project following repository guidel
 - **PEP 8 compliance**: Strict formatting and style requirements
 - **File headers**: Full docstring format with shebang, encoding, and complete metadata
 - **Streamlined docstrings**: Brief descriptions, 80-char limit, leverage type hints
-- **DRY principle**: Eliminate ALL duplication, use [common_lib](../../projects/common_lib/) for shared utilities
+- **DRY principle**: Eliminate ALL duplication, centralize shared utilities within the project
 
 ## Clean & Confident Design (Highest Priority)
 - **PREFER confident, clean code** over defensive programming patterns

@@ -127,10 +127,10 @@ addopts = "--cov=src --cov-report=html --cov-report=term-missing"
 ## Repository Integration
 
 ### Shared Testing Utilities
-- **USE** `projects/common_lib/` for shared test utilities and fixtures
-- **CREATE** reusable testing patterns and helpers
+- **CREATE** reusable testing patterns and helpers within the project
 - **MAINTAIN** consistency across project test suites
 - **ELIMINATE** duplicate testing code through shared utilities
+- **ORGANIZE** shared test utilities in the project's `/tests/` directory
 
 ### Python Standard Library Focus
 - **PREFER** built-in testing capabilities and assert statements

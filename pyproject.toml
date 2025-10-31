@@ -1,0 +1,137 @@
+[project]
+name = "dfbu"
+version = "0.3.0"
+description = "Dotfiles Backup Utility - A file backup and restoration utility"
+authors = [
+    {name = "Chris Purcell", email = "chris@l3digital.net"}
+]
+requires-python = ">=3.14"
+dependencies = [
+    "PySide6>=6.6.0",
+    "tomli-w>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/L3DigitalNet/DFBU-DotFiles-Backup-Utility"
+
+[tool.ruff]
+# Target Python 3.14+ as specified in guidelines
+target-version = "py314"
+line-length = 88  # Black-compatible, reasonable for readability
+
+# Exclude patterns
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "__pycache__",
+    ".pytest_cache",
+    ".ruff_cache",
+    "build",
+    "dist",
+    "*.egg-info",
+]
+
+[tool.ruff.lint]
+# Enable comprehensive rule sets for strict PEP 8 compliance
+select = [
+    "E",      # pycodestyle errors (PEP 8)
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort (import organization)
+    "N",      # pep8-naming
+    "UP",     # pyupgrade (modern Python syntax)
+    "ANN",    # flake8-annotations (type hints everywhere)
+    "B",      # flake8-bugbear (common bugs)
+    "C4",     # flake8-comprehensions
+    "DTZ",    # flake8-datetimez
+    "T10",    # flake8-debugger
+    "ISC",    # flake8-implicit-str-concat
+    "ICN",    # flake8-import-conventions
+    "PIE",    # flake8-pie
+    "PT",     # flake8-pytest-style
+    "Q",      # flake8-quotes
+    "RSE",    # flake8-raise
+    "RET",    # flake8-return
+    "SIM",    # flake8-simplify
+    "PTH",    # flake8-use-pathlib
+    "PL",     # Pylint
+    "RUF",    # Ruff-specific rules
+]
+
+ignore = [
+    "ANN101",  # Missing type annotation for self in method
+    "ANN102",  # Missing type annotation for cls in classmethod
+    "ANN401",  # Dynamically typed expressions (Any) - allow when necessary
+    "PLR0913", # Too many arguments - let design dictate
+    "PLR2004", # Magic value comparison - acceptable for common values
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Test files can have additional flexibility
+"tests/**/*.py" = [
+    "ANN",     # Type hints less critical in tests
+    "PLR2004", # Magic values acceptable in test data
+    "S101",    # Assert usage (required for pytest)
+]
+
+[tool.ruff.lint.isort]
+# Organize imports per Python conventions
+force-single-line = false
+lines-after-imports = 2
+known-first-party = ["dfbu", "gui"]
+
+[tool.ruff.lint.mccabe]
+# Enforce reasonable complexity (max 3 nesting levels per guidelines)
+max-complexity = 10
+
+[tool.ruff.lint.pyupgrade]
+# Enforce modern Python 3.14+ syntax
+keep-runtime-typing = false  # Use modern type hints (str | None instead of Optional[str])
+
+[tool.ruff.format]
+# Format settings
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+
+[tool.pytest.ini_options]
+# pytest configuration per guidelines
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+    "--cov=DFBU",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "slow: Tests that take a long time to run",
+]
+
+[tool.mypy]
+# Type checking configuration
+python_version = "3.14"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+check_untyped_defs = true
+strict_equality = true
+strict = true
+
+[[tool.mypy.overrides]]
+# Test files can be less strict
+module = "tests.*"
+disallow_untyped_defs = false

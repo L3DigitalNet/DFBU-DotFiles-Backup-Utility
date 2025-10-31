@@ -5,7 +5,7 @@ description: "Commit, push, and merge the testing branch into the main branch af
 
 # Merge Testing Branch into Main Branch
 
-This prompt is designed to help finalize the integration of changes from the `testing` branch into the `main` branch of the Star Trek Retro Remake repository.
+This prompt is designed to help finalize the integration of changes from the `testing` branch into the `main` branch of the DFBU repository.
 
 ## 🔓 Branch Protection Exception
 
@@ -72,21 +72,17 @@ Merge the testing branch into main using the project's preferred strategy:
 **Option A: Merge Commit (Preserves History)**
 
 ```bash
-git merge testing --no-ff -m "Merge testing branch - UI enhancements and documentation updates"
+git merge testing --no-ff -m "Merge testing branch - Updates and improvements"
 ```
 
 **Option B: Squash and Merge (Clean History)**
 
 ```bash
 git merge testing --squash
-git commit -m "Merge testing branch - UI enhancements and documentation updates
+git commit -m "Merge testing branch - Updates and improvements
 
-- Added complete Qt Designer main window implementation
-- Expanded DESIGN.md with comprehensive architecture details
-- Added new prompt files for UI creation and venv initialization
-- Updated copilot instructions with branch protection policy
-- Fixed minor whitespace issues
-- All tests passing (289/292, 3 intentional edge cases documented)"
+[Summarize the changes being merged from testing branch]
+"
 ```
 
 ### Step 6: Push Main Branch to Remote
@@ -112,33 +108,20 @@ The diff should show no differences if the push was successful.
 
 After successful merge:
 
-1. **Optional: Delete testing branch locally** (if no longer needed):
-
-   ```bash
-   git branch -d testing
-   ```
-
-2. **Optional: Delete testing branch remotely** (if no longer needed):
-
-   ```bash
-   git push origin --delete testing
-   ```
-
-   ⚠️ **WARNING:** Only delete if you're done with the testing branch. The project typically keeps it for ongoing development.
-
-3. **Return to testing branch for continued development** (if keeping it):
+1. **Keep testing branch for ongoing development**:
 
    ```bash
    git checkout testing
    git merge main  # Sync testing with main
    ```
 
-4. **Run tests on main branch** to verify everything works:
+2. **Run tests to verify everything works**:
 
    ```bash
-   git checkout main
-   uv run pytest STRR/tests/ -v
+   uv run pytest DFBU/tests/ -v
    ```
+
+   ⚠️ **NOTE:** The project maintains `testing` branch for active development. Do not delete it.
 
 ## Rollback Procedure
 
@@ -173,22 +156,21 @@ git push origin main --force
 
 ## Known Issues
 
-### Test Failures (3 edge cases)
+### Test Status
 
-The testing branch has 3 intentionally failing tests related to null-checking edge cases:
+Check current test status with:
 
-1. `test_handle_ship_move_request_without_player_ship`
-2. `test_handle_combat_action_without_player_ship`
-3. `test_is_valid_move_no_sector`
+```bash
+uv run pytest DFBU/tests/ -v
+```
 
-**Status:** These are **intentional design decisions** per project guidelines:
+**Note:** Per project guidelines:
 
 - Project uses "confident design patterns"
-- Error handling deferred to v1.0.0
-- Code assumes valid state after initialization
-- Tests document future v1.0.0 requirements
+- Error handling deferred to v1.0.0 (unless critical)
+- Tests should focus on happy path and core functionality before v1.0.0
 
-**Action Required:** None - these are documented as expected behavior for v0.0.x
+**Action Required:** Review and document any failing tests before merge
 
 ## Merge Checklist Summary
 
@@ -204,33 +186,22 @@ The testing branch has 3 intentionally failing tests related to null-checking ed
 - [ ] Complete post-merge tasks
 - [ ] Document merge in project tracking
 
-## Expected Changes
-
-After merge, the main branch will include:
-
-- **7 files changed**: +2719 insertions, -618 deletions
-- **New UI Files**: Complete Qt Designer main window implementation
-- **Documentation**: Major DESIGN.md expansion
-- **New Prompts**: UI creation and venv initialization guides
-- **Updated Guidelines**: Branch protection policy in copilot instructions
-- **Current Version**: v0.0.21
-
 ## Success Criteria
 
 The merge is successful when:
 
 1. ✅ Main branch contains all testing branch commits
 2. ✅ No merge conflicts remain
-3. ✅ Tests pass on main branch (289/292 with 3 documented exceptions)
+3. ✅ Tests pass on main branch
 4. ✅ Remote repository updated
 5. ✅ Project documentation reflects merge
-6. ✅ Team notified of merge completion
+6. ✅ Changelog is up to date
 
 ## Additional Notes
 
 - **Branch Strategy**: The project maintains `main` for stable releases and `testing` for active development
 - **Code Changes Policy**: All code changes MUST go through `testing` branch first
-- **Documentation**: Can be updated directly on `main` after explicit approval
+- **Documentation**: Should be updated in `testing` branch and merged with code changes
 - **Version Numbering**: After merge, consider if next version should increment MINOR or PATCH
 
 ## Support
@@ -238,6 +209,6 @@ The merge is successful when:
 If you encounter issues during the merge process:
 
 1. Check the repository's GitHub Issues page
-2. Review the project's ARCHITECTURE.md and DESIGN.md
+2. Review the project's documentation in `/DFBU/docs/`
 3. Consult the CHANGELOG.md for recent changes
 4. Refer to the merge_prep.prompt.md for preparation details

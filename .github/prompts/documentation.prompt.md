@@ -45,7 +45,7 @@ Ensure all files have proper headers following repository standards with shebang
 - Ensure documentation reflects clean, confident design patterns
 
 ## MINIMIZE .md File Creation
-- **IMPORTANT**: Only create/update README.md, PROJECT-DOC.md, CHANGELOG.md as needed. The exception is for auto-generated API docs in library folders (common_lib/docs/).
+- **IMPORTANT**: Only create/update README.md, PROJECT-DOC.md, CHANGELOG.md as needed.
 
 ## Project Documentation
 - **README.md**: Create or update comprehensive README.md with project directory structure, installation, usage, examples for Linux.

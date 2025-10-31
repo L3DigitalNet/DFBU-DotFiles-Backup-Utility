@@ -36,12 +36,10 @@ Features:
     - Python standard library first approach with minimal dependencies
 
 Requirements:
-    - Linux environment only
-    - Python 3.14+ for latest Path.copy() functionality with metadata preservation
-    - PySide6 framework for modern desktop GUI
-    - Custom libraries located at ../common_lib/
-    - Properly configured TOML file located at ./data/dfbu-config.toml
-    - Standard library: pathlib, tomllib, tarfile, socket, time, datetime, sys, os
+    - Linux environment
+    - Python 3.14+ for latest language features
+    - PySide6 for GUI components
+    - Additional technical requirements and dependencies
 
 Known Issues:
     - Comprehensive error handling deferred until v1.0.0 per confident design pattern
