@@ -16,7 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- KDiff3 configuration paths for development utility support
+- Krusader user actions configuration path for enhanced file manager functionality
+
 ### Changed
+
+- Import organization improvements with proper ordering
+- Enhanced type safety with strict parameter added to zip() calls
+- Updated type hints for better code clarity
 
 ### Deprecated
 

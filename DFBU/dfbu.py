@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Dotfiles Backup Utility (DFBU)
 
@@ -86,13 +85,13 @@ import sys
 import tarfile
 import termios
 import time
+import tomllib
 import tty
 from datetime import datetime
 from pathlib import Path
 from socket import gethostname
 from typing import Any, Final, TypedDict
 
-import tomllib
 
 # Version information
 __version__ = "0.3.1"
@@ -729,7 +728,7 @@ class DotFile:
     def __init__(
         self,
         raw_dotfile: DotFileDict,
-        options: "Options",
+        options: Options,
     ) -> None:
         """
         Initialize dotfile metadata from configuration.
@@ -1288,7 +1287,7 @@ class CLIHandler:
         """
         print(f"\n{DEFAULT.bold}The following files will be restored:{RESET}\n")
 
-        for src_file, dest_file in zip(src_files, dest_files):
+        for src_file, dest_file in zip(src_files, dest_files, strict=False):
             if src_file.is_file():
                 print(
                     f"  {BLUE.bold}{src_file.name}{RESET}: {DEFAULT}{src_file}{RESET}\n"
@@ -1471,7 +1470,7 @@ def copy_files_restore(
 
     # Copy files with metadata preservation using Python 3.14 Path.copy()
     print(f"\n{DEFAULT.bold}Processing files:{RESET}\n")
-    for src_file, dest_path in zip(src_files, dest_paths):
+    for src_file, dest_path in zip(src_files, dest_paths, strict=False):
         print(f"  copying {BLUE.bold}{src_file.name}{RESET} to: {dest_path}")
 
         if not dry_run:

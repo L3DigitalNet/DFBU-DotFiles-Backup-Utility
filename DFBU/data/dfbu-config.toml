@@ -90,6 +90,30 @@ enabled = true
 [[dotfile]]
 category = "Development"
 subcategory = "Utility"
+application = "kdiff3"
+description = "KDiff3 configuration and settings"
+path = "~/.config/kdiff3rc/"
+enabled = true
+
+[[dotfile]]
+category = "Development"
+subcategory = "Utility"
+application = "kdiff3"
+description = "KDiff3 configuration and settings"
+path = "~/.kde/share/config/kdiff3rc"
+enabled = true
+
+[[dotfile]]
+category = "Development"
+subcategory = "Utility"
+application = "kdiff3"
+description = "Supplemmentary data for KDiff3 application"
+path = "~/.local/share/kdiff3/"
+enabled = true
+
+[[dotfile]]
+category = "Development"
+subcategory = "Utility"
 application = "QT Design Studio"
 description = "QT Design Studio configuration and settings"
 path = "~/.config/QtProject/qtdesignstudio.conf"
@@ -269,6 +293,14 @@ subcategory = "File Explorer"
 application = "Krusader"
 description = "Krusader file manager configuration"
 path = "/home/chris/.local/share/kxmlgui5/krusader/krusaderui.rc"
+enabled = true
+
+[[dotfile]]
+category = "System"
+subcategory = "File Explorer"
+application = "Krusader"
+description = "Krusader file manager user actions"
+path = "~/.local/share/krusader/useractions.xml"
 enabled = true
 
 [[dotfile]]
