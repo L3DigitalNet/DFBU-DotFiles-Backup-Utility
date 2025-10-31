@@ -136,7 +136,6 @@ class TestConfigValidator:
             "path": "~/.bashrc",
             "mirror_dir": "~/backup/mirror",
             "archive_dir": "~/backup/archive",
-            "enabled": True,
         }
 
         # Act
@@ -150,7 +149,6 @@ class TestConfigValidator:
         assert result["path"] == "~/.bashrc"
         assert result["mirror_dir"] == "~/backup/mirror"
         assert result["archive_dir"] == "~/backup/archive"
-        assert result["enabled"] is True
 
     def test_validate_dotfile_with_missing_fields(self) -> None:
         """Test dotfile validation applies defaults for missing fields."""
@@ -168,29 +166,25 @@ class TestConfigValidator:
         assert result["path"] == ""
         assert result["mirror_dir"] == "~/DFBU_Mirror"
         assert result["archive_dir"] == "~/DFBU_Archives"
-        assert result["enabled"] is True
 
-    def test_validate_dotfile_enabled_string_values(self) -> None:
-        """Test dotfile enabled field handles string representations."""
-        # Arrange - Test various true values
-        for true_val in ["true", "True", "TRUE", "1", "yes", "Yes"]:
-            raw_dotfile = {"enabled": true_val}
+    def test_validate_dotfile_partial_fields(self) -> None:
+        """Test dotfile validation with subset of fields."""
+        # Arrange
+        raw_dotfile = {
+            "category": "Shell",
+            "path": "~/.bashrc",
+        }
 
-            # Act
-            result = ConfigValidator.validate_dotfile(raw_dotfile)
+        # Act
+        result = ConfigValidator.validate_dotfile(raw_dotfile)
 
-            # Assert
-            assert result["enabled"] is True, f"Failed for value: {true_val}"
-
-        # Arrange - Test false values
-        for false_val in ["false", "False", "FALSE", "0", "no", "No"]:
-            raw_dotfile = {"enabled": false_val}
-
-            # Act
-            result = ConfigValidator.validate_dotfile(raw_dotfile)
-
-            # Assert
-            assert result["enabled"] is False, f"Failed for value: {false_val}"
+        # Assert - Specified fields preserved
+        assert result["category"] == "Shell"
+        assert result["path"] == "~/.bashrc"
+        # Missing fields use defaults
+        assert result["subcategory"] == "Unknown"
+        assert result["application"] == "Unknown"
+        assert result["description"] == "None"
 
     def test_validate_config_complete_structure(self) -> None:
         """Test complete config validation with paths, options, and dotfiles."""
@@ -215,7 +209,6 @@ class TestConfigValidator:
                     "application": "Bash",
                     "description": "Bash config",
                     "path": "~/.bashrc",
-                    "enabled": True,
                 },
                 {
                     "category": "Editor",
@@ -223,7 +216,6 @@ class TestConfigValidator:
                     "application": "Vim",
                     "description": "Vim config",
                     "path": "~/.vimrc",
-                    "enabled": False,
                 },
             ],
         }
@@ -245,12 +237,10 @@ class TestConfigValidator:
         assert dotfiles[0]["path"] == "~/.bashrc"
         assert dotfiles[0]["mirror_dir"] == "~/test/mirror"
         assert dotfiles[0]["archive_dir"] == "~/test/archive"
-        assert dotfiles[0]["enabled"] is True
 
         # Assert second dotfile
         assert dotfiles[1]["category"] == "Editor"
         assert dotfiles[1]["path"] == "~/.vimrc"
-        assert dotfiles[1]["enabled"] is False
 
     def test_validate_config_missing_sections(self) -> None:
         """Test config validation handles missing sections gracefully."""

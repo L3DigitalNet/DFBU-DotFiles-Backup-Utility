@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 DFBU GUI - Dotfiles Backup Utility (Desktop Edition)
 
@@ -11,29 +12,19 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-18-2025
-Date Changed: 10-30-2025
+Date Changed: 10-31-2025
 License: MIT
 
 Features:
-    - Modern desktop GUI with tab-based interface
-    - MVVM architectural pattern with clean separation of concerns
-    - Threaded operations to prevent UI blocking
-    - Window state persistence (size, position, preferences)
-    - Responsive user feedback for long operations
-    - Signal-based reactive data binding
-    - TOML configuration with Category/Subcategory/Application metadata structure
-    - Interactive dotfile management with add, update, and remove functionality
-    - Flexible directory organization with hostname and date-based subdirectory options
-    - Python 3.14 Path.copy() with metadata preservation and symlink support
-    - Recursive file and directory processing with automatic parent directory creation
-    - Permission checking and graceful handling of inaccessible files
-    - Mirror backup mode for uncompressed file copies maintaining directory structure
-    - Compressed archive creation with TAR.GZ format and configurable compression levels
-    - Archive rotation with configurable maximum archive limits per retention policy
-    - Interactive restore with visual feedback and progress tracking
-    - Comprehensive file existence validation and type detection
-    - Full type hint coverage with typed dictionaries for configuration data structures
-    - Python standard library first approach with minimal dependencies
+    - MVVM desktop GUI with tab-based interface and threaded operations
+    - Window state persistence and responsive user feedback
+    - TOML configuration with Category/Subcategory/Application structure
+    - Interactive dotfile management (add, update, remove)
+    - Flexible backup organization with hostname and date-based directories
+    - Mirror and compressed archive backup modes with rotation
+    - Interactive restore with progress tracking
+    - Python 3.14 Path.copy() with metadata and symlink support
+    - Standard library first approach with minimal dependencies
 
 Requirements:
     - Linux environment
@@ -88,7 +79,7 @@ except ImportError:
     print("Install it with: pip install PySide6")
     sys.exit(1)
 
-__version__: Final[str] = "0.5.2"
+__version__: Final[str] = "0.5.3"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
 DEFAULT_CONFIG_PATH: Final[Path] = Path(__file__).parent / "data" / "dfbu-config.toml"

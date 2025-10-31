@@ -12,7 +12,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-19-2025
-Date Changed: 10-27-2025
+Date Changed: 10-31-2025
 License: MIT
 
 Features:
@@ -30,7 +30,7 @@ Note:
 """
 
 # Package metadata
-__version__ = "0.2.0"
+__version__ = "0.5.3"
 __author__ = "Chris Purcell"
 __email__ = "chris@l3digital.net"
 

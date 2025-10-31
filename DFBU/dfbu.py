@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Dotfiles Backup Utility (DFBU)
 
@@ -10,7 +11,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-18-2025
-Date Changed: 10-29-2025
+Date Changed: 10-31-2025
 License: MIT
 
 Features:
@@ -94,7 +95,7 @@ from typing import Any, Final, TypedDict
 import tomllib
 
 # Version information
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 
 # =============================================================================
@@ -1287,7 +1288,7 @@ class CLIHandler:
         """
         print(f"\n{DEFAULT.bold}The following files will be restored:{RESET}\n")
 
-        for src_file, dest_file in zip(src_files, dest_files, strict=False):
+        for src_file, dest_file in zip(src_files, dest_files):
             if src_file.is_file():
                 print(
                     f"  {BLUE.bold}{src_file.name}{RESET}: {DEFAULT}{src_file}{RESET}\n"
@@ -1470,7 +1471,7 @@ def copy_files_restore(
 
     # Copy files with metadata preservation using Python 3.14 Path.copy()
     print(f"\n{DEFAULT.bold}Processing files:{RESET}\n")
-    for src_file, dest_path in zip(src_files, dest_paths, strict=False):
+    for src_file, dest_path in zip(src_files, dest_paths):
         print(f"  copying {BLUE.bold}{src_file.name}{RESET} to: {dest_path}")
 
         if not dry_run:
@@ -1526,10 +1527,12 @@ def main() -> None:
 
         # Execute archive creation if enabled
         if options.archive:
-            # Determine archive base destination path from configuration
-            archive_base_dest_path: Path = Path(
-                raw_dotfiles[0].get("archive_dir", "~/DFBU_Archives")
-            ).expanduser()
+            # Determine archive base destination path from configuration with fallback
+            if raw_dotfiles:
+                archive_dir = raw_dotfiles[0].get("archive_dir", "~/DFBU_Archives")
+            else:
+                archive_dir = "~/DFBU_Archives"
+            archive_base_dest_path: Path = Path(archive_dir).expanduser()
 
             # Add hostname subdirectory if configured
             if options.hostname_subdir:

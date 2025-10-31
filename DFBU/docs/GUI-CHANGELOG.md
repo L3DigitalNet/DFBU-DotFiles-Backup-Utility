@@ -1,6 +1,6 @@
-# Changelog - Dotfiles Backup Utility
+# Changelog - Dotfiles Backup Utility GUI
 
-All notable changes to this project will be documented in this file.
+All notable changes to the GUI component of this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -13,6 +13,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Development Stages**: `.dev`, `.a` (alpha), `.b` (beta), `.rc` (release candidate)
 
 ## [Unreleased]
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [0.5.3] - 2025-10-31
+
+### Added
+
+### Changed
+
+- **Documentation Update**: Updated all GUI module headers to current date (2025-10-31)
+- Enhanced documentation consistency across Model, View, and ViewModel layers
+- Updated GUI project documentation version tracking
+- Improved MVVM architecture documentation clarity
+
+### Fixed
+
+- Corrected version numbering and date consistency in GUI documentation
+
+## [0.5.2] - 2025-10-30
 
 ### Added
 

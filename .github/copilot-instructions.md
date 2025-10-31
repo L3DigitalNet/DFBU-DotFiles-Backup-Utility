@@ -100,14 +100,14 @@ git branch --show-current  # Must show "testing"
 - **Functions:** Small, focused, descriptive names, max 3 nesting levels
 
 ### File Structure (Required)
-- **MUST** include shebang and encoding: `#``!/usr/bin/env python3` and `# -*- coding: utf-8 -*-`
+- **MUST** include shebang and encoding: `#!/usr/bin/env python3` and `# -*- coding: utf-8 -*-`
 - **MUST** follow standard header format with project-specific Features section
 - **MUST** include inline comments for each significant code block for readability and autocompletion context
 - **MUST** place comments at the top of code blocks explaining their purpose, preferably in one line
 - **MUST** add inline comments for complex logic, Linux-specific implementations, and important decisions
 
 ```python
-#``!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Project Title - Brief Description

@@ -12,7 +12,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-30-2025
-Date Changed: 10-30-2025
+Date Changed: 10-31-2025
 License: MIT
 
 Features:
@@ -91,7 +91,9 @@ class AddDotfileDialog(QDialog):
         exec: Show dialog and return result
     """
 
-    def __init__(self, parent: QWidget | None = None, dotfile_data: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self, parent: QWidget | None = None, dotfile_data: dict[str, Any] | None = None
+    ) -> None:
         """
         Initialize the AddDotfileDialog.
 
@@ -101,14 +103,20 @@ class AddDotfileDialog(QDialog):
         """
         super().__init__(parent)
         self.is_update_mode = dotfile_data is not None
-        self.setWindowTitle("Update Dotfile Entry" if self.is_update_mode else "Add Dotfile Entry")
+        self.setWindowTitle(
+            "Update Dotfile Entry" if self.is_update_mode else "Add Dotfile Entry"
+        )
         self.setMinimumWidth(500)
 
         # Create main layout
         main_layout = QVBoxLayout(self)
 
         # Add info label
-        info_text = "Update the dotfile entry:" if self.is_update_mode else "Add a new dotfile entry to the configuration:"
+        info_text = (
+            "Update the dotfile entry:"
+            if self.is_update_mode
+            else "Add a new dotfile entry to the configuration:"
+        )
         info_label = QLabel(info_text)
         main_layout.addWidget(info_label)
 
@@ -431,7 +439,16 @@ class MainWindow(QMainWindow):
         self.dotfile_table = QTableWidget()
         self.dotfile_table.setColumnCount(8)
         self.dotfile_table.setHorizontalHeaderLabels(
-            ["Enabled", "Status", "Category", "Subcategory", "Application", "Type", "Size", "Path"]
+            [
+                "Enabled",
+                "Status",
+                "Category",
+                "Subcategory",
+                "Application",
+                "Type",
+                "Size",
+                "Path",
+            ]
         )
 
         # Configure table properties
@@ -703,13 +720,17 @@ class MainWindow(QMainWindow):
         self.config_compression_spinbox = QSpinBox()
         self.config_compression_spinbox.setMinimum(0)
         self.config_compression_spinbox.setMaximum(9)
-        self.config_compression_spinbox.setToolTip("0 = no compression, 9 = maximum compression")
+        self.config_compression_spinbox.setToolTip(
+            "0 = no compression, 9 = maximum compression"
+        )
         self.config_compression_spinbox.valueChanged.connect(self._on_config_changed)
         form_layout.addRow("Compression Level:", self.config_compression_spinbox)
 
         # Archive rotation checkbox
         self.config_rotate_checkbox = QCheckBox("Enable archive rotation")
-        self.config_rotate_checkbox.stateChanged.connect(self._on_rotate_checkbox_changed)
+        self.config_rotate_checkbox.stateChanged.connect(
+            self._on_rotate_checkbox_changed
+        )
         self.config_rotate_checkbox.stateChanged.connect(self._on_config_changed)
         form_layout.addRow("Rotate Archives:", self.config_rotate_checkbox)
 
@@ -717,7 +738,9 @@ class MainWindow(QMainWindow):
         self.config_max_archives_spinbox = QSpinBox()
         self.config_max_archives_spinbox.setMinimum(1)
         self.config_max_archives_spinbox.setMaximum(100)
-        self.config_max_archives_spinbox.setToolTip("Maximum number of archives to keep")
+        self.config_max_archives_spinbox.setToolTip(
+            "Maximum number of archives to keep"
+        )
         self.config_max_archives_spinbox.valueChanged.connect(self._on_config_changed)
         form_layout.addRow("Max Archives:", self.config_max_archives_spinbox)
 
@@ -1020,7 +1043,12 @@ class MainWindow(QMainWindow):
 
         self._populate_dotfile_table(dotfiles, validation, sizes)
 
-    def _populate_dotfile_table(self, dotfiles: list, validation: dict[int, tuple[bool, bool, str]], sizes: dict[int, int]) -> None:
+    def _populate_dotfile_table(
+        self,
+        dotfiles: list,
+        validation: dict[int, tuple[bool, bool, str]],
+        sizes: dict[int, int],
+    ) -> None:
         """
         Populate the dotfile table with given data.
 
@@ -1030,7 +1058,9 @@ class MainWindow(QMainWindow):
             sizes: Size results mapping index to size in bytes
         """
         # Create list of (index, dotfile, validation, size) tuples for sorting
-        dotfile_data = [(i, dotfile, validation[i], sizes[i]) for i, dotfile in enumerate(dotfiles)]
+        dotfile_data = [
+            (i, dotfile, validation[i], sizes[i]) for i, dotfile in enumerate(dotfiles)
+        ]
 
         # Sort by enabled status (False/disabled first, then True/enabled)
         # This puts disabled dotfiles at the top of the list
@@ -1041,11 +1071,18 @@ class MainWindow(QMainWindow):
         # Track total size for enabled items
         total_enabled_size = 0
 
-        for row_idx, (original_idx, dotfile, (exists, is_dir, type_str), size) in enumerate(dotfile_data):
+        for row_idx, (
+            original_idx,
+            dotfile,
+            (exists, is_dir, type_str),
+            size,
+        ) in enumerate(dotfile_data):
             # Enabled indicator
             enabled = dotfile.get("enabled", True)
             enabled_item = QTableWidgetItem("✓" if enabled else "✗")
-            enabled_item.setData(Qt.ItemDataRole.UserRole, original_idx)  # Store original index
+            enabled_item.setData(
+                Qt.ItemDataRole.UserRole, original_idx
+            )  # Store original index
             if enabled:
                 enabled_item.setForeground(QColor(0, 150, 0))  # Green
             else:
@@ -1061,13 +1098,19 @@ class MainWindow(QMainWindow):
             self.dotfile_table.setItem(row_idx, 1, status_item)
 
             # Category
-            self.dotfile_table.setItem(row_idx, 2, QTableWidgetItem(dotfile["category"]))
+            self.dotfile_table.setItem(
+                row_idx, 2, QTableWidgetItem(dotfile["category"])
+            )
 
             # Subcategory
-            self.dotfile_table.setItem(row_idx, 3, QTableWidgetItem(dotfile["subcategory"]))
+            self.dotfile_table.setItem(
+                row_idx, 3, QTableWidgetItem(dotfile["subcategory"])
+            )
 
             # Application
-            self.dotfile_table.setItem(row_idx, 4, QTableWidgetItem(dotfile["application"]))
+            self.dotfile_table.setItem(
+                row_idx, 4, QTableWidgetItem(dotfile["application"])
+            )
 
             # Type
             self.dotfile_table.setItem(row_idx, 5, QTableWidgetItem(type_str))
@@ -1076,7 +1119,9 @@ class MainWindow(QMainWindow):
             size_str = self.viewmodel.format_size(size)
             size_item = QTableWidgetItem(size_str)
             # Right-align the size for better readability
-            size_item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            size_item.setTextAlignment(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
             self.dotfile_table.setItem(row_idx, 6, size_item)
 
             # Path
@@ -1184,17 +1229,35 @@ class MainWindow(QMainWindow):
 
         if reply == QMessageBox.StandardButton.Yes:
             # Update model with all configuration values
-            self.viewmodel.command_update_option("mirror", self.config_mirror_checkbox.isChecked())
-            self.viewmodel.command_update_option("archive", self.config_archive_checkbox.isChecked())
-            self.viewmodel.command_update_option("hostname_subdir", self.config_hostname_checkbox.isChecked())
-            self.viewmodel.command_update_option("date_subdir", self.config_date_checkbox.isChecked())
-            self.viewmodel.command_update_option("archive_compression_level", self.config_compression_spinbox.value())
-            self.viewmodel.command_update_option("rotate_archives", self.config_rotate_checkbox.isChecked())
-            self.viewmodel.command_update_option("max_archives", self.config_max_archives_spinbox.value())
+            self.viewmodel.command_update_option(
+                "mirror", self.config_mirror_checkbox.isChecked()
+            )
+            self.viewmodel.command_update_option(
+                "archive", self.config_archive_checkbox.isChecked()
+            )
+            self.viewmodel.command_update_option(
+                "hostname_subdir", self.config_hostname_checkbox.isChecked()
+            )
+            self.viewmodel.command_update_option(
+                "date_subdir", self.config_date_checkbox.isChecked()
+            )
+            self.viewmodel.command_update_option(
+                "archive_compression_level", self.config_compression_spinbox.value()
+            )
+            self.viewmodel.command_update_option(
+                "rotate_archives", self.config_rotate_checkbox.isChecked()
+            )
+            self.viewmodel.command_update_option(
+                "max_archives", self.config_max_archives_spinbox.value()
+            )
 
             # Update paths
-            self.viewmodel.command_update_path("mirror_dir", self.config_mirror_path_edit.text())
-            self.viewmodel.command_update_path("archive_dir", self.config_archive_path_edit.text())
+            self.viewmodel.command_update_path(
+                "mirror_dir", self.config_mirror_path_edit.text()
+            )
+            self.viewmodel.command_update_path(
+                "archive_dir", self.config_archive_path_edit.text()
+            )
 
             # Save to file
             if self.viewmodel.command_save_config():
@@ -1206,7 +1269,9 @@ class MainWindow(QMainWindow):
 
                 # Update backup tab checkboxes to reflect changes
                 self.mirror_checkbox.setChecked(self.config_mirror_checkbox.isChecked())
-                self.archive_checkbox.setChecked(self.config_archive_checkbox.isChecked())
+                self.archive_checkbox.setChecked(
+                    self.config_archive_checkbox.isChecked()
+                )
             else:
                 QMessageBox.critical(
                     self,
@@ -1253,7 +1318,7 @@ class MainWindow(QMainWindow):
         item = self.dotfile_table.item(table_row, 0)
         if item:
             original_idx = item.data(Qt.ItemDataRole.UserRole)
-            if original_idx is not None:
+            if original_idx is not None and isinstance(original_idx, int):
                 return original_idx
         # Fallback to table row if no data stored (shouldn't happen)
         return table_row
@@ -1297,9 +1362,7 @@ class MainWindow(QMainWindow):
                     self, "Dotfile Added", "Dotfile entry has been added successfully."
                 )
             else:
-                QMessageBox.critical(
-                    self, "Add Failed", "Failed to add dotfile entry."
-                )
+                QMessageBox.critical(self, "Add Failed", "Failed to add dotfile entry.")
 
     def _on_update_dotfile(self) -> None:
         """Handle update dotfile button click."""
@@ -1337,12 +1400,20 @@ class MainWindow(QMainWindow):
 
             # Update dotfile via ViewModel
             success = self.viewmodel.command_update_dotfile(
-                original_idx, category, subcategory, application, description, path, enabled
+                original_idx,
+                category,
+                subcategory,
+                application,
+                description,
+                path,
+                enabled,
             )
 
             if success:
                 QMessageBox.information(
-                    self, "Dotfile Updated", "Dotfile entry has been updated successfully."
+                    self,
+                    "Dotfile Updated",
+                    "Dotfile entry has been updated successfully.",
                 )
             else:
                 QMessageBox.critical(
@@ -1409,7 +1480,7 @@ class MainWindow(QMainWindow):
         status_text = "enabled" if new_status else "disabled"
         self.status_bar.showMessage(
             f"Dotfile '{dotfile['application']}' {status_text}",
-            self.STATUS_MESSAGE_TIMEOUT_MS
+            self.STATUS_MESSAGE_TIMEOUT_MS,
         )
 
         # Perform lightweight table update without re-validation
