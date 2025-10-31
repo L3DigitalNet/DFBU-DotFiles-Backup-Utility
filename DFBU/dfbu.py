@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Dotfiles Backup Utility (DFBU)
 
@@ -39,10 +38,10 @@ Features:
 Requirements:
     - Linux environment only
     - Python 3.14+ for latest Path.copy() functionality with metadata preservation
-    - Custom libraries located at ../common_lib/ (AnsiColor, CLIMenu from cust_class)
     - Properly configured TOML file located at ./data/dfbu-config.toml
     - Path configurable via global CONFIG_PATH variable
     - Standard library only: pathlib, tomllib, argparse, tarfile, socket, time, datetime, sys
+    - AnsiColor and CLIMenu utility classes included inline (no external dependencies)
 
 Known Issues:
     - Comprehensive error handling deferred until v1.0.0 per confident design pattern
@@ -86,20 +85,304 @@ import sys
 import tarfile
 import termios
 import time
-import tomllib
 import tty
 from datetime import datetime
 from pathlib import Path
 from socket import gethostname
 from typing import Any, Final, TypedDict
 
-# Import custom classes from common_lib
-sys.path.insert(0, str(Path(__file__).parent.parent / "common_lib"))
-from cust_class import AnsiColor, CLIMenu
+import tomllib
 
 # Version information
-# Version information
 __version__ = "0.3.0"
+
+
+# =============================================================================
+# Utility Classes (formerly from common_lib)
+# =============================================================================
+
+
+class AnsiColor:
+    """
+    Build ANSI escape sequences for terminal text formatting and styling.
+
+    Attributes:
+        fg_color: Foreground color name for text
+        bg_color: Background color name for text
+        reset: ANSI reset sequence to clear all formatting
+        code: Complete ANSI color code for current configuration
+
+    Public methods:
+        bold: Returns ANSI code with bold styling
+        dim: Returns ANSI code with dim styling
+        underline: Returns ANSI code with underline styling
+        blinking: Returns ANSI code with blinking styling
+        hidden: Returns ANSI code with hidden text styling
+
+    Private methods:
+        _code: Assembles ANSI color code with optional styling
+    """
+
+    # Valid ANSI color names
+    _valid_colors: Final[set[str]] = {
+        "black",
+        "red",
+        "green",
+        "yellow",
+        "blue",
+        "magenta",
+        "cyan",
+        "white",
+        "default",
+        "bright black",
+        "bright red",
+        "bright green",
+        "bright yellow",
+        "bright blue",
+        "bright magenta",
+        "bright cyan",
+        "bright white",
+    }
+
+    # ANSI color codes mapping
+    _fg_color_codes: Final[dict[str, str]] = {
+        "black": "30",
+        "red": "31",
+        "green": "32",
+        "yellow": "33",
+        "blue": "34",
+        "magenta": "35",
+        "cyan": "36",
+        "white": "37",
+        "default": "39",
+        "bright black": "90",
+        "bright red": "91",
+        "bright green": "92",
+        "bright yellow": "93",
+        "bright blue": "94",
+        "bright magenta": "95",
+        "bright cyan": "96",
+        "bright white": "97",
+    }
+
+    _bg_color_codes: Final[dict[str, str]] = {
+        "black": "40",
+        "red": "41",
+        "green": "42",
+        "yellow": "43",
+        "blue": "44",
+        "magenta": "45",
+        "cyan": "46",
+        "white": "47",
+        "default": "49",
+        "bright black": "100",
+        "bright red": "101",
+        "bright green": "102",
+        "bright yellow": "103",
+        "bright blue": "104",
+        "bright magenta": "105",
+        "bright cyan": "106",
+        "bright white": "107",
+    }
+
+    def __init__(
+        self,
+        fg_color: str = "default",
+        bg_color: str = "default",
+    ) -> None:
+        """
+        Initialize ANSI color formatter.
+
+        Args:
+            fg_color: Foreground color name
+            bg_color: Background color name
+
+        Returns:
+            None
+        """
+        # Normalize input colors to lowercase and strip whitespace
+        self.fg_color: str = fg_color.lower().strip()
+        self.bg_color: str = bg_color.lower().strip()
+
+        # Set ANSI reset sequence constant for clearing all formatting
+        self.reset: Final[str] = "\u001b[0m"
+        # NOTE: Validation deferred until v1.0.0 per confident design guidelines
+
+        # Generate complete ANSI escape sequence for current color configuration
+        self.code: str = self._code()
+
+    def __str__(self) -> str:
+        return self.code
+
+    def _code(self, style_code: str = "") -> str:
+        """
+        Assemble ANSI color code with optional styling.
+
+        Args:
+            style_code: Optional ANSI style code
+
+        Returns:
+            Complete ANSI escape sequence
+        """
+        # Look up ANSI codes for foreground and background colors
+        fg_code = self._fg_color_codes[self.fg_color]
+        bg_code = self._bg_color_codes[self.bg_color]
+
+        # Build complete ANSI escape sequence with optional style code
+        if style_code:
+            return f"\u001b[{fg_code};{bg_code};{style_code}m"
+        return f"\u001b[{fg_code};{bg_code}m"
+
+    @property
+    def bold(self) -> str:
+        """
+        Get ANSI color code with bold styling.
+
+        Args:
+            None
+
+        Returns:
+            ANSI escape sequence with bold formatting
+        """
+        return self._code("1")
+
+    @property
+    def dim(self) -> str:
+        """
+        Get ANSI color code with dim styling.
+
+        Args:
+            None
+
+        Returns:
+            ANSI escape sequence with dim formatting
+        """
+        return self._code("2")
+
+    @property
+    def underline(self) -> str:
+        """
+        Get ANSI color code with underline styling.
+
+        Args:
+            None
+
+        Returns:
+            ANSI escape sequence with underline formatting
+        """
+        return self._code("4")
+
+    @property
+    def blinking(self) -> str:
+        """
+        Get ANSI color code with blinking styling.
+
+        Args:
+            None
+
+        Returns:
+            ANSI escape sequence with blinking formatting
+        """
+        return self._code("5")
+
+    @property
+    def hidden(self) -> str:
+        """
+        Get ANSI color code with hidden text styling.
+
+        Args:
+            None
+
+        Returns:
+            ANSI escape sequence with hidden text formatting
+        """
+        return self._code("8")
+
+
+class CLIMenu:
+    """
+    Simple command-line interface menu utility class.
+
+    Attributes:
+        None
+
+    Public methods:
+        run: Display menu options and handle user input selection
+        ynq: Display yes/no/quit prompt and handle user response
+
+    Private methods:
+        None
+    """
+
+    def run(
+        self,
+        menu_options: dict[str, Any],
+    ) -> None:
+        """
+        Display menu options with numbered selection and handle user input.
+
+        Args:
+            menu_options: Dictionary mapping option names to functions
+
+        Returns:
+            None
+        """
+        # Display numbered menu options to user
+        print("\nMenu Options:")
+        for i, option in enumerate(menu_options.keys(), 1):
+            print(f"{i}. {option}")
+
+        # Get user selection and execute corresponding function
+        while True:
+            try:
+                choice = input("\nSelect option (number): ").strip()
+                option_num = int(choice)
+
+                # Validate selection is within range
+                if 1 <= option_num <= len(menu_options):
+                    option_name = list(menu_options.keys())[option_num - 1]
+                    selected_function = menu_options[option_name]
+                    selected_function()
+                    break
+                print(f"Invalid selection. Please choose 1-{len(menu_options)}")
+
+            except (ValueError, KeyboardInterrupt, EOFError):
+                print("\nInvalid input or quit by user. Exiting...")
+                sys.exit(0)
+
+    def ynq(
+        self,
+        prompt: str,
+    ) -> bool:
+        """
+        Display yes/no/quit prompt and handle user input.
+
+        Args:
+            prompt: Question to display to user
+
+        Returns:
+            True for 'yes', False for 'no'. Exits program on 'quit'
+        """
+        # Loop until valid response is entered
+        while True:
+            try:
+                # Display prompt and get user input
+                response = input(f"{prompt.strip()} (y/n/q) ").strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                # Handle Ctrl+C or EOF gracefully
+                print("\nQuit by user. Exiting...")
+                sys.exit(0)
+
+            # Process user response and return appropriate boolean or exit
+            if response in ("y", "yes"):
+                return True
+            if response in ("n", "no"):
+                return False
+            if response in ("q", "quit"):
+                print("Quit by user. Exiting...")
+                sys.exit(0)
+            else:
+                print("Invalid entry. Try again.")
 
 
 # Color constants using AnsiColor class
@@ -877,9 +1160,9 @@ class CLIHandler:
             choice: str = input("Choice (1/2/q): ").strip()
             if choice == "1":
                 return "backup"
-            elif choice == "2":
+            if choice == "2":
                 return "restore"
-            elif choice.lower() in ("q", "quit", "exit"):
+            if choice.lower() in ("q", "quit", "exit"):
                 print("Exiting...")
                 sys.exit(0)
             else:
@@ -914,7 +1197,7 @@ class CLIHandler:
 
                     if confirm == "y":
                         return src_path
-                    elif confirm == "n":
+                    if confirm == "n":
                         break
             elif src_path.exists() and not src_path.is_dir():
                 print(f"{DEFAULT.underline}{src_path}{RESET} is not a directory.")
@@ -1004,7 +1287,7 @@ class CLIHandler:
         """
         print(f"\n{DEFAULT.bold}The following files will be restored:{RESET}\n")
 
-        for src_file, dest_file in zip(src_files, dest_files):
+        for src_file, dest_file in zip(src_files, dest_files, strict=False):
             if src_file.is_file():
                 print(
                     f"  {BLUE.bold}{src_file.name}{RESET}: {DEFAULT}{src_file}{RESET}\n"
@@ -1033,7 +1316,7 @@ def wait_for_spacebar() -> None:
             char = sys.stdin.read(1)
             if char == " ":  # Spacebar pressed
                 break
-            elif char == "\x03":  # Ctrl+C
+            if char == "\x03":  # Ctrl+C
                 raise KeyboardInterrupt
 
     finally:
@@ -1187,7 +1470,7 @@ def copy_files_restore(
 
     # Copy files with metadata preservation using Python 3.14 Path.copy()
     print(f"\n{DEFAULT.bold}Processing files:{RESET}\n")
-    for src_file, dest_path in zip(src_files, dest_paths):
+    for src_file, dest_path in zip(src_files, dest_paths, strict=False):
         print(f"  copying {BLUE.bold}{src_file.name}{RESET} to: {dest_path}")
 
         if not dry_run:

@@ -4,16 +4,20 @@
 
 **AI AGENTS MUST NEVER MAKE CODE CHANGES TO THE `main` BRANCH**
 
+### Exception for Human-Initiated Merges:
+**EXCEPTION:** If the merge is initiated by a human using the `/merge_testing_to_main` command, AI agents are then permitted to modify the `main` branch as part of that merge process.
+
 ### Enforcement Rules:
-1. **ALL code changes** must be made to the `testing` branch
+1. **ALL code changes** must be made to the `testing` branch (except during human-initiated `/merge_testing_to_main` command)
 2. **BEFORE making ANY file edits**, verify current branch with: `git branch --show-current`
 3. **IF on `main` branch**, STOP immediately and switch to `testing`: `git checkout testing`
-4. **NO EXCEPTIONS** - This rule applies to:
+   - **UNLESS** currently executing a human-initiated `/merge_testing_to_main` command
+4. **NO EXCEPTIONS** except as noted above - This rule applies to:
    - New files creation
    - File modifications
    - File deletions
    - Any code changes whatsoever
-5. **Merge workflow**: Only humans may merge `testing` → `main` after review
+5. **Merge workflow**: Only humans may initiate merges `testing` → `main` after review
 
 ### Verification Steps (MANDATORY before ANY code change):
 ```bash

@@ -7,6 +7,10 @@ description: "Commit, push, and merge the testing branch into the main branch af
 
 This prompt is designed to help finalize the integration of changes from the `testing` branch into the `main` branch of the Star Trek Retro Remake repository.
 
+## 🔓 Branch Protection Exception
+
+**IMPORTANT:** When this prompt is executed by a human using the `/merge_testing_to_main` command, AI agents are authorized to modify the `main` branch as part of the merge process. This is an explicit exception to the standard branch protection policy that prohibits AI agents from autonomously modifying `main`.
+
 ## Prerequisites
 
 Before running this prompt, ensure you have completed the merge preparation checklist:
@@ -53,6 +57,8 @@ git push origin testing
 ### Step 4: Switch to Main Branch
 
 Switch to the main branch and ensure it's up to date:
+
+**Note:** This step involves switching to and modifying the `main` branch, which is normally prohibited for AI agents. However, since this is a human-initiated merge process using the `/merge_testing_to_main` command, AI agents are authorized to perform these operations.
 
 ```bash
 git checkout main

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU Model - Data and Business Logic Layer
 
@@ -30,7 +29,8 @@ Features:
 Requirements:
     - Linux environment
     - Python 3.14+ for latest Path.copy() with metadata preservation
-    - Standard library only: pathlib, tomllib, tarfile, socket, time, datetime, os
+    - Standard library only: pathlib, tomllib, tomli_w, tarfile, socket, time, datetime, os, sys, shutil
+    - Rotating backup utilities included inline (no external dependencies)
 
 Classes:
     - DotFileDict: TypedDict for dotfile configuration
@@ -47,17 +47,169 @@ import shutil
 import sys
 import tarfile
 import time
-import tomllib
-import tomli_w
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from socket import gethostname
-from typing import Any, TypedDict, Final
+from typing import Any, TypedDict
 
-# Import rotating backup utility from common_lib
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "common_lib"))
-from file_backup import create_rotating_backup
+import tomli_w
+import tomllib
+
+# =============================================================================
+# Utility Functions (formerly from common_lib/file_backup.py)
+# =============================================================================
+
+
+def create_rotating_backup(
+    source_path: Path,
+    backup_dir: Path | None = None,
+    max_backups: int = 10,
+    timestamp_format: str = "%Y%m%d_%H%M%S",
+) -> tuple[Path | None, bool]:
+    """
+    Create a timestamped backup of a file and rotate old backups.
+
+    Creates a backup copy of the source file in the backup directory with a
+    timestamp. Automatically rotates old backups to maintain the maximum count.
+    If backup_dir is None, backups are created in the same directory as the
+    source file with a '.backups' suffix.
+
+    Args:
+        source_path: Path to file to backup
+        backup_dir: Directory for backup storage (default: source_path.parent / '.backups')
+        max_backups: Maximum number of backups to retain (default: 10)
+        timestamp_format: strftime format for timestamp (default: ISO 8601 compatible)
+
+    Returns:
+        Tuple of (backup_path, success). backup_path is None if operation failed.
+    """
+    # Source file must exist
+    if not source_path.exists() or not source_path.is_file():
+        return None, False
+
+    # Determine backup directory location
+    if backup_dir is None:
+        backup_dir = source_path.parent / f".{source_path.name}.backups"
+
+    # Create backup directory if needed
+    try:
+        backup_dir.mkdir(parents=True, exist_ok=True)
+    except (OSError, PermissionError):
+        return None, False
+
+    # Generate timestamped backup filename with collision handling
+    timestamp = datetime.now().strftime(timestamp_format)
+    backup_name = f"{source_path.stem}.{timestamp}{source_path.suffix}"
+    backup_path = backup_dir / backup_name
+
+    # Handle filename collision by adding counter suffix
+    counter = 0
+    while backup_path.exists():
+        counter += 1
+        backup_name = f"{source_path.stem}.{timestamp}.{counter}{source_path.suffix}"
+        backup_path = backup_dir / backup_name
+
+    # Copy file to backup location
+    try:
+        shutil.copy2(source_path, backup_path)
+    except (OSError, PermissionError, shutil.Error):
+        return backup_path, False
+
+    # Rotate old backups to maintain maximum count
+    rotate_old_backups(source_path, backup_dir, max_backups)
+
+    return backup_path, True
+
+
+def rotate_old_backups(
+    source_path: Path,
+    backup_dir: Path,
+    max_backups: int,
+) -> list[Path]:
+    """
+    Delete oldest backups exceeding maximum retention limit.
+
+    Finds all backup files for the source file and deletes the oldest ones
+    to maintain the maximum backup count. Backups are identified by matching
+    the source file's stem and suffix with timestamp in between.
+
+    Args:
+        source_path: Original file that was backed up
+        backup_dir: Directory containing backup files
+        max_backups: Maximum number of backups to retain
+
+    Returns:
+        List of deleted backup file paths
+    """
+    deleted_backups: list[Path] = []
+
+    # Get all backup files for this source file
+    backup_files = get_backup_files(source_path, backup_dir)
+
+    # Calculate number to delete
+    num_to_delete = len(backup_files) - max_backups
+
+    # Delete oldest backups if we exceed the limit
+    if num_to_delete > 0:
+        for i in range(num_to_delete):
+            try:
+                backup_files[i].unlink()
+                deleted_backups.append(backup_files[i])
+            except OSError:
+                # Skip files that can't be deleted
+                continue
+
+    return deleted_backups
+
+
+def get_backup_files(
+    source_path: Path,
+    backup_dir: Path,
+) -> list[Path]:
+    """
+    Find all backup files for a specific source file.
+
+    Searches the backup directory for files matching the source file's naming
+    pattern. Returns files sorted by modification time (oldest first).
+
+    Args:
+        source_path: Original file that was backed up
+        backup_dir: Directory containing backup files
+
+    Returns:
+        List of backup file paths sorted by age (oldest first)
+    """
+    # Backup directory must exist
+    if not backup_dir.exists():
+        return []
+
+    # Build glob pattern to match backup files
+    # Pattern: {stem}.{timestamp}{suffix}
+    pattern = f"{source_path.stem}.*{source_path.suffix}"
+
+    # Find all matching backup files with error handling
+    backup_list: list[tuple[Path, float]] = []
+    try:
+        for backup_path in backup_dir.glob(pattern):
+            try:
+                mtime = backup_path.stat().st_mtime
+                backup_list.append((backup_path, mtime))
+            except OSError:
+                # Skip files that can't be stat'd
+                continue
+    except OSError:
+        return []
+
+    # Sort by modification time (oldest first)
+    backup_files = [path for path, mtime in sorted(backup_list, key=lambda x: x[1])]
+
+    return backup_files
+
+
+# =============================================================================
+# Type Definitions
+# =============================================================================
 
 
 class DotFileDict(TypedDict):
@@ -239,11 +391,11 @@ class DFBUModel:
         except FileNotFoundError:
             return False, f"Configuration file not found: {self.config_path}"
         except tomllib.TOMLDecodeError as e:
-            return False, f"Invalid TOML format: {str(e)}"
+            return False, f"Invalid TOML format: {e!s}"
         except KeyError as e:
-            return False, f"Missing required configuration key: {str(e)}"
+            return False, f"Missing required configuration key: {e!s}"
         except Exception as e:
-            return False, f"Unexpected error loading config: {str(e)}"
+            return False, f"Unexpected error loading config: {e!s}"
 
     def save_config(self) -> tuple[bool, str]:
         """
@@ -258,12 +410,14 @@ class DFBUModel:
         try:
             # Create rotating backup before saving (if config file exists)
             if self.config_path.exists():
-                backup_dir = self.config_path.parent / f".{self.config_path.name}.backups"
+                backup_dir = (
+                    self.config_path.parent / f".{self.config_path.name}.backups"
+                )
                 backup_path, backup_success = create_rotating_backup(
                     source_path=self.config_path,
                     backup_dir=backup_dir,
                     max_backups=10,
-                    timestamp_format="%Y%m%d_%H%M%S"
+                    timestamp_format="%Y%m%d_%H%M%S",
                 )
                 # Continue with save even if backup fails (log could be added here)
 
@@ -276,7 +430,7 @@ class DFBUModel:
                     "archive_dir": self._path_to_tilde_notation(self.archive_base_dir),
                 },
                 "options": dict(self.options),
-                "dotfile": []
+                "dotfile": [],
             }
 
             # Add dotfiles without path entries (they inherit from [paths])
@@ -298,9 +452,9 @@ class DFBUModel:
             return True, ""
 
         except (OSError, PermissionError) as e:
-            return False, f"Failed to write configuration file: {str(e)}"
+            return False, f"Failed to write configuration file: {e!s}"
         except Exception as e:
-            return False, f"Unexpected error saving config: {str(e)}"
+            return False, f"Unexpected error saving config: {e!s}"
 
     def update_option(self, key: str, value: Any) -> bool:
         """
@@ -353,7 +507,7 @@ class DFBUModel:
         if path_type == "mirror_dir":
             self.mirror_base_dir = expanded_path
             return True
-        elif path_type == "archive_dir":
+        if path_type == "archive_dir":
             self.archive_base_dir = expanded_path
             return True
 
@@ -402,7 +556,7 @@ class DFBUModel:
                 return path.stat().st_size
 
             # For directories, sum all file sizes recursively
-            elif path.is_dir():
+            if path.is_dir():
                 total_size = 0
                 try:
                     for item in path.rglob("*"):
@@ -583,7 +737,11 @@ class DFBUModel:
             return False
 
     def copy_file(
-        self, src_path: Path, dest_path: Path, create_parent: bool = True, skip_identical: bool = False
+        self,
+        src_path: Path,
+        dest_path: Path,
+        create_parent: bool = True,
+        skip_identical: bool = False,
     ) -> bool:
         """
         Copy file with metadata preservation using Python 3.14 Path.copy() or fallback.
@@ -616,10 +774,8 @@ class DFBUModel:
                     return False
 
             # Use Path.copy() if available (Python 3.14+), otherwise fallback to shutil.copy2
-            if sys.version_info >= (3, 14) and hasattr(Path, 'copy'):
-                src_path.copy(
-                    dest_path, follow_symlinks=True, preserve_metadata=True
-                )
+            if sys.version_info >= (3, 14) and hasattr(Path, "copy"):
+                src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
             else:
                 # Fallback to shutil.copy2 for Python < 3.14
                 shutil.copy2(src_path, dest_path, follow_symlinks=True)
@@ -628,7 +784,9 @@ class DFBUModel:
         except (OSError, PermissionError):
             return False
 
-    def copy_directory(self, src_path: Path, dest_base: Path, skip_identical: bool = False) -> list[tuple[Path, Path, bool, bool]]:
+    def copy_directory(
+        self, src_path: Path, dest_base: Path, skip_identical: bool = False
+    ) -> list[tuple[Path, Path, bool, bool]]:
         """
         Copy directory recursively with all files.
 
@@ -656,7 +814,7 @@ class DFBUModel:
         for file_path in files:
             # Skip files without read permissions
             if not self.check_readable(file_path):
-                results.append((file_path, Path(""), False, False))
+                results.append((file_path, Path(), False, False))
                 continue
 
             # Calculate destination path maintaining structure
@@ -671,11 +829,13 @@ class DFBUModel:
                     results.append((file_path, file_dest, True, True))
                 else:
                     # Copy file
-                    success = self.copy_file(file_path, file_dest, create_parent=True, skip_identical=False)
+                    success = self.copy_file(
+                        file_path, file_dest, create_parent=True, skip_identical=False
+                    )
                     results.append((file_path, file_dest, success, False))
 
             except (ValueError, OSError):
-                results.append((file_path, Path(""), False, False))
+                results.append((file_path, Path(), False, False))
 
         return results
 
@@ -701,9 +861,7 @@ class DFBUModel:
             return None, False
 
         # Generate timestamped archive filename
-        archive_name = (
-            f"dotfiles-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.tar.gz"
-        )
+        archive_name = f"dotfiles-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.tar.gz"
         archive_path = archive_base / archive_name
 
         try:
@@ -745,7 +903,9 @@ class DFBUModel:
                     continue
 
             # Sort by modification time
-            archives = [path for path, mtime in sorted(archive_list, key=lambda x: x[1])]
+            archives = [
+                path for path, mtime in sorted(archive_list, key=lambda x: x[1])
+            ]
         except OSError:
             return deleted_archives
 
@@ -778,7 +938,9 @@ class DFBUModel:
         except (OSError, PermissionError):
             return []
 
-    def reconstruct_restore_paths(self, src_files: list[Path]) -> list[tuple[Path, Path | None]]:
+    def reconstruct_restore_paths(
+        self, src_files: list[Path]
+    ) -> list[tuple[Path, Path | None]]:
         """
         Build original destination paths from backup structure.
 

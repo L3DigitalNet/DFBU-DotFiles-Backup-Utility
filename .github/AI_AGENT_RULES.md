@@ -1,6 +1,10 @@
 # AI Agent Rules - Quick Reference
 
-## 🚨 RULE #1: NEVER MODIFY `main` BRANCH 🚨
+## 🚨 RULE #1: NEVER AUTONOMOUSLY MODIFY `main` BRANCH 🚨
+
+### Exception for Human-Initiated Merges
+
+**EXCEPTION:** If the merge is initiated by a human using the `/merge_testing_to_main` command, AI agents are then permitted to modify the `main` branch as part of that merge process.
 
 ### Before EVERY code change, run
 
@@ -11,11 +15,12 @@ git branch --show-current
 ### If output is `main`
 
 ```bash
+# UNLESS currently executing human-initiated /merge_testing_to_main command
 git checkout testing
 git branch --show-current  # Verify it says "testing"
 ```
 
-### Only proceed with changes if on `testing` branch
+### Only proceed with changes if on `testing` branch (or during human-initiated `/merge_testing_to_main` command)
 
 ---
 
@@ -34,17 +39,19 @@ git branch --show-current  # Verify it says "testing"
 | Action | `main` Branch | `testing` Branch |
 |--------|---------------|------------------|
 | Read files | ✅ Allowed | ✅ Allowed |
-| Create files | ❌ FORBIDDEN | ✅ Allowed |
-| Modify files | ❌ FORBIDDEN | ✅ Allowed |
-| Delete files | ❌ FORBIDDEN | ✅ Allowed |
-| Commit changes | ❌ FORBIDDEN | ✅ Allowed |
-| Push changes | ❌ FORBIDDEN | ✅ Allowed |
+| Create files | ❌ FORBIDDEN* | ✅ Allowed |
+| Modify files | ❌ FORBIDDEN* | ✅ Allowed |
+| Delete files | ❌ FORBIDDEN* | ✅ Allowed |
+| Commit changes | ❌ FORBIDDEN* | ✅ Allowed |
+| Push changes | ❌ FORBIDDEN* | ✅ Allowed |
+
+*Exception: All actions are allowed on `main` branch during human-initiated `/merge_testing_to_main` command
 
 ---
 
 ## Standard Response Template
 
-When asked to make changes while on `main`:
+When asked to make changes while on `main` (unless during `/merge_testing_to_main`):
 
 ```
 I cannot make code changes on the main branch per repository policy.
@@ -56,17 +63,19 @@ Let me verify the current branch and switch to testing:
 Now I can proceed with your requested changes on the testing branch.
 ```
 
+**Exception:** If executing a human-initiated `/merge_testing_to_main` command, proceed with merge operations on `main` branch.
+
 ---
 
 ## Emergency Override
 
-**There is NO emergency override.**
+**There is NO emergency override except the `/merge_testing_to_main` command.**
 
 Even for critical bugs:
 
 1. Make fix on `testing` branch
 2. Human reviews
-3. Human merges to `main`
+3. Human initiates merge to `main` (may use `/merge_testing_to_main` command)
 
 ---
 
