@@ -786,7 +786,7 @@ class DFBUModel:
 
     def copy_directory(
         self, src_path: Path, dest_base: Path, skip_identical: bool = False
-    ) -> list[tuple[Path, Path, bool, bool]]:
+    ) -> list[tuple[Path, Path | None, bool, bool]]:
         """
         Copy directory recursively with all files.
 
@@ -797,8 +797,9 @@ class DFBUModel:
 
         Returns:
             List of (src_file, dest_file, success, skipped) tuples for each file
+            dest_file is None if destination path is not applicable
         """
-        results: list[tuple[Path, Path, bool, bool]] = []
+        results: list[tuple[Path, Path | None, bool, bool]] = []
 
         # Check directory readability
         if not self.check_readable(src_path):
@@ -814,7 +815,7 @@ class DFBUModel:
         for file_path in files:
             # Skip files without read permissions
             if not self.check_readable(file_path):
-                results.append((file_path, Path(), False, False))
+                results.append((file_path, None, False, False))
                 continue
 
             # Calculate destination path maintaining structure
@@ -835,7 +836,7 @@ class DFBUModel:
                     results.append((file_path, file_dest, success, False))
 
             except (ValueError, OSError):
-                results.append((file_path, Path(), False, False))
+                results.append((file_path, None, False, False))
 
         return results
 

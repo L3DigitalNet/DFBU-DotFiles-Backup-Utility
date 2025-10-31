@@ -1287,7 +1287,7 @@ class CLIHandler:
         """
         print(f"\n{DEFAULT.bold}The following files will be restored:{RESET}\n")
 
-        for src_file, dest_file in zip(src_files, dest_files, strict=False):
+        for src_file, dest_file in zip(src_files, dest_files, strict=True):
             if src_file.is_file():
                 print(
                     f"  {BLUE.bold}{src_file.name}{RESET}: {DEFAULT}{src_file}{RESET}\n"
@@ -1470,7 +1470,7 @@ def copy_files_restore(
 
     # Copy files with metadata preservation using Python 3.14 Path.copy()
     print(f"\n{DEFAULT.bold}Processing files:{RESET}\n")
-    for src_file, dest_path in zip(src_files, dest_paths, strict=False):
+    for src_file, dest_path in zip(src_files, dest_paths, strict=True):
         print(f"  copying {BLUE.bold}{src_file.name}{RESET} to: {dest_path}")
 
         if not dry_run:
