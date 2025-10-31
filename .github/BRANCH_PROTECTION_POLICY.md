@@ -2,19 +2,23 @@
 
 ## Purpose
 
-This document establishes strict branch protection rules for the Python repository to ensure code quality and prevent unauthorized changes to production code.
+This document establishes branch protection rules for the Python repository to ensure code quality and prevent unauthorized changes to production code.
 
 ---
 
-## 🚨 PRIMARY RULE: AI AGENTS PROHIBITED FROM MODIFYING `main` BRANCH 🚨
+## 🚨 PRIMARY RULE: AI AGENTS PROHIBITED FROM AUTONOMOUSLY MODIFYING `main` BRANCH 🚨
 
 ### Absolute Prohibition
 
-**AI agents, GitHub Copilot, and all automated code generation tools are STRICTLY FORBIDDEN from making any code changes to the `main` branch.**
+**AI agents, GitHub Copilot, and all automated code generation tools are STRICTLY FORBIDDEN from making any code changes to the `main` branch without explicit human approval.**
+
+### Exception for Human-Initiated Merges
+
+**EXCEPTION:** If the merge is initiated by a human using the `/merge_testing_to_main` command, AI agents are then permitted to modify the `main` branch as part of that merge process. This counts as explicit human approval for the specific merge operation.
 
 ### Scope of Prohibition
 
-The following actions are **PROHIBITED** on `main` branch for AI agents:
+The following actions are **PROHIBITED** on `main` branch for AI agents (except during human-initiated `/merge_testing_to_main` command):
 
 - ❌ Creating new files
 - ❌ Modifying existing files
@@ -33,6 +37,7 @@ The following actions are **PROHIBITED** on `main` branch for AI agents:
 git branch --show-current
 
 # 2. If on "main", immediately switch to "testing"
+#    UNLESS currently executing a human-initiated /merge_testing_to_main command
 if [ "$(git branch --show-current)" = "main" ]; then
     git checkout testing
 fi
@@ -46,6 +51,7 @@ git branch --show-current  # Output MUST be "testing"
 1. **AI makes changes** → `testing` branch only
 2. **Human reviews** → Tests, validates, approves
 3. **Human merges** → `testing` → `main` (via PR or direct merge)
+   - **During human-initiated `/merge_testing_to_main` command**: AI agents may modify `main` branch as part of the merge process
 
 ---
 
@@ -54,10 +60,10 @@ git branch --show-current  # Output MUST be "testing"
 ### `main` Branch
 
 - **Purpose**: Production-ready, stable code
-- **Protection**: AI-agent modifications FORBIDDEN
-- **Write Access**: Humans only
+- **Protection**: AI-agent modifications FORBIDDEN (except during human-initiated `/merge_testing_to_main` command)
+- **Write Access**: Humans only (except during human-initiated `/merge_testing_to_main` command)
 - **Merge Source**: Only from `testing` branch
-- **Merge Authority**: Human developers only
+- **Merge Authority**: Human developers only, who may use `/merge_testing_to_main` command to authorize AI assistance
 
 ### `testing` Branch
 
@@ -87,99 +93,7 @@ All AI assistants working in this repository MUST:
 
 ### 3. Human Review Process
 
-- All merges from `testing` → `main` require human approval
+- All merges from `testing` → `main` require human initiation and approval
 - Humans verify changes before merging
 - Humans maintain final authority over production code
-
-### 4. Recommended GitHub Settings (Manual Setup Required)
-
-To fully enforce this policy, repository admins should configure:
-
-#### Branch Protection Rules for `main`
-
-1. Navigate to: Repository Settings → Branches → Add rule
-2. Branch name pattern: `main`
-3. Enable:
-   - ✅ Require pull request reviews before merging
-   - ✅ Require approvals: 1
-   - ✅ Dismiss stale pull request approvals when new commits are pushed
-   - ✅ Require status checks to pass before merging
-   - ✅ Require branches to be up to date before merging
-   - ✅ Include administrators (optional but recommended)
-   - ✅ Restrict who can push to matching branches
-   - ✅ Do not allow bypassing the above settings
-
----
-
-## Policy Violations
-
-### Detection
-
-- Code changes committed to `main` by AI agents
-- Direct pushes to `main` from automated tools
-- Bypassing branch protection workflows
-
-### Response
-
-1. **Immediate**: Revert unauthorized changes
-2. **Investigation**: Review how policy was bypassed
-3. **Correction**: Update AI instructions if needed
-4. **Prevention**: Strengthen enforcement mechanisms
-
----
-
-## Frequently Asked Questions
-
-### Q: Can AI agents create pull requests to `main`?
-
-**A:** No. AI agents should work exclusively on `testing`. Humans create PRs from `testing` to `main`.
-
-### Q: What if AI agent is already on `main` when user requests changes?
-
-**A:** AI agent MUST switch to `testing` before making any changes. If unable to switch, AI MUST refuse the request and ask human to switch branches.
-
-### Q: Can AI agents read files from `main`?
-
-**A:** Yes. Reading and analyzing code is allowed. Only modifications are prohibited.
-
-### Q: What about hotfixes or critical bugs?
-
-**A:** Even for urgent fixes:
-
-1. AI makes fix on `testing` branch
-2. Human reviews and tests
-3. Human merges to `main`
-This ensures all code is reviewed before production.
-
-### Q: How do I enable GitHub branch protection?
-
-**A:** See "Recommended GitHub Settings" section above. These must be configured by a repository administrator through GitHub's web interface.
-
----
-
-## Document History
-
-- **Created**: 2025-10-30
-- **Purpose**: Establish AI agent restrictions on `main` branch
-- **Authority**: Repository policy
-- **Enforcement**: Documentation-based + recommended GitHub settings
-
----
-
-## Summary
-
-**ONE RULE TO REMEMBER:**
-
-```
-AI AGENTS: NEVER TOUCH `main` BRANCH
-ALL AI CHANGES GO TO `testing` BRANCH
-HUMANS MERGE `testing` → `main` AFTER REVIEW
-```
-
-This policy ensures:
-
-- ✅ Code quality through human review
-- ✅ Testing before production deployment
-- ✅ Clear separation of development and production code
-- ✅ Audit trail for all production changes
-- ✅ Human oversight of critical code
+- When humans use the `/merge_testing_to_main` command, this authorizes AI agents to perform the merge operations on the `main` branch

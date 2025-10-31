@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU GUI - Dotfiles Backup Utility (Desktop Edition)
 
@@ -75,13 +74,13 @@ import sys
 from pathlib import Path
 from typing import Final
 
-# Add src directory to Python path for module imports BEFORE importing local modules
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+# Add gui directory to Python path for module imports BEFORE importing local modules
+sys.path.insert(0, str(Path(__file__).parent / "gui"))
 
 # Import local modules after path is set
-from src.model import DFBUModel
-from src.viewmodel import DFBUViewModel
-from src.view import MainWindow
+from gui.model import DFBUModel
+from gui.view import MainWindow
+from gui.viewmodel import DFBUViewModel
 
 # Import PySide6 with proper error handling
 try:
@@ -94,9 +93,7 @@ except ImportError:
 __version__: Final[str] = "0.5.2"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
-DEFAULT_CONFIG_PATH: Final[Path] = (
-    Path(__file__).parent / "data" / "dfbu-config.toml"
-)
+DEFAULT_CONFIG_PATH: Final[Path] = Path(__file__).parent / "data" / "dfbu-config.toml"
 
 
 class Application:
