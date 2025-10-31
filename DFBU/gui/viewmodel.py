@@ -18,7 +18,7 @@ Features:
     - MVVM ViewModel layer separating presentation logic from View and Model
     - Signal-based communication with View for reactive updates
     - Worker thread management for non-blocking backup/restore operations
-    - Command pattern for user actions (backup, restore, config load, dotfile management)
+    - Command pattern for user actions (backup, restore, config load, etc.)
     - Property exposure for data binding and state queries
     - Settings persistence and restoration for UI state
     - Interactive dotfile management with add, update, and remove commands
@@ -198,7 +198,7 @@ class BackupWorker(QThread):
                 else:
                     success_count += 1
                     self.item_processed.emit(str(src_file), str(dest_file))
-            elif dest_file == Path():
+            elif dest_file is None:
                 self.item_skipped.emit(str(src_file), "Permission denied or read error")
             else:
                 self.error_occurred.emit(str(src_file), "Failed to copy file")
@@ -421,9 +421,6 @@ class RestoreWorker(QThread):
 
         # Copy each file
         for i, (src_path, dest_path) in enumerate(valid_paths):
-            if dest_path is None:
-                continue
-
             file_start = time.perf_counter()
 
             # Copy file
@@ -771,12 +768,10 @@ class DFBUViewModel(QObject):
         Returns:
             New enabled status
         """
-        new_status = self.model.toggle_dotfile_enabled(index)
-
         # Note: Don't emit dotfiles_updated here - the list hasn't changed,
         # only the enabled status of one entry. The View will update locally.
 
-        return new_status
+        return self.model.toggle_dotfile_enabled(index)
 
     def get_dotfile_count(self) -> int:
         """
@@ -821,7 +816,7 @@ class DFBUViewModel(QObject):
         Returns:
             Sorted list of unique category names
         """
-        categories = set()
+        categories: set[str] = set()
         for dotfile in self.model.dotfiles:
             if dotfile.get("category"):
                 categories.add(dotfile["category"])
@@ -834,7 +829,7 @@ class DFBUViewModel(QObject):
         Returns:
             Sorted list of unique subcategory names
         """
-        subcategories = set()
+        subcategories: set[str] = set()
         for dotfile in self.model.dotfiles:
             if dotfile.get("subcategory"):
                 subcategories.add(dotfile["subcategory"])
@@ -934,22 +929,25 @@ class DFBUViewModel(QObject):
         Returns:
             Dictionary of loaded settings
         """
-        settings_dict = {
-            "config_path": self.settings.value("configPath", ""),
-            "restore_source": self.settings.value("restoreSource", ""),
+        config_path_str: str = str(self.settings.value("configPath", ""))
+        restore_source_str: str = str(self.settings.value("restoreSource", ""))
+
+        settings_dict: dict[str, Any] = {
+            "config_path": config_path_str,
+            "restore_source": restore_source_str,
             "geometry": self.settings.value("geometry"),
             "window_state": self.settings.value("windowState"),
         }
 
         # Apply loaded config path if exists
-        if settings_dict["config_path"]:
-            config_path = Path(settings_dict["config_path"])
+        if config_path_str:
+            config_path = Path(config_path_str)
             if config_path.exists():
                 self.model.config_path = config_path
 
         # Apply restore source if exists
-        if settings_dict["restore_source"]:
-            restore_path = Path(settings_dict["restore_source"])
+        if restore_source_str:
+            restore_path = Path(restore_source_str)
             if restore_path.exists():
                 self.restore_source_directory = restore_path
 

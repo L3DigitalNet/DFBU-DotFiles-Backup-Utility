@@ -30,15 +30,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- UTF-8 encoding declaration in viewmodel.py per repository standards
+
 ### Changed
 
+- **Code Quality Improvements**: Comprehensive code review and refactoring of viewmodel.py
+- Enhanced type safety with explicit type annotations for set[str] in category/subcategory methods
+- Improved type handling in load_settings() method for QSettings.value() return types
+- Streamlined command_toggle_dotfile_enabled() by removing unnecessary variable assignment
+- Optimized RestoreWorker.run() by removing unreachable dead code condition
 - **Documentation Update**: Updated all GUI module headers to current date (2025-10-31)
 - Enhanced documentation consistency across Model, View, and ViewModel layers
 - Updated GUI project documentation version tracking
 - Improved MVVM architecture documentation clarity
+- Fixed PEP 8 compliance issues (line length, formatting)
 
 ### Fixed
 
+- Type inference warnings in get_unique_categories() and get_unique_subcategories()
+- Type safety issues in load_settings() method with explicit str type annotations
+- Dead code removal in RestoreWorker for cleaner, more maintainable code
 - Corrected version numbering and date consistency in GUI documentation
 
 ## [0.5.2] - 2025-10-30

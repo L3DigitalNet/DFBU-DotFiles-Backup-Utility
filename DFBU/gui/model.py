@@ -51,9 +51,19 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from socket import gethostname
-from typing import Any, TypedDict
+from typing import Any, Final, TypedDict
 
 import tomli_w
+
+
+# =============================================================================
+# Constants
+# =============================================================================
+
+
+# File modification time comparison tolerance in seconds
+# Accounts for filesystem timestamp precision differences across systems
+FILE_MTIME_TOLERANCE_SECONDS: Final[float] = 1.0
 
 
 # =============================================================================
@@ -748,9 +758,9 @@ class DFBUModel:
             if src_stat.st_size != dest_stat.st_size:
                 return False
 
-            # Compare modification time (within 1 second tolerance for filesystem precision)
+            # Compare modification time with tolerance for filesystem precision
             time_diff = abs(src_stat.st_mtime - dest_stat.st_mtime)
-            if time_diff > 1.0:
+            if time_diff > FILE_MTIME_TOLERANCE_SECONDS:
                 return False
 
             # Files appear identical
@@ -1273,10 +1283,19 @@ class DFBUModel:
         """
         Convert absolute path to tilde notation for home directory.
 
+        Uses Path.relative_to() for proper path handling instead of string
+        replacement to avoid edge cases where home path appears as substring.
+
         Args:
             path: Path to convert
 
         Returns:
             Path string with ~ notation if under home directory
         """
-        return str(path).replace(str(Path.home()), "~")
+        try:
+            # Check if path is relative to home directory
+            rel_path = path.relative_to(Path.home())
+            return f"~/{rel_path}"
+        except ValueError:
+            # Path is not under home directory, return as-is
+            return str(path)
