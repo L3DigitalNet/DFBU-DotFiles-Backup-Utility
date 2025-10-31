@@ -1,0 +1,42 @@
+name: Branch Protection Reminder
+
+# This workflow serves as a reminder about branch protection policy
+# It does NOT block AI agents (that's done through documentation)
+# It DOES provide visible reminders to all contributors
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  policy-reminder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Branch Protection Policy Reminder
+        run: |
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║                                                                ║"
+          echo "║  ⛔ BRANCH PROTECTION POLICY REMINDER ⛔                        ║"
+          echo "║                                                                ║"
+          echo "║  AI agents should NEVER make direct changes to main branch    ║"
+          echo "║                                                                ║"
+          echo "║  Proper workflow:                                              ║"
+          echo "║  1. AI makes changes on 'testing' branch                       ║"
+          echo "║  2. Human reviews changes                                      ║"
+          echo "║  3. Human merges testing → main                                ║"
+          echo "║                                                                ║"
+          echo "║  See: .github/BRANCH_PROTECTION_POLICY.md                      ║"
+          echo "║                                                                ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+
+      - name: Check if this is a human or AI commit
+        run: |
+          echo "This workflow provides visibility into branch activity."
+          echo "All merges to main should be human-reviewed."
+          echo ""
+          echo "If you are an AI agent seeing this workflow run,"
+          echo "you should not be pushing to main branch."
