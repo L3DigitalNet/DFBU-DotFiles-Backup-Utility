@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU Model - Data and Business Logic Layer
 
@@ -47,14 +46,25 @@ import os
 import shutil
 import tarfile
 import time
+import tomllib
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from socket import gethostname
-from typing import Any, TypedDict
+from typing import Any, Final, TypedDict
 
 import tomli_w
-import tomllib
+
+
+# =============================================================================
+# Constants
+# =============================================================================
+
+
+# File modification time comparison tolerance in seconds
+# Accounts for filesystem timestamp precision differences across systems
+FILE_MTIME_TOLERANCE_SECONDS: Final[float] = 1.0
+
 
 # =============================================================================
 # Utility Functions (formerly from common_lib/file_backup.py)
@@ -217,14 +227,14 @@ class DotFileDict(TypedDict):
     Type definition for dotfile configuration dictionary.
 
     Contains all metadata and path information for individual dotfile entries
-    from TOML configuration file.
+    from TOML configuration file. Supports multiple paths per dotfile entry.
     """
 
     category: str
     subcategory: str
     application: str
     description: str
-    path: str
+    paths: list[str]
     mirror_dir: str
     archive_dir: str
     enabled: bool
@@ -433,16 +443,24 @@ class DFBUModel:
                 "dotfile": [],
             }
 
-            # Add dotfiles without path entries (they inherit from [paths])
+            # Add dotfiles - save as single 'path' or 'paths' list
             for dotfile in self.dotfiles:
-                dotfile_entry = {
+                dotfile_entry: dict[str, Any] = {
                     "category": dotfile["category"],
                     "subcategory": dotfile["subcategory"],
                     "application": dotfile["application"],
                     "description": dotfile["description"],
-                    "path": dotfile["path"],
                     "enabled": dotfile["enabled"],
                 }
+
+                # Save as single 'path' for backward compatibility if only one path
+                # Otherwise save as 'paths' list
+                paths_list = dotfile["paths"]
+                if len(paths_list) == 1:
+                    dotfile_entry["path"] = paths_list[0]
+                else:
+                    dotfile_entry["paths"] = paths_list
+
                 config_data["dotfile"].append(dotfile_entry)
 
             # Write TOML file using tomli_w
@@ -517,13 +535,22 @@ class DFBUModel:
         """
         Check which configured dotfiles exist on the system.
 
+        For dotfiles with multiple paths, validates the first path only for display purposes.
+        Individual path validation occurs during backup operations.
+
         Returns:
             Dict mapping index to (exists, is_dir, type_str) tuple
         """
         validation_results: dict[int, tuple[bool, bool, str]] = {}
 
         for i, dotfile in enumerate(self.dotfiles):
-            path = self.expand_path(dotfile["path"])
+            # Get first path for validation (for display purposes)
+            paths = dotfile["paths"]
+            if not paths or not paths[0]:
+                validation_results[i] = (False, False, "File")
+                continue
+
+            path = self.expand_path(paths[0])
             exists = path.exists()
             is_dir = path.is_dir() if exists else False
             type_str = "Directory" if is_dir else "File"
@@ -581,14 +608,20 @@ class DFBUModel:
         """
         Calculate sizes for all configured dotfiles.
 
+        For dotfiles with multiple paths, returns the sum of all path sizes.
+
         Returns:
-            Dict mapping dotfile index to size in bytes
+            Dict mapping dotfile index to total size in bytes
         """
         size_results: dict[int, int] = {}
 
         for i, dotfile in enumerate(self.dotfiles):
-            path = self.expand_path(dotfile["path"])
-            size_results[i] = self.calculate_path_size(path)
+            total_size = 0
+            for path_str in dotfile["paths"]:
+                if path_str:
+                    path = self.expand_path(path_str)
+                    total_size += self.calculate_path_size(path)
+            size_results[i] = total_size
 
         return size_results
 
@@ -725,9 +758,9 @@ class DFBUModel:
             if src_stat.st_size != dest_stat.st_size:
                 return False
 
-            # Compare modification time (within 1 second tolerance for filesystem precision)
+            # Compare modification time with tolerance for filesystem precision
             time_diff = abs(src_stat.st_mtime - dest_stat.st_mtime)
-            if time_diff > 1.0:
+            if time_diff > FILE_MTIME_TOLERANCE_SECONDS:
                 return False
 
             # Files appear identical
@@ -1004,7 +1037,7 @@ class DFBUModel:
         subcategory: str,
         application: str,
         description: str,
-        path: str,
+        paths: list[str],
         enabled: bool = True,
     ) -> bool:
         """
@@ -1015,7 +1048,7 @@ class DFBUModel:
             subcategory: Subcategory for the dotfile
             application: Application name
             description: Description of the dotfile
-            path: File or directory path
+            paths: List of file or directory paths
             enabled: Whether the dotfile is enabled for backup (default True)
 
         Returns:
@@ -1027,7 +1060,7 @@ class DFBUModel:
             "subcategory": subcategory,
             "application": application,
             "description": description,
-            "path": path,
+            "paths": paths,
             "mirror_dir": self._path_to_tilde_notation(self.mirror_base_dir),
             "archive_dir": self._path_to_tilde_notation(self.archive_base_dir),
             "enabled": enabled,
@@ -1044,7 +1077,7 @@ class DFBUModel:
         subcategory: str,
         application: str,
         description: str,
-        path: str,
+        paths: list[str],
         enabled: bool = True,
     ) -> bool:
         """
@@ -1056,7 +1089,7 @@ class DFBUModel:
             subcategory: Updated subcategory
             application: Updated application name
             description: Updated description
-            path: Updated file or directory path
+            paths: Updated list of file or directory paths
             enabled: Whether the dotfile is enabled for backup (default True)
 
         Returns:
@@ -1068,7 +1101,7 @@ class DFBUModel:
             self.dotfiles[index]["subcategory"] = subcategory
             self.dotfiles[index]["application"] = application
             self.dotfiles[index]["description"] = description
-            self.dotfiles[index]["path"] = path
+            self.dotfiles[index]["paths"] = paths
             self.dotfiles[index]["enabled"] = enabled
             return True
         return False
@@ -1185,11 +1218,14 @@ class DFBUModel:
         """
         Validate individual dotfile entry.
 
+        Supports both legacy single 'path' (str) and new 'paths' (list[str]) format.
+        Automatically converts single path to list for internal consistency.
+
         Args:
             raw_dotfile: Raw dotfile metadata
 
         Returns:
-            Validated DotFileDict
+            Validated DotFileDict with paths as list[str]
         """
         # Convert enabled field to bool with proper type handling
         enabled_value = raw_dotfile.get("enabled", "true")
@@ -1199,12 +1235,29 @@ class DFBUModel:
             # Handle string representations
             enabled = str(enabled_value).lower() in ("true", "1", "yes")
 
+        # Handle both legacy 'path' (str) and new 'paths' (list[str]) format
+        paths: list[str] = []
+        if "paths" in raw_dotfile:
+            # New format: paths is already a list
+            paths_value = raw_dotfile["paths"]
+            if isinstance(paths_value, list):
+                paths = paths_value
+            else:
+                # Fallback: treat as single path
+                paths = [str(paths_value)]
+        elif "path" in raw_dotfile:
+            # Legacy format: convert single path to list
+            paths = [raw_dotfile["path"]]
+        else:
+            # No path provided
+            paths = [""]
+
         return {
             "category": raw_dotfile.get("category", "Unknown"),
             "subcategory": raw_dotfile.get("subcategory", "Unknown"),
             "application": raw_dotfile.get("application", "Unknown"),
             "description": raw_dotfile.get("description", "None"),
-            "path": raw_dotfile.get("path", ""),
+            "paths": paths,
             "mirror_dir": raw_dotfile.get("mirror_dir", "~/DFBU_Mirror"),
             "archive_dir": raw_dotfile.get("archive_dir", "~/DFBU_Archives"),
             "enabled": enabled,
@@ -1230,10 +1283,19 @@ class DFBUModel:
         """
         Convert absolute path to tilde notation for home directory.
 
+        Uses Path.relative_to() for proper path handling instead of string
+        replacement to avoid edge cases where home path appears as substring.
+
         Args:
             path: Path to convert
 
         Returns:
             Path string with ~ notation if under home directory
         """
-        return str(path).replace(str(Path.home()), "~")
+        try:
+            # Check if path is relative to home directory
+            rel_path = path.relative_to(Path.home())
+            return f"~/{rel_path}"
+        except ValueError:
+            # Path is not under home directory, return as-is
+            return str(path)

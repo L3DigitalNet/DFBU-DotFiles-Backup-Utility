@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU ViewModel - Presentation Logic Layer
 
@@ -19,7 +18,7 @@ Features:
     - MVVM ViewModel layer separating presentation logic from View and Model
     - Signal-based communication with View for reactive updates
     - Worker thread management for non-blocking backup/restore operations
-    - Command pattern for user actions (backup, restore, config load, dotfile management)
+    - Command pattern for user actions (backup, restore, config load, etc.)
     - Property exposure for data binding and state queries
     - Settings persistence and restoration for UI state
     - Interactive dotfile management with add, update, and remove commands
@@ -45,11 +44,11 @@ import time
 from pathlib import Path
 from typing import Any, Final
 
-# PySide6 imports for signals and threading
-from PySide6.QtCore import QObject, QThread, Signal, QSettings
-
 # Local import
 from model import DFBUModel, DotFileDict
+
+# PySide6 imports for signals and threading
+from PySide6.QtCore import QObject, QSettings, QThread, Signal
 
 
 class BackupWorker(QThread):
@@ -199,7 +198,7 @@ class BackupWorker(QThread):
                 else:
                     success_count += 1
                     self.item_processed.emit(str(src_file), str(dest_file))
-            elif dest_file == Path(""):
+            elif dest_file is None:
                 self.item_skipped.emit(str(src_file), "Permission denied or read error")
             else:
                 self.error_occurred.emit(str(src_file), "Failed to copy file")
@@ -232,46 +231,48 @@ class BackupWorker(QThread):
             if not dotfile.get("enabled", True):
                 continue
 
-            exists, is_dir, type_str = validation_results[i]
+            # Process each path in the dotfile's paths list
+            for path_str in dotfile["paths"]:
+                if not path_str:
+                    continue
 
-            if not exists:
-                continue
+                # Expand source path
+                src_path = self.model.expand_path(path_str)
 
-            # Expand source path
-            src_path = self.model.expand_path(dotfile["path"])
+                # Check if path exists
+                if not src_path.exists():
+                    continue
 
-            # Assemble destination path
-            dest_path = self.model.assemble_dest_path(
-                self.model.mirror_base_dir,
-                src_path,
-                self.model.options["hostname_subdir"],
-                self.model.options["date_subdir"],
-            )
+                is_dir = src_path.is_dir()
 
-            # Process based on type with skip_identical optimization for mirror backups
-            if is_dir:
-                file_count = self._process_directory(
-                    src_path, dest_path, skip_identical=True
+                # Assemble destination path
+                dest_path = self.model.assemble_dest_path(
+                    self.model.mirror_base_dir,
+                    src_path,
+                    self.model.options["hostname_subdir"],
+                    self.model.options["date_subdir"],
                 )
-                if file_count > 0:
-                    processed_count += 1
-            else:
-                if self._process_file(src_path, dest_path, skip_identical=True):
+
+                # Process based on type with skip_identical optimization
+                if is_dir:
+                    file_count = self._process_directory(
+                        src_path, dest_path, skip_identical=True
+                    )
+                    if file_count > 0:
+                        processed_count += 1
+                elif self._process_file(src_path, dest_path, skip_identical=True):
                     processed_count += 1
 
-            # Update progress with zero division protection
-            if total_items > 0:
-                progress = int((processed_count / total_items) * 100)
-                self.progress_updated.emit(progress)
+                # Update progress with zero division protection
+                if total_items > 0:
+                    progress = int((processed_count / total_items) * 100)
+                    self.progress_updated.emit(progress)
 
     def _process_archive_backup(self) -> None:
         """Create compressed archive of configured dotfiles."""
         # Model must be set before running
         if not self.model:
             return
-
-        # Get validation results
-        validation_results = self.model.validate_dotfile_paths()
 
         # Build list of items to archive
         items_to_archive: list[tuple[Path, bool, bool]] = []
@@ -284,10 +285,18 @@ class BackupWorker(QThread):
             if not dotfile.get("enabled", True):
                 continue
 
-            exists, is_dir, type_str = validation_results[i]
-            if exists:
-                src_path = self.model.expand_path(dotfile["path"])
-                items_to_archive.append((src_path, exists, is_dir))
+            # Process each path in the dotfile's paths list
+            for path_str in dotfile["paths"]:
+                if not path_str:
+                    continue
+
+                # Expand source path
+                src_path = self.model.expand_path(path_str)
+
+                # Check if path exists and add to archive list
+                if src_path.exists():
+                    is_dir = src_path.is_dir()
+                    items_to_archive.append((src_path, True, is_dir))
 
         if not items_to_archive:
             self.error_occurred.emit("Archive Backup", "No items found to archive")
@@ -412,9 +421,6 @@ class RestoreWorker(QThread):
 
         # Copy each file
         for i, (src_path, dest_path) in enumerate(valid_paths):
-            if dest_path is None:
-                continue
-
             file_start = time.perf_counter()
 
             # Copy file
@@ -669,7 +675,7 @@ class DFBUViewModel(QObject):
         subcategory: str,
         application: str,
         description: str,
-        path: str,
+        paths: list[str],
         enabled: bool = True,
     ) -> bool:
         """
@@ -680,14 +686,14 @@ class DFBUViewModel(QObject):
             subcategory: Subcategory for the dotfile
             application: Application name
             description: Description of the dotfile
-            path: File or directory path
+            paths: List of file or directory paths
             enabled: Whether the dotfile is enabled for backup (default True)
 
         Returns:
             True if dotfile was added successfully
         """
         success = self.model.add_dotfile(
-            category, subcategory, application, description, path, enabled
+            category, subcategory, application, description, paths, enabled
         )
 
         if success:
@@ -704,7 +710,7 @@ class DFBUViewModel(QObject):
         subcategory: str,
         application: str,
         description: str,
-        path: str,
+        paths: list[str],
         enabled: bool = True,
     ) -> bool:
         """
@@ -716,14 +722,14 @@ class DFBUViewModel(QObject):
             subcategory: Updated subcategory
             application: Updated application name
             description: Updated description
-            path: Updated file or directory path
+            paths: List of file or directory paths
             enabled: Whether the dotfile is enabled for backup (default True)
 
         Returns:
             True if dotfile was updated successfully
         """
         success = self.model.update_dotfile(
-            index, category, subcategory, application, description, path, enabled
+            index, category, subcategory, application, description, paths, enabled
         )
 
         if success:
@@ -762,12 +768,10 @@ class DFBUViewModel(QObject):
         Returns:
             New enabled status
         """
-        new_status = self.model.toggle_dotfile_enabled(index)
-
         # Note: Don't emit dotfiles_updated here - the list hasn't changed,
         # only the enabled status of one entry. The View will update locally.
 
-        return new_status
+        return self.model.toggle_dotfile_enabled(index)
 
     def get_dotfile_count(self) -> int:
         """
@@ -805,6 +809,32 @@ class DFBUViewModel(QObject):
         """
         return self.model.get_dotfile_sizes()
 
+    def get_unique_categories(self) -> list[str]:
+        """
+        Get sorted list of unique categories from all dotfiles.
+
+        Returns:
+            Sorted list of unique category names
+        """
+        categories: set[str] = set()
+        for dotfile in self.model.dotfiles:
+            if dotfile.get("category"):
+                categories.add(dotfile["category"])
+        return sorted(categories)
+
+    def get_unique_subcategories(self) -> list[str]:
+        """
+        Get sorted list of unique subcategories from all dotfiles.
+
+        Returns:
+            Sorted list of unique subcategory names
+        """
+        subcategories: set[str] = set()
+        for dotfile in self.model.dotfiles:
+            if dotfile.get("subcategory"):
+                subcategories.add(dotfile["subcategory"])
+        return sorted(subcategories)
+
     @staticmethod
     def format_size(size_bytes: int) -> str:
         """
@@ -832,8 +862,7 @@ class DFBUViewModel(QObject):
         # Format with appropriate precision
         if unit_index == 0:  # Bytes
             return f"{int(size)} {units[unit_index]}"
-        else:
-            return f"{size:.1f} {units[unit_index]}"
+        return f"{size:.1f} {units[unit_index]}"
 
     def get_statistics_summary(self) -> str:
         """
@@ -900,22 +929,25 @@ class DFBUViewModel(QObject):
         Returns:
             Dictionary of loaded settings
         """
-        settings_dict = {
-            "config_path": self.settings.value("configPath", ""),
-            "restore_source": self.settings.value("restoreSource", ""),
+        config_path_str: str = str(self.settings.value("configPath", ""))
+        restore_source_str: str = str(self.settings.value("restoreSource", ""))
+
+        settings_dict: dict[str, Any] = {
+            "config_path": config_path_str,
+            "restore_source": restore_source_str,
             "geometry": self.settings.value("geometry"),
             "window_state": self.settings.value("windowState"),
         }
 
         # Apply loaded config path if exists
-        if settings_dict["config_path"]:
-            config_path = Path(settings_dict["config_path"])
+        if config_path_str:
+            config_path = Path(config_path_str)
             if config_path.exists():
                 self.model.config_path = config_path
 
         # Apply restore source if exists
-        if settings_dict["restore_source"]:
-            restore_path = Path(settings_dict["restore_source"])
+        if restore_source_str:
+            restore_path = Path(restore_source_str)
             if restore_path.exists():
                 self.restore_source_directory = restore_path
 

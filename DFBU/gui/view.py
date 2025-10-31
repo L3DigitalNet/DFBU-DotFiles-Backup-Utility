@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU View - UI Presentation Layer
 
@@ -44,55 +43,92 @@ from pathlib import Path
 from typing import Any, Final
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont, QAction, QColor, QCloseEvent
+from PySide6.QtGui import QAction, QCloseEvent, QColor
 from PySide6.QtWidgets import (
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QTextEdit,
-    QFileDialog,
-    QProgressBar,
-    QStatusBar,
-    QGroupBox,
     QCheckBox,
-    QTabWidget,
-    QListWidget,
-    QListWidgetItem,
-    QMessageBox,
-    QTableWidget,
-    QTableWidgetItem,
-    QHeaderView,
-    QSpinBox,
-    QFormLayout,
+    QComboBox,
     QDialog,
     QDialogButtonBox,
+    QFileDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QMainWindow,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QSpinBox,
+    QStatusBar,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 
 # Local import
 from viewmodel import DFBUViewModel
 
 
+class NumericTableWidgetItem(QTableWidgetItem):
+    """
+    Custom QTableWidgetItem for proper numeric sorting.
+
+    Stores a numeric value in UserRole and uses it for comparisons,
+    enabling correct sorting of formatted strings (like "1.5 KB").
+    """
+
+    def __lt__(self, other: QTableWidgetItem) -> bool:
+        """
+        Compare items by numeric value stored in UserRole.
+
+        Args:
+            other: Other table item to compare against
+
+        Returns:
+            True if this item's numeric value is less than other's
+        """
+        self_value = self.data(Qt.ItemDataRole.UserRole)
+        other_value = other.data(Qt.ItemDataRole.UserRole)
+
+        # Handle None values by treating them as 0
+        if self_value is None:
+            self_value = 0
+        if other_value is None:
+            other_value = 0
+
+        return self_value < other_value
+
+
 class AddDotfileDialog(QDialog):
     """
-    Dialog for adding a new dotfile entry.
+    Dialog for adding or updating dotfile entry with support for multiple paths.
 
     Attributes:
-        category_edit: Line edit for category
-        subcategory_edit: Line edit for subcategory
+        category_combo: Editable combo box for category (prepopulated)
+        subcategory_combo: Editable combo box for subcategory (prepopulated)
         application_edit: Line edit for application name
         description_edit: Line edit for description
-        path_edit: Line edit for file/directory path
+        paths_list: List widget displaying all paths
+        path_input_edit: Line edit for new path input
+        enabled_checkbox: Checkbox for enabled status
 
     Public methods:
         exec: Show dialog and return result
+        get_paths: Get list of paths from the list widget
     """
 
     def __init__(
-        self, parent: QWidget | None = None, dotfile_data: dict[str, Any] | None = None
+        self,
+        parent: QWidget | None = None,
+        dotfile_data: dict[str, Any] | None = None,
+        categories: list[str] | None = None,
+        subcategories: list[str] | None = None,
     ) -> None:
         """
         Initialize the AddDotfileDialog.
@@ -100,13 +136,16 @@ class AddDotfileDialog(QDialog):
         Args:
             parent: Parent widget
             dotfile_data: Optional existing dotfile data for update mode
+            categories: List of existing categories for dropdown
+            subcategories: List of existing subcategories for dropdown
         """
         super().__init__(parent)
         self.is_update_mode = dotfile_data is not None
         self.setWindowTitle(
             "Update Dotfile Entry" if self.is_update_mode else "Add Dotfile Entry"
         )
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(600)
+        self.setMinimumHeight(400)
 
         # Create main layout
         main_layout = QVBoxLayout(self)
@@ -123,15 +162,21 @@ class AddDotfileDialog(QDialog):
         # Create form layout for inputs
         form_layout = QFormLayout()
 
-        # Category input
-        self.category_edit = QLineEdit()
-        self.category_edit.setPlaceholderText("e.g., Applications, Shell configs")
-        form_layout.addRow("Category:", self.category_edit)
+        # Category combo box (editable)
+        self.category_combo = QComboBox()
+        self.category_combo.setEditable(True)
+        self.category_combo.setPlaceholderText("e.g., Applications, Shell configs")
+        if categories:
+            self.category_combo.addItems(categories)
+        form_layout.addRow("Category:", self.category_combo)
 
-        # Subcategory input
-        self.subcategory_edit = QLineEdit()
-        self.subcategory_edit.setPlaceholderText("e.g., Web Browser, Shell")
-        form_layout.addRow("Subcategory:", self.subcategory_edit)
+        # Subcategory combo box (editable)
+        self.subcategory_combo = QComboBox()
+        self.subcategory_combo.setEditable(True)
+        self.subcategory_combo.setPlaceholderText("e.g., Web Browser, Shell")
+        if subcategories:
+            self.subcategory_combo.addItems(subcategories)
+        form_layout.addRow("Subcategory:", self.subcategory_combo)
 
         # Application input
         self.application_edit = QLineEdit()
@@ -145,35 +190,57 @@ class AddDotfileDialog(QDialog):
         )
         form_layout.addRow("Description:", self.description_edit)
 
-        # Path input with browse button
-        path_layout = QHBoxLayout()
-        self.path_edit = QLineEdit()
-        self.path_edit.setPlaceholderText("Path to file or directory (e.g., ~/.bashrc)")
-        path_layout.addWidget(self.path_edit)
+        main_layout.addLayout(form_layout)
+
+        # Paths section with QListWidget
+        paths_label = QLabel("Paths (one or more):")
+        main_layout.addWidget(paths_label)
+
+        # List widget for paths
+        self.paths_list = QListWidget()
+        self.paths_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        main_layout.addWidget(self.paths_list)
+
+        # Path input controls
+        path_input_layout = QHBoxLayout()
+        self.path_input_edit = QLineEdit()
+        self.path_input_edit.setPlaceholderText("Enter or browse for path...")
+        path_input_layout.addWidget(self.path_input_edit)
 
         browse_btn = QPushButton("Browse...")
         browse_btn.clicked.connect(self._on_browse_path)
-        path_layout.addWidget(browse_btn)
+        path_input_layout.addWidget(browse_btn)
 
-        path_widget = QWidget()
-        path_widget.setLayout(path_layout)
-        form_layout.addRow("Path:", path_widget)
+        add_path_btn = QPushButton("Add Path")
+        add_path_btn.clicked.connect(self._on_add_path)
+        path_input_layout.addWidget(add_path_btn)
+
+        main_layout.addLayout(path_input_layout)
+
+        # Remove path button
+        remove_path_btn = QPushButton("Remove Selected Path(s)")
+        remove_path_btn.clicked.connect(self._on_remove_paths)
+        main_layout.addWidget(remove_path_btn)
 
         # Enabled checkbox
         self.enabled_checkbox = QCheckBox("Enable for backup")
         self.enabled_checkbox.setChecked(True)
-        form_layout.addRow("Enabled:", self.enabled_checkbox)
-
-        main_layout.addLayout(form_layout)
+        main_layout.addWidget(self.enabled_checkbox)
 
         # Pre-populate fields if in update mode
         if self.is_update_mode and dotfile_data:
-            self.category_edit.setText(dotfile_data.get("category", ""))
-            self.subcategory_edit.setText(dotfile_data.get("subcategory", ""))
+            self.category_combo.setCurrentText(dotfile_data.get("category", ""))
+            self.subcategory_combo.setCurrentText(dotfile_data.get("subcategory", ""))
             self.application_edit.setText(dotfile_data.get("application", ""))
             self.description_edit.setText(dotfile_data.get("description", ""))
-            self.path_edit.setText(dotfile_data.get("path", ""))
             self.enabled_checkbox.setChecked(dotfile_data.get("enabled", True))
+
+            # Handle both legacy "path" and new "paths" format
+            if "paths" in dotfile_data:
+                for path_str in dotfile_data["paths"]:
+                    self.paths_list.addItem(path_str)
+            elif "path" in dotfile_data:
+                self.paths_list.addItem(dotfile_data["path"])
 
         # Add buttons
         button_box = QDialogButtonBox(
@@ -184,7 +251,7 @@ class AddDotfileDialog(QDialog):
         main_layout.addWidget(button_box)
 
     def _on_browse_path(self) -> None:
-        """Handle browse button click."""
+        """Handle browse button click to select file or directory."""
         # First try to select a file
         file_path, _ = QFileDialog.getOpenFileName(
             self,
@@ -194,7 +261,7 @@ class AddDotfileDialog(QDialog):
         )
 
         if file_path:
-            self.path_edit.setText(file_path)
+            self.path_input_edit.setText(file_path)
         else:
             # If no file selected, try directory
             dir_path = QFileDialog.getExistingDirectory(
@@ -202,7 +269,47 @@ class AddDotfileDialog(QDialog):
             )
 
             if dir_path:
-                self.path_edit.setText(dir_path)
+                self.path_input_edit.setText(dir_path)
+
+    def _on_add_path(self) -> None:
+        """Add path from input field to paths list."""
+        path_text = self.path_input_edit.text().strip()
+
+        if not path_text:
+            return
+
+        # Check for duplicates
+        for i in range(self.paths_list.count()):
+            if self.paths_list.item(i).text() == path_text:
+                QMessageBox.warning(
+                    self, "Duplicate Path", "This path is already in the list."
+                )
+                return
+
+        # Add to list and clear input
+        self.paths_list.addItem(path_text)
+        self.path_input_edit.clear()
+
+    def _on_remove_paths(self) -> None:
+        """Remove selected paths from list."""
+        selected_items = self.paths_list.selectedItems()
+
+        for item in selected_items:
+            self.paths_list.takeItem(self.paths_list.row(item))
+
+    def get_paths(self) -> list[str]:
+        """
+        Get list of paths from the list widget.
+
+        Returns:
+            List of path strings
+        """
+        paths = []
+        for i in range(self.paths_list.count()):
+            path_text = self.paths_list.item(i).text().strip()
+            if path_text:
+                paths.append(path_text)
+        return paths
 
 
 class MainWindow(QMainWindow):
@@ -1057,14 +1164,13 @@ class MainWindow(QMainWindow):
             validation: Validation results mapping index to (exists, is_dir, type_str)
             sizes: Size results mapping index to size in bytes
         """
-        # Create list of (index, dotfile, validation, size) tuples for sorting
+        # Disable sorting while populating table to prevent performance issues
+        self.dotfile_table.setSortingEnabled(False)
+
+        # Create list of (index, dotfile, validation, size) tuples
         dotfile_data = [
             (i, dotfile, validation[i], sizes[i]) for i, dotfile in enumerate(dotfiles)
         ]
-
-        # Sort by enabled status (False/disabled first, then True/enabled)
-        # This puts disabled dotfiles at the top of the list
-        dotfile_data.sort(key=lambda x: x[1].get("enabled", True))
 
         self.dotfile_table.setRowCount(len(dotfiles))
 
@@ -1074,7 +1180,7 @@ class MainWindow(QMainWindow):
         for row_idx, (
             original_idx,
             dotfile,
-            (exists, is_dir, type_str),
+            (exists, _is_dir, type_str),
             size,
         ) in enumerate(dotfile_data):
             # Enabled indicator
@@ -1115,18 +1221,28 @@ class MainWindow(QMainWindow):
             # Type
             self.dotfile_table.setItem(row_idx, 5, QTableWidgetItem(type_str))
 
-            # Size - format to human readable
+            # Size - format to human readable with custom numeric sorting
             size_str = self.viewmodel.format_size(size)
-            size_item = QTableWidgetItem(size_str)
+            size_item = NumericTableWidgetItem(size_str)
+            # Store raw size value for proper numeric sorting
+            size_item.setData(Qt.ItemDataRole.UserRole, size)
             # Right-align the size for better readability
             size_item.setTextAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
             )
             self.dotfile_table.setItem(row_idx, 6, size_item)
 
-            # Path
-            path_item = QTableWidgetItem(dotfile["path"])
-            path_item.setToolTip(dotfile["description"])
+            # Path - show first path with count indicator if multiple
+            paths = dotfile["paths"]
+            if len(paths) == 1:
+                path_display = paths[0]
+            else:
+                path_display = f"{paths[0]} (+{len(paths) - 1} more)"
+
+            path_item = QTableWidgetItem(path_display)
+            # Tooltip shows description and all paths
+            tooltip_text = f"{dotfile['description']}\n\nPaths:\n" + "\n".join(paths)
+            path_item.setToolTip(tooltip_text)
             self.dotfile_table.setItem(row_idx, 7, path_item)
 
             # Accumulate total size for enabled items
@@ -1137,6 +1253,9 @@ class MainWindow(QMainWindow):
         self.total_size_label.setText(
             f"Total Size (enabled): {self.viewmodel.format_size(total_enabled_size)}"
         )
+
+        # Re-enable sorting after populating table
+        self.dotfile_table.setSortingEnabled(True)
 
     def _update_options_display(self) -> None:
         """Update the options display with current configuration."""
@@ -1333,28 +1452,36 @@ class MainWindow(QMainWindow):
 
     def _on_add_dotfile(self) -> None:
         """Handle add dotfile button click."""
+        # Get unique categories and subcategories for dropdown
+        categories = self.viewmodel.get_unique_categories()
+        subcategories = self.viewmodel.get_unique_subcategories()
+
         # Create dialog for adding new dotfile
-        dialog = AddDotfileDialog(self)
+        dialog = AddDotfileDialog(
+            self, categories=categories, subcategories=subcategories
+        )
 
         if dialog.exec():
             # Get values from dialog
-            category = dialog.category_edit.text()
-            subcategory = dialog.subcategory_edit.text()
+            category = dialog.category_combo.currentText()
+            subcategory = dialog.subcategory_combo.currentText()
             application = dialog.application_edit.text()
             description = dialog.description_edit.text()
-            path = dialog.path_edit.text()
+            paths = dialog.get_paths()
             enabled = dialog.enabled_checkbox.isChecked()
 
             # Validate inputs
-            if not all([category, subcategory, application, description, path]):
+            if not all([category, subcategory, application, description]) or not paths:
                 QMessageBox.warning(
-                    self, "Missing Information", "Please fill in all fields."
+                    self,
+                    "Missing Information",
+                    "Please fill in all fields and add at least one path.",
                 )
                 return
 
             # Add dotfile via ViewModel
             success = self.viewmodel.command_add_dotfile(
-                category, subcategory, application, description, path, enabled
+                category, subcategory, application, description, paths, enabled
             )
 
             if success:
@@ -1378,23 +1505,34 @@ class MainWindow(QMainWindow):
         # Get existing dotfile data
         dotfile = self.viewmodel.get_dotfile_list()[original_idx]
 
+        # Get unique categories and subcategories for dropdown
+        categories = self.viewmodel.get_unique_categories()
+        subcategories = self.viewmodel.get_unique_subcategories()
+
         # Create dialog for updating dotfile with pre-populated data
         # Cast TypedDict to plain dict for dialog compatibility
-        dialog = AddDotfileDialog(self, dotfile_data=dict(dotfile))
+        dialog = AddDotfileDialog(
+            self,
+            dotfile_data=dict(dotfile),
+            categories=categories,
+            subcategories=subcategories,
+        )
 
         if dialog.exec():
             # Get updated values from dialog
-            category = dialog.category_edit.text()
-            subcategory = dialog.subcategory_edit.text()
+            category = dialog.category_combo.currentText()
+            subcategory = dialog.subcategory_combo.currentText()
             application = dialog.application_edit.text()
             description = dialog.description_edit.text()
-            path = dialog.path_edit.text()
+            paths = dialog.get_paths()
             enabled = dialog.enabled_checkbox.isChecked()
 
             # Validate inputs
-            if not all([category, subcategory, application, description, path]):
+            if not all([category, subcategory, application, description]) or not paths:
                 QMessageBox.warning(
-                    self, "Missing Information", "Please fill in all fields."
+                    self,
+                    "Missing Information",
+                    "Please fill in all fields and add at least one path.",
                 )
                 return
 
@@ -1405,7 +1543,7 @@ class MainWindow(QMainWindow):
                 subcategory,
                 application,
                 description,
-                path,
+                paths,
                 enabled,
             )
 
@@ -1433,12 +1571,16 @@ class MainWindow(QMainWindow):
 
         # Confirm removal
         dotfile = self.viewmodel.get_dotfile_list()[original_idx]
+
+        # Format paths display
+        paths_display = "\n".join(dotfile["paths"])
+
         reply = QMessageBox.question(
             self,
             "Confirm Remove",
             f"Remove dotfile entry for {dotfile['application']}?\n\n"
-            f"Path: {dotfile['path']}\n\n"
-            "This will not delete the actual file, only the configuration entry.",
+            f"Paths:\n{paths_display}\n\n"
+            "This will not delete the actual files, only the configuration entry.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -1469,9 +1611,8 @@ class MainWindow(QMainWindow):
         table_row = selected_rows[0].row()
         original_idx = self._get_original_dotfile_index(table_row)
 
-        # Get current dotfile status
+        # Get current dotfile
         dotfile = self.viewmodel.get_dotfile_list()[original_idx]
-        current_status = dotfile.get("enabled", True)
 
         # Toggle enabled status via ViewModel
         new_status = self.viewmodel.command_toggle_dotfile_enabled(original_idx)
@@ -1484,7 +1625,6 @@ class MainWindow(QMainWindow):
         )
 
         # Perform lightweight table update without re-validation
-        # Since we sort by enabled status, need to refresh to move item to correct position
         self._update_dotfile_table_fast()
 
     def _on_dotfiles_updated(self, dotfile_count: int) -> None:
