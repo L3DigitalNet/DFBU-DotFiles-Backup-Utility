@@ -135,3 +135,8 @@ strict = true
 # Test files can be less strict
 module = "tests.*"
 disallow_untyped_defs = false
+
+[dependency-groups]
+dev = [
+    "pytest-cov>=7.0.0",
+]
