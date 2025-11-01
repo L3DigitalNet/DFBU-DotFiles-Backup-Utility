@@ -43,6 +43,7 @@ Functions:
 
 import os
 import shutil
+import sys
 import tarfile
 import time
 import tomllib
@@ -50,18 +51,23 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from socket import gethostname
-from typing import Any, Final, TypedDict
+from typing import Any, Final
 
+# External dependency: tomli_w required for TOML writing (no stdlib alternative until Python 3.15+)
 import tomli_w
+
+# Local imports - import from parent DFBU directory
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from common_types import DotFileDict, OptionsDict
 
 
 # =============================================================================
 # Constants
 # =============================================================================
 
-
 # File modification time comparison tolerance in seconds
 # Accounts for filesystem timestamp precision differences across systems
+# (e.g., ext4: 1ns, FAT32: 2s, NTFS: 100ns)
 FILE_MTIME_TOLERANCE_SECONDS: Final[float] = 1.0
 
 
@@ -75,7 +81,7 @@ def create_rotating_backup(
     backup_dir: Path | None = None,
     max_backups: int = 10,
     timestamp_format: str = "%Y%m%d_%H%M%S",
-) -> tuple[Path | None, bool]:
+) -> Path | None:
     """
     Create a timestamped backup of a file and rotate old backups.
 
@@ -91,11 +97,11 @@ def create_rotating_backup(
         timestamp_format: strftime format for timestamp (default: ISO 8601 compatible)
 
     Returns:
-        Tuple of (backup_path, success). backup_path is None if operation failed.
+        Path to created backup file, or None if operation failed
     """
     # Source file must exist
     if not source_path.exists() or not source_path.is_file():
-        return None, False
+        return None
 
     # Determine backup directory location
     if backup_dir is None:
@@ -105,7 +111,7 @@ def create_rotating_backup(
     try:
         backup_dir.mkdir(parents=True, exist_ok=True)
     except (OSError, PermissionError):
-        return None, False
+        return None
 
     # Generate timestamped backup filename with collision handling
     timestamp = datetime.now(UTC).strftime(timestamp_format)
@@ -123,12 +129,12 @@ def create_rotating_backup(
     try:
         shutil.copy2(source_path, backup_path)
     except (OSError, PermissionError, shutil.Error):
-        return backup_path, False
+        return None
 
     # Rotate old backups to maintain maximum count
     rotate_old_backups(source_path, backup_dir, max_backups)
 
-    return backup_path, True
+    return backup_path
 
 
 def rotate_old_backups(
@@ -215,44 +221,8 @@ def get_backup_files(
 
 
 # =============================================================================
-# Type Definitions
+# Data Classes
 # =============================================================================
-
-
-class DotFileDict(TypedDict):
-    """
-    Type definition for dotfile configuration dictionary.
-
-    Contains all metadata and path information for individual dotfile entries
-    from TOML configuration file. Supports multiple paths per dotfile entry.
-    """
-
-    category: str
-    subcategory: str
-    application: str
-    description: str
-    paths: list[str]
-    mirror_dir: str
-    archive_dir: str
-    enabled: bool
-
-
-class OptionsDict(TypedDict):
-    """
-    Type definition for options configuration dictionary.
-
-    Contains all backup operation settings and preferences from TOML
-    configuration file.
-    """
-
-    mirror: bool
-    archive: bool
-    hostname_subdir: bool
-    date_subdir: bool
-    archive_format: str
-    archive_compression_level: int
-    rotate_archives: bool
-    max_archives: int
 
 
 @dataclass
@@ -277,7 +247,7 @@ class BackupStatistics:
     skipped_items: int = 0
     failed_items: int = 0
     total_time: float = 0.0
-    processing_times: list[float] = field(default_factory=list)
+    processing_times: list[float] = field(default_factory=lambda: [])
 
     @property
     def average_time(self) -> float:
@@ -420,7 +390,7 @@ class DFBUModel:
                 backup_dir = (
                     self.config_path.parent / f".{self.config_path.name}.backups"
                 )
-                _backup_path, _backup_success = create_rotating_backup(
+                _backup_path = create_rotating_backup(
                     source_path=self.config_path,
                     backup_dir=backup_dir,
                     max_backups=10,
@@ -471,7 +441,7 @@ class DFBUModel:
         except Exception as e:
             return False, f"Unexpected error saving config: {e!s}"
 
-    def update_option(self, key: str, value: Any) -> bool:
+    def update_option(self, key: str, value: bool | int | str) -> bool:
         """
         Update a single configuration option.
 
@@ -566,39 +536,33 @@ class DFBUModel:
         Returns:
             Total size in bytes, 0 if path doesn't exist or permission denied
         """
-        # Path doesn't exist
-        if not path.exists():
-            return 0
-
-        # Check read permissions
-        if not self.check_readable(path):
+        # Validate path exists and is readable
+        if not path.exists() or not self.check_readable(path):
             return 0
 
         try:
-            # For files, return file size
+            # Simple case: single file
             if path.is_file():
                 return path.stat().st_size
 
-            # For directories, sum all file sizes recursively
+            # Complex case: directory with recursive traversal
             if path.is_dir():
                 total_size = 0
-                try:
-                    for item in path.rglob("*"):
-                        if item.is_file():
-                            try:
-                                total_size += item.stat().st_size
-                            except (OSError, PermissionError):
-                                # Skip files we can't access
-                                continue
-                except (OSError, PermissionError):
-                    # Error during directory traversal
-                    return 0
-
+                # Sum all accessible file sizes in directory tree
+                for item in path.rglob("*"):
+                    if item.is_file():
+                        try:
+                            total_size += item.stat().st_size
+                        except (OSError, PermissionError):
+                            # Skip inaccessible files (e.g., permission denied)
+                            continue
                 return total_size
 
         except (OSError, PermissionError):
-            return 0
+            # Error during directory traversal or stat operation
+            pass
 
+        # Default: not a file/directory or error occurred
         return 0
 
     def get_dotfile_sizes(self) -> dict[int, int]:
@@ -664,16 +628,19 @@ class DFBUModel:
         Returns:
             Assembled destination path
         """
-        # Determine if path is relative to home or root
+        # Determine if source path is under home directory or root filesystem
+        # This affects how we reconstruct the path in backup structure
         is_relative_to_home = self._is_relative_to_home(src_path)
         src_relative = (
             src_path.relative_to(Path.home())
             if is_relative_to_home
             else src_path.relative_to(Path("/"))
         )
+        # Use 'home' or 'root' prefix for clear backup organization
         prefix = "home" if is_relative_to_home else "root"
 
-        # Build destination path components
+        # Build destination path with optional subdirectories
+        # Structure: base_path / [hostname] / [date] / prefix / relative_path
         dest_parts: list[Path] = [base_path]
         if hostname_subdir:
             dest_parts.append(Path(self.hostname))
@@ -681,7 +648,7 @@ class DFBUModel:
             dest_parts.append(Path(time.strftime("%Y-%m-%d")))
         dest_parts.extend([Path(prefix), src_relative])
 
-        # Combine all path components
+        # Combine all path components efficiently
         final_path = dest_parts[0]
         for part in dest_parts[1:]:
             final_path = final_path / part
@@ -712,29 +679,22 @@ class DFBUModel:
         """
         return os.access(path, os.R_OK)
 
-    def create_directory(self, path: Path, mode: int = 0o755) -> bool:
+    def create_directory(self, path: Path, mode: int = 0o755) -> None:
         """
         Create directory with proper permissions.
 
         Args:
             path: Directory path to create
             mode: Directory permissions mode
-
-        Returns:
-            True if created successfully, False otherwise
         """
-        try:
-            path.mkdir(mode=mode, parents=True, exist_ok=True)
-            return True
-        except (OSError, PermissionError):
-            return False
+        path.mkdir(mode=mode, parents=True, exist_ok=True)
 
     def files_are_identical(self, src_path: Path, dest_path: Path) -> bool:
         """
         Compare two files to determine if they are identical.
 
-        Compares file size and modification time to efficiently determine if files
-        are the same without reading entire file contents.
+        Uses efficient metadata comparison (size + mtime) instead of reading
+        entire file contents. Includes tolerance for filesystem timestamp precision.
 
         Args:
             src_path: Source file path
@@ -743,7 +703,7 @@ class DFBUModel:
         Returns:
             True if files are identical (same size and mtime), False otherwise
         """
-        # Destination doesn't exist, files are not identical
+        # Quick check: destination doesn't exist
         if not dest_path.exists():
             return False
 
@@ -751,11 +711,12 @@ class DFBUModel:
             src_stat = src_path.stat()
             dest_stat = dest_path.stat()
 
-            # Compare file size first (fast check)
+            # Fast check: compare file sizes first (cheap operation)
             if src_stat.st_size != dest_stat.st_size:
                 return False
 
-            # Compare modification time with tolerance for filesystem precision
+            # Precise check: compare modification times with filesystem tolerance
+            # Tolerance accounts for different filesystem timestamp precision (ext4, NTFS, etc.)
             time_diff = abs(src_stat.st_mtime - dest_stat.st_mtime)
             return time_diff <= FILE_MTIME_TOLERANCE_SECONDS
 
@@ -770,14 +731,10 @@ class DFBUModel:
         skip_identical: bool = False,
     ) -> bool:
         """
-        Copy file with metadata preservation using Python 3.14 Path.copy() or fallback.
-
-        Note: Performs readability check as this is a public method that may be called
-        with non-validated paths. For validated configuration files, this provides
-        additional safety against permission changes between validation and copy.
+        Copy file with metadata preservation using Python 3.14 Path.copy().
 
         Args:
-            src_path: Source file path (must exist and be readable)
+            src_path: Source file path (validated by caller)
             dest_path: Destination file path
             create_parent: Whether to create parent directories
             skip_identical: Whether to skip copying if files are identical (mirror optimization)
@@ -785,34 +742,22 @@ class DFBUModel:
         Returns:
             True if copied successfully or skipped due to identical files, False otherwise
         """
-        try:
-            # Check readability - protects against permission changes after validation
-            if not self.check_readable(src_path):
-                return False
-
-            # Check if files are identical when optimization enabled
-            if skip_identical and self.files_are_identical(src_path, dest_path):
-                return True
-
-            # Create parent directory if needed
-            if (
-                create_parent
-                and not dest_path.parent.exists()
-                and not self.create_directory(dest_path.parent)
-            ):
-                return False
-
-            # Use Path.copy() with metadata preservation (Python 3.14+ required)
-            # Fall back to shutil.copy2 for older Python versions
-            try:
-                src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
-            except AttributeError:
-                # Fallback for Python < 3.14
-                shutil.copy2(src_path, dest_path)
+        # Check if files are identical when optimization enabled
+        if skip_identical and self.files_are_identical(src_path, dest_path):
             return True
 
-        except (OSError, PermissionError):
-            return False
+        # Create parent directory if needed
+        if create_parent and not dest_path.parent.exists():
+            self.create_directory(dest_path.parent)
+
+        # Use Path.copy() with metadata preservation (Python 3.14+ required)
+        # Fall back to shutil.copy2 for older Python versions
+        try:
+            src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
+        except AttributeError:
+            # Fallback for Python < 3.14
+            shutil.copy2(src_path, dest_path)
+        return True
 
     def copy_directory(
         self, src_path: Path, dest_base: Path, skip_identical: bool = False
@@ -877,7 +822,7 @@ class DFBUModel:
 
     def create_archive(
         self, dotfiles_to_archive: list[tuple[Path, bool, bool]]
-    ) -> tuple[Path | None, bool]:
+    ) -> Path | None:
         """
         Create compressed TAR.GZ archive of existing dotfiles.
 
@@ -885,7 +830,7 @@ class DFBUModel:
             dotfiles_to_archive: List of (path, exists, is_dir) tuples
 
         Returns:
-            Tuple of (archive_path, success)
+            Path to created archive file, or None if operation failed
         """
         # Determine archive path with hostname subdirectory if configured
         archive_base = self.archive_base_dir
@@ -893,8 +838,7 @@ class DFBUModel:
             archive_base = archive_base / self.hostname
 
         # Create archive directory
-        if not self.create_directory(archive_base):
-            return None, False
+        self.create_directory(archive_base)
 
         # Generate timestamped archive filename
         archive_name = (
@@ -909,10 +853,10 @@ class DFBUModel:
                     if exists:
                         tar.add(path)
 
-            return archive_path, True
+            return archive_path
 
         except (OSError, tarfile.TarError):
-            return archive_path, False
+            return None
 
     def rotate_archives(self) -> list[Path]:
         """
@@ -971,10 +915,7 @@ class DFBUModel:
         Returns:
             List of all file paths found
         """
-        try:
-            return [f for f in src_dir.rglob("*") if f.is_file()]
-        except (OSError, PermissionError):
-            return []
+        return [f for f in src_dir.rglob("*") if f.is_file()]
 
     def reconstruct_restore_paths(
         self, src_files: list[Path]
