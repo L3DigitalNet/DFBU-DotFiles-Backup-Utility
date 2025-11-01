@@ -309,16 +309,15 @@ class TestMainWindow:
 
     def test_window_connects_viewmodel_signals(self, qapp, viewmodel_with_config):
         """Test window connects to ViewModel signals."""
-        # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        # Arrange - patch before window creation to intercept connection
+        with patch.object(MainWindow, "_on_config_loaded") as mock_handler:
+            window = MainWindow(viewmodel_with_config, "1.0.0")
 
-        # Act - emit signal from viewmodel
-        with patch.object(window, "_on_config_loaded") as mock_handler:
-            viewmodel_with_config.config_loaded.connect(mock_handler)
+            # Act - emit signal from viewmodel
             viewmodel_with_config.config_loaded.emit(5)
 
-            # Assert
-            mock_handler.assert_called_once()
+            # Assert - handler should be called
+            mock_handler.assert_called_once_with(5)
 
     def test_window_saves_geometry_on_close(self, qapp, viewmodel_with_config):
         """Test window saves geometry and state on close."""

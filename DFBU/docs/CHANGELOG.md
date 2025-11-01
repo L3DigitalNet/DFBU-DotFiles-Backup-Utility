@@ -26,6 +26,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.0] - 2025-11-01
+
+### Added
+
+- **Component Architecture**: Implemented Single Responsibility Principle by splitting DFBUModel into focused components
+  - `ConfigManager` class (555 lines): Handles all configuration operations (I/O, TOML parsing, dotfile CRUD, validation)
+  - `FileOperations` class (620 lines): Manages all file system operations (path expansion, copying, archives, restore)
+  - `BackupOrchestrator` class (420 lines): Coordinates backup/restore operations with progress tracking
+  - `StatisticsTracker` class (158 lines): Tracks operation metrics using BackupStatistics dataclass
+
+### Changed
+
+- **DFBUModel Refactoring**: Transformed from monolithic class (1,178 lines) to clean facade pattern (583 lines)
+  - 50.5% code reduction (595 lines eliminated)
+  - Now coordinates 4 focused components via delegation
+  - Added property setters for `config_path`, `mirror_base_dir`, and `archive_base_dir` for backward compatibility
+  - Maintains full API compatibility with existing ViewModel
+- **Architecture Improvements**: 
+  - Implemented facade pattern for clean component composition
+  - Dependency injection via expand_path callback from FileOperations to ConfigManager
+  - Each component now has single, well-defined responsibility
+- **Test Suite**: Improved to 277/282 passing (98.2% pass rate), 78% code coverage
+- Updated Date Changed header to 2025-11-01
+
+### Fixed
+
+- Test expectations corrected for `validate_dotfile_paths` return signature (exists, is_dir, type_str)
+- View signal connection test fixed to properly test signal connections
+
 ## [0.3.2] - 2025-11-01
 
 ### Added

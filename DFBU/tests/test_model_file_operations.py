@@ -269,10 +269,9 @@ class TestModelArchiveOperations:
         dotfiles_to_archive = [(test_file, True, False)]
 
         # Act
-        archive_path, success = model.create_archive(dotfiles_to_archive)
+        archive_path = model.create_archive(dotfiles_to_archive)
 
         # Assert
-        assert success is True
         assert archive_path is not None
         assert archive_path.exists()
         assert archive_path.suffix == ".gz"
@@ -292,10 +291,9 @@ class TestModelArchiveOperations:
         dotfiles_to_archive = [(file1, True, False), (file2, True, False)]
 
         # Act
-        archive_path, success = model.create_archive(dotfiles_to_archive)
+        archive_path = model.create_archive(dotfiles_to_archive)
 
         # Assert
-        assert success is True
         assert archive_path is not None
         assert archive_path.exists()
 
@@ -388,6 +386,100 @@ class TestModelRestoreOperations:
         src_path, dest_path = results[0]
         assert src_path == backup_path
         assert dest_path is not None
+
+
+class TestModelConfidentCodePaths:
+    """Test suite for confident code execution paths after simplification."""
+
+    def test_copy_file_confident_execution(self, tmp_path: Path) -> None:
+        """Test copy_file executes confidently with valid paths."""
+        # Arrange
+        model = DFBUModel(tmp_path / "config.toml")
+        src_file = tmp_path / "source.txt"
+        src_file.write_text("Confident copy test")
+        dest_file = tmp_path / "dest" / "target.txt"
+
+        # Act - Should execute without defensive checks on valid paths
+        success = model.copy_file(src_file, dest_file, create_parent=True)
+
+        # Assert
+        assert success is True
+        assert dest_file.exists()
+        assert dest_file.read_text() == "Confident copy test"
+
+    def test_create_directory_confident_execution(self, tmp_path: Path) -> None:
+        """Test create_directory executes confidently without return checks."""
+        # Arrange
+        model = DFBUModel(tmp_path / "config.toml")
+        new_dir = tmp_path / "confident" / "nested" / "path"
+
+        # Act - Should execute without defensive return checking
+        model.create_directory(new_dir)
+
+        # Assert - Verify directory was created
+        assert new_dir.exists()
+        assert new_dir.is_dir()
+
+    def test_create_archive_returns_path_on_success(self, tmp_path: Path) -> None:
+        """Test create_archive returns Path object on success (not tuple)."""
+        # Arrange
+        model = DFBUModel(tmp_path / "config.toml")
+        model.archive_base_dir = tmp_path / "archives"
+        model.archive_base_dir.mkdir()
+
+        test_file = tmp_path / "test.txt"
+        test_file.write_text("Archive content")
+
+        dotfiles_to_archive = [(test_file, True, False)]
+
+        # Act
+        result = model.create_archive(dotfiles_to_archive)
+
+        # Assert - Result should be Path object, not tuple
+        assert isinstance(result, Path)
+        assert result.exists()
+        assert result.suffix == ".gz"
+
+    def test_create_rotating_backup_returns_path_on_success(
+        self, tmp_path: Path
+    ) -> None:
+        """Test create_rotating_backup returns Path object on success (not tuple)."""
+        # Arrange
+        source_file = tmp_path / "source.txt"
+        source_file.write_text("Backup content")
+        backup_dir = tmp_path / "backups"
+
+        # Act
+        from file_operations import create_rotating_backup
+
+        result = create_rotating_backup(source_file, backup_dir, max_backups=5)
+
+        # Assert - Result should be Path object or None, not tuple
+        assert isinstance(result, Path) or result is None
+        if result:
+            assert result.exists()
+
+    def test_discover_restore_files_confident_execution(self, tmp_path: Path) -> None:
+        """Test discover_restore_files executes confidently without try-except."""
+        # Arrange
+        model = DFBUModel(tmp_path / "config.toml")
+        restore_dir = tmp_path / "restore"
+        restore_dir.mkdir()
+
+        # Create test files
+        (restore_dir / "file1.txt").write_text("1")
+        (restore_dir / "file2.txt").write_text("2")
+        subdir = restore_dir / "subdir"
+        subdir.mkdir()
+        (subdir / "file3.txt").write_text("3")
+
+        # Act - Should execute confidently
+        files = model.discover_restore_files(restore_dir)
+
+        # Assert
+        assert len(files) == 3
+        assert all(isinstance(f, Path) for f in files)
+        assert all(f.is_file() for f in files)
 
 
 if __name__ == "__main__":
