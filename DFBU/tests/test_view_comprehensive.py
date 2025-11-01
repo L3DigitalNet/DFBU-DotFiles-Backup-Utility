@@ -304,7 +304,7 @@ class TestMainWindow:
         # Assert
         assert window.viewmodel == viewmodel_with_config
         assert "DFBU GUI" in window.windowTitle()
-        assert hasattr(window, "tabs")
+        assert hasattr(window, "tab_widget")
         assert hasattr(window, "dotfile_table")
 
     def test_window_connects_viewmodel_signals(self, qapp, viewmodel_with_config):
@@ -495,13 +495,16 @@ class TestMainWindowBackupRestore:
 
         # Simulate operation in progress
         window.progress_bar.setValue(50)
+        window.progress_bar.setVisible(True)
         window.backup_btn.setEnabled(False)
 
-        # Act
-        window._on_operation_finished("")
+        # Mock QMessageBox.information to avoid blocking
+        with patch("PySide6.QtWidgets.QMessageBox.information"):
+            # Act
+            window._on_operation_finished("")
 
-        # Assert
-        assert window.progress_bar.value() == 0
+        # Assert - progress bar should be hidden
+        assert window.progress_bar.isVisible() is False
         assert window.backup_btn.isEnabled() is True
 
 
