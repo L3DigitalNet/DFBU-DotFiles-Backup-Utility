@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 DFBU Model - Data and Business Logic Layer
 
@@ -857,12 +858,17 @@ class DFBUModel:
                     file_dest = dest_base / file_relative
 
                     # Check if file is identical and can be skipped
-                    if skip_identical and self.files_are_identical(file_path, file_dest):
+                    if skip_identical and self.files_are_identical(
+                        file_path, file_dest
+                    ):
                         results.append((file_path, file_dest, True, True))
                     else:
                         # Copy file
                         success = self.copy_file(
-                            file_path, file_dest, create_parent=True, skip_identical=False
+                            file_path,
+                            file_dest,
+                            create_parent=True,
+                            skip_identical=False,
                         )
                         results.append((file_path, file_dest, success, False))
 
