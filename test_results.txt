@@ -1,0 +1,421 @@
+============================= test session starts ==============================
+platform linux -- Python 3.14.0, pytest-8.4.2, pluggy-1.6.0 -- /home/chris/GitHub/DFBU-DotFiles-Backup-Utility/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/chris/GitHub/DFBU-DotFiles-Backup-Utility
+configfile: pyproject.toml
+plugins: cov-7.0.0
+collecting ... collected 307 items
+
+DFBU/tests/test_backup_orchestrator.py::TestBackupOrchestratorInitialization::test_orchestrator_initialization PASSED [  0%]
+DFBU/tests/test_backup_orchestrator.py::TestValidateDotfilePaths::test_validate_paths_all_exist PASSED [  0%]
+DFBU/tests/test_backup_orchestrator.py::TestValidateDotfilePaths::test_validate_paths_nonexistent PASSED [  0%]
+DFBU/tests/test_backup_orchestrator.py::TestValidateDotfilePaths::test_validate_paths_empty_path_string PASSED [  1%]
+DFBU/tests/test_backup_orchestrator.py::TestValidateDotfilePaths::test_validate_paths_multiple_paths_per_dotfile PASSED [  1%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteMirrorBackup::test_mirror_backup_no_valid_dotfiles PASSED [  1%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteMirrorBackup::test_mirror_backup_skips_disabled_dotfiles PASSED [  2%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteMirrorBackup::test_mirror_backup_processes_file PASSED [  2%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteMirrorBackup::test_mirror_backup_processes_directory PASSED [  2%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteMirrorBackup::test_mirror_backup_with_progress_callback PASSED [  3%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteMirrorBackup::test_mirror_backup_with_item_callbacks PASSED [  3%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteArchiveBackup::test_archive_backup_no_enabled_dotfiles PASSED [  3%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteArchiveBackup::test_archive_backup_creates_archive PASSED [  4%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteArchiveBackup::test_archive_backup_with_rotation PASSED [  4%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteArchiveBackup::test_archive_backup_skips_empty_paths PASSED [  4%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteRestore::test_restore_no_files_in_backup PASSED [  5%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteRestore::test_restore_processes_files PASSED [  5%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteRestore::test_restore_with_progress_callback PASSED [  5%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteRestore::test_restore_with_item_processed_callback PASSED [  6%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteRestore::test_restore_skips_none_dest_paths PASSED [  6%]
+DFBU/tests/test_backup_orchestrator.py::TestExecuteRestore::test_restore_handles_copy_failures PASSED [  6%]
+DFBU/tests/test_backup_orchestrator.py::TestProcessFileBackup::test_process_file_backup_permission_denied PASSED [  7%]
+DFBU/tests/test_backup_orchestrator.py::TestProcessFileBackup::test_process_file_backup_identical_file_skipped PASSED [  7%]
+DFBU/tests/test_backup_orchestrator.py::TestProcessDirectoryBackup::test_process_directory_backup_permission_denied PASSED [  7%]
+DFBU/tests/test_backup_orchestrator.py::TestProcessDirectoryBackup::test_process_directory_backup_processes_results PASSED [  8%]
+DFBU/tests/test_cli_integration.py::TestCLIHandlerArgumentParsing::test_parse_args_no_flags PASSED [  8%]
+DFBU/tests/test_cli_integration.py::TestCLIHandlerArgumentParsing::test_parse_args_dry_run_flag PASSED [  8%]
+DFBU/tests/test_cli_integration.py::TestCLIHandlerArgumentParsing::test_parse_args_force_flag PASSED [  9%]
+DFBU/tests/test_cli_integration.py::TestCLIHandlerArgumentParsing::test_parse_args_both_flags PASSED [  9%]
+DFBU/tests/test_cli_integration.py::TestCLIHandlerArgumentParsing::test_parse_args_short_flags PASSED [  9%]
+DFBU/tests/test_cli_integration.py::TestMirrorBackupExecution::test_mirror_backup_execute_with_existing_file PASSED [ 10%]
+DFBU/tests/test_cli_integration.py::TestMirrorBackupExecution::test_mirror_backup_execute_dry_run PASSED [ 10%]
+DFBU/tests/test_cli_integration.py::TestArchiveBackupExecution::test_archive_backup_create_creates_archive PASSED [ 10%]
+DFBU/tests/test_cli_integration.py::TestArchiveBackupExecution::test_archive_backup_create_dry_run PASSED [ 11%]
+DFBU/tests/test_cli_integration.py::TestFileSystemHelperIntegration::test_expand_path_integration PASSED [ 11%]
+DFBU/tests/test_cli_integration.py::TestFileSystemHelperIntegration::test_check_readable_with_existing_file PASSED [ 11%]
+DFBU/tests/test_cli_integration.py::TestFileSystemHelperIntegration::test_create_directory_creates_parents PASSED [ 12%]
+DFBU/tests/test_cli_integration.py::TestFileSystemHelperIntegration::test_format_dry_run_prefix PASSED [ 12%]
+DFBU/tests/test_cli_integration.py::TestPathAssemblerIntegration::test_assemble_dest_path_home_file PASSED [ 12%]
+DFBU/tests/test_cli_integration.py::TestPathAssemblerIntegration::test_assemble_dest_path_with_hostname PASSED [ 13%]
+DFBU/tests/test_cli_integration.py::TestPathAssemblerIntegration::test_assemble_dest_path_with_date PASSED [ 13%]
+DFBU/tests/test_cli_integration.py::TestOptionsClass::test_options_initialization PASSED [ 13%]
+DFBU/tests/test_cli_integration.py::TestOptionsClass::test_options_string_representation PASSED [ 14%]
+DFBU/tests/test_cli_integration.py::TestDotFileClass::test_dotfile_initialization_with_options PASSED [ 14%]
+DFBU/tests/test_cli_integration.py::TestDotFileClass::test_dotfile_string_representation PASSED [ 14%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuRun::test_menu_run_valid_selection PASSED [ 14%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuRun::test_menu_run_second_option PASSED [ 15%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuRun::test_menu_run_invalid_then_valid PASSED [ 15%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuRun::test_menu_run_out_of_range_high PASSED [ 15%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuRun::test_menu_run_keyboard_interrupt PASSED [ 16%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuRun::test_menu_run_eof_error PASSED [ 16%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuRun::test_menu_run_non_numeric_input PASSED [ 16%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_yes_response PASSED [ 17%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_yes_full_word PASSED [ 17%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_no_response PASSED [ 17%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_no_full_word PASSED [ 18%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_quit_response PASSED [ 18%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_quit_full_word PASSED [ 18%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_case_insensitive PASSED [ 19%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_invalid_then_valid PASSED [ 19%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_whitespace_handling PASSED [ 19%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_keyboard_interrupt PASSED [ 20%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_eof_error PASSED   [ 20%]
+DFBU/tests/test_cli_menu.py::TestCLIMenuYNQ::test_ynq_prompt_display PASSED [ 20%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_options_with_defaults PASSED [ 21%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_options_with_valid_values PASSED [ 21%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_options_compression_level_out_of_range PASSED [ 21%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_options_compression_level_invalid_type PASSED [ 22%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_options_max_archives_below_minimum PASSED [ 22%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_options_max_archives_invalid_type PASSED [ 22%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_dotfile_with_all_fields PASSED [ 23%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_dotfile_with_missing_fields PASSED [ 23%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_dotfile_partial_fields PASSED [ 23%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_config_complete_structure PASSED [ 24%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_config_missing_sections PASSED [ 24%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_config_empty_dotfiles_list PASSED [ 24%]
+DFBU/tests/test_config_validation.py::TestConfigValidator::test_validate_options_boolean_type_conversion PASSED [ 25%]
+DFBU/tests/test_dfbu_cli.py::TestCLIArgumentParsing::test_options_initialization_with_defaults PASSED [ 25%]
+DFBU/tests/test_dfbu_cli.py::TestCLIArgumentParsing::test_options_with_custom_values PASSED [ 25%]
+DFBU/tests/test_dfbu_cli.py::TestCLIArgumentParsing::test_options_archive_settings PASSED [ 26%]
+DFBU/tests/test_dfbu_cli.py::TestCLIArgumentParsing::test_options_compression_levels PASSED [ 26%]
+DFBU/tests/test_dfbu_cli.py::TestBackupWorkflowIntegration::test_config_validator_returns_correct_structure PASSED [ 26%]
+DFBU/tests/test_dfbu_cli.py::TestBackupWorkflowIntegration::test_options_object_creation_from_validated_config PASSED [ 27%]
+DFBU/tests/test_dfbu_cli.py::TestBackupWorkflowIntegration::test_backup_workflow_with_validated_config PASSED [ 27%]
+DFBU/tests/test_dfbu_cli.py::TestComponentIntegration::test_config_validator_with_pathassembler PASSED [ 27%]
+DFBU/tests/test_dfbu_cli.py::TestComponentIntegration::test_filesystem_helper_with_pathassembler PASSED [ 28%]
+DFBU/tests/test_dfbu_cli.py::TestComponentIntegration::test_cli_handler_parse_args_defaults PASSED [ 28%]
+DFBU/tests/test_dfbu_cli.py::TestComponentIntegration::test_cli_handler_parse_args_dry_run PASSED [ 28%]
+DFBU/tests/test_dfbu_cli.py::TestComponentIntegration::test_cli_handler_parse_args_force PASSED [ 28%]
+DFBU/tests/test_dfbu_cli.py::TestAnsiColorIntegration::test_ansicolor_instance_creation PASSED [ 29%]
+DFBU/tests/test_dfbu_cli.py::TestAnsiColorIntegration::test_ansicolor_bold_property PASSED [ 29%]
+DFBU/tests/test_dfbu_cli.py::TestAnsiColorIntegration::test_ansicolor_predefined_constants PASSED [ 29%]
+DFBU/tests/test_dfbu_cli.py::TestAnsiColorIntegration::test_ansicolor_with_background PASSED [ 30%]
+DFBU/tests/test_dfbu_cli.py::TestWorkflowValidation::test_complete_config_to_options_workflow PASSED [ 30%]
+DFBU/tests/test_dfbu_cli.py::TestWorkflowValidation::test_config_validation_workflow PASSED [ 30%]
+DFBU/tests/test_dfbu_cli.py::TestWorkflowValidation::test_path_assembly_integration_workflow PASSED [ 31%]
+DFBU/tests/test_dotfile_class.py::TestDotFileInitialization::test_dotfile_initialization_with_existing_file PASSED [ 31%]
+DFBU/tests/test_dotfile_class.py::TestDotFileInitialization::test_dotfile_initialization_with_directory PASSED [ 31%]
+DFBU/tests/test_dotfile_class.py::TestDotFileInitialization::test_dotfile_with_nonexistent_source PASSED [ 32%]
+DFBU/tests/test_dotfile_class.py::TestDotFileInitialization::test_dotfile_path_expansion PASSED [ 32%]
+DFBU/tests/test_dotfile_class.py::TestDotFileDestinationPaths::test_dotfile_destination_paths_no_subdirs PASSED [ 32%]
+DFBU/tests/test_dotfile_class.py::TestDotFileDestinationPaths::test_dotfile_destination_paths_with_hostname PASSED [ 33%]
+DFBU/tests/test_dotfile_class.py::TestDotFileRelativePaths::test_dotfile_relative_path_from_home PASSED [ 33%]
+DFBU/tests/test_dotfile_class.py::TestDotFileRelativePaths::test_dotfile_relative_path_from_root PASSED [ 33%]
+DFBU/tests/test_dotfile_class.py::TestDotFileStringRepresentation::test_dotfile_str_contains_metadata PASSED [ 34%]
+DFBU/tests/test_dotfile_class.py::TestDotFileStringRepresentation::test_dotfile_str_indicates_file_type PASSED [ 34%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_expand_path_with_tilde PASSED [ 34%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_expand_path_without_tilde PASSED [ 35%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_check_readable_existing_file PASSED [ 35%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_check_readable_nonexistent_file PASSED [ 35%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_create_directory_new_path PASSED [ 36%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_create_directory_existing_path PASSED [ 36%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_create_directory_dry_run PASSED [ 36%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_format_dry_run_prefix_enabled PASSED [ 37%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_format_dry_run_prefix_disabled PASSED [ 37%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_format_action_verb_copy_dry_run_present_tense PASSED [ 37%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_format_action_verb_copy_normal_present_tense PASSED [ 38%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_format_action_verb_copy_normal_past_tense PASSED [ 38%]
+DFBU/tests/test_file_operations.py::TestFileSystemHelper::test_format_action_verb_delete_dry_run_past_tense PASSED [ 38%]
+DFBU/tests/test_file_operations.py::TestPathAssembler::test_assemble_dest_path_home_no_subdirs PASSED [ 39%]
+DFBU/tests/test_file_operations.py::TestPathAssembler::test_assemble_dest_path_home_with_hostname PASSED [ 39%]
+DFBU/tests/test_file_operations.py::TestPathAssembler::test_assemble_dest_path_home_with_date PASSED [ 39%]
+DFBU/tests/test_file_operations.py::TestPathAssembler::test_assemble_dest_path_home_with_both_subdirs PASSED [ 40%]
+DFBU/tests/test_file_operations.py::TestPathAssembler::test_assemble_dest_path_root_no_subdirs PASSED [ 40%]
+DFBU/tests/test_file_operations.py::TestPathAssembler::test_assemble_dest_path_root_with_hostname PASSED [ 40%]
+DFBU/tests/test_file_operations.py::TestPathAssembler::test_assemble_dest_path_preserves_nested_structure PASSED [ 41%]
+DFBU/tests/test_gui_init.py::TestGUIPackageMetadata::test_package_has_version PASSED [ 41%]
+DFBU/tests/test_gui_init.py::TestGUIPackageMetadata::test_version_format PASSED [ 41%]
+DFBU/tests/test_gui_init.py::TestGUIPackageMetadata::test_package_has_author PASSED [ 42%]
+DFBU/tests/test_gui_init.py::TestGUIPackageMetadata::test_package_has_email PASSED [ 42%]
+DFBU/tests/test_gui_init.py::TestGUIPackageMetadata::test_package_has_all_list PASSED [ 42%]
+DFBU/tests/test_gui_init.py::TestGUIPackageMetadata::test_package_metadata_types PASSED [ 42%]
+DFBU/tests/test_model.py::TestDFBUModelInitialization::test_model_initialization PASSED [ 43%]
+DFBU/tests/test_model.py::TestDFBUModelInitialization::test_model_default_options PASSED [ 43%]
+DFBU/tests/test_model.py::TestDFBUModelConfigManagement::test_load_config_file_not_found PASSED [ 43%]
+DFBU/tests/test_model.py::TestDFBUModelConfigManagement::test_load_config_invalid_toml PASSED [ 44%]
+DFBU/tests/test_model.py::TestDFBUModelConfigManagement::test_load_config_valid_minimal PASSED [ 44%]
+DFBU/tests/test_model.py::TestDFBUModelConfigManagement::test_save_config_creates_file PASSED [ 44%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_add_dotfile PASSED [ 45%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_add_multiple_dotfiles PASSED [ 45%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_update_dotfile_valid_index PASSED [ 45%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_update_dotfile_invalid_index PASSED [ 46%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_remove_dotfile_valid_index PASSED [ 46%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_remove_dotfile_invalid_index PASSED [ 46%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_toggle_dotfile_enabled PASSED [ 47%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_get_dotfile_by_index_valid PASSED [ 47%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_get_dotfile_by_index_invalid PASSED [ 47%]
+DFBU/tests/test_model.py::TestDFBUModelDotfileManagement::test_get_dotfile_count PASSED [ 48%]
+DFBU/tests/test_model.py::TestDFBUModelPathOperations::test_expand_path_with_tilde PASSED [ 48%]
+DFBU/tests/test_model.py::TestDFBUModelPathOperations::test_expand_path_without_tilde PASSED [ 48%]
+DFBU/tests/test_model.py::TestDFBUModelPathOperations::test_check_readable_existing_file PASSED [ 49%]
+DFBU/tests/test_model.py::TestDFBUModelPathOperations::test_check_readable_nonexistent PASSED [ 49%]
+DFBU/tests/test_model.py::TestDFBUModelFileOperations::test_copy_file_success PASSED [ 49%]
+DFBU/tests/test_model.py::TestDFBUModelFileOperations::test_copy_file_creates_parent_directory PASSED [ 50%]
+DFBU/tests/test_model.py::TestDFBUModelFileOperations::test_copy_file_with_skip_identical PASSED [ 50%]
+DFBU/tests/test_model.py::TestDFBUModelFileOperations::test_create_directory_success PASSED [ 50%]
+DFBU/tests/test_model.py::TestDFBUModelStatistics::test_record_item_processed PASSED [ 51%]
+DFBU/tests/test_model.py::TestDFBUModelStatistics::test_record_item_skipped PASSED [ 51%]
+DFBU/tests/test_model.py::TestDFBUModelStatistics::test_record_item_failed PASSED [ 51%]
+DFBU/tests/test_model.py::TestDFBUModelStatistics::test_reset_statistics PASSED [ 52%]
+DFBU/tests/test_model.py::TestDFBUModelOptionManagement::test_update_option_valid_boolean PASSED [ 52%]
+DFBU/tests/test_model.py::TestDFBUModelOptionManagement::test_update_option_valid_integer PASSED [ 52%]
+DFBU/tests/test_model.py::TestDFBUModelOptionManagement::test_update_option_invalid_key PASSED [ 53%]
+DFBU/tests/test_model.py::TestDFBUModelOptionManagement::test_update_path_mirror_dir PASSED [ 53%]
+DFBU/tests/test_model.py::TestDFBUModelOptionManagement::test_update_path_archive_dir PASSED [ 53%]
+DFBU/tests/test_model.py::TestDFBUModelOptionManagement::test_update_path_invalid_type PASSED [ 54%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_create_rotating_backup_success PASSED [ 54%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_create_rotating_backup_default_directory PASSED [ 54%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_create_rotating_backup_handles_collision PASSED [ 55%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_create_rotating_backup_rotates_old_backups PASSED [ 55%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_create_rotating_backup_returns_none_for_nonexistent PASSED [ 55%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_get_backup_files_finds_all_backups PASSED [ 56%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_get_backup_files_returns_empty_for_nonexistent_dir PASSED [ 56%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_get_backup_files_sorts_by_age PASSED [ 56%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_rotate_old_backups_deletes_oldest PASSED [ 57%]
+DFBU/tests/test_model_additional_coverage.py::TestModelBackupUtilities::test_rotate_old_backups_returns_empty_when_under_limit PASSED [ 57%]
+DFBU/tests/test_model_additional_coverage.py::TestModelArchiveOperations::test_create_archive_with_hostname_subdir PASSED [ 57%]
+DFBU/tests/test_model_additional_coverage.py::TestModelArchiveOperations::test_create_archive_without_hostname_subdir PASSED [ 57%]
+DFBU/tests/test_model_additional_coverage.py::TestModelArchiveOperations::test_create_archive_skips_nonexistent_paths PASSED [ 58%]
+DFBU/tests/test_model_additional_coverage.py::TestModelArchiveOperations::test_create_archive_includes_directories PASSED [ 58%]
+DFBU/tests/test_model_additional_coverage.py::TestModelArchiveOperations::test_rotate_archives_deletes_oldest PASSED [ 58%]
+DFBU/tests/test_model_additional_coverage.py::TestModelRestoreOperations::test_discover_restore_files_with_hostname PASSED [ 59%]
+DFBU/tests/test_model_additional_coverage.py::TestModelRestoreOperations::test_discover_restore_files_without_hostname PASSED [ 59%]
+DFBU/tests/test_model_additional_coverage.py::TestModelRestoreOperations::test_discover_restore_files_empty_directory PASSED [ 59%]
+DFBU/tests/test_model_additional_coverage.py::TestModelRestoreOperations::test_reconstruct_restore_paths_home_files PASSED [ 60%]
+DFBU/tests/test_model_additional_coverage.py::TestModelRestoreOperations::test_reconstruct_restore_paths_root_files PASSED [ 60%]
+DFBU/tests/test_model_additional_coverage.py::TestModelValidation::test_validate_dotfile_paths_all_valid PASSED [ 60%]
+DFBU/tests/test_model_additional_coverage.py::TestModelValidation::test_validate_dotfile_paths_nonexistent PASSED [ 61%]
+DFBU/tests/test_model_additional_coverage.py::TestModelValidation::test_validate_dotfile_paths_multiple_dotfiles PASSED [ 61%]
+DFBU/tests/test_model_additional_coverage.py::TestModelDotfileSizes::test_get_dotfile_sizes_single_file PASSED [ 61%]
+DFBU/tests/test_model_additional_coverage.py::TestModelDotfileSizes::test_get_dotfile_sizes_directory PASSED [ 62%]
+DFBU/tests/test_model_additional_coverage.py::TestModelDotfileSizes::test_get_dotfile_sizes_nonexistent PASSED [ 62%]
+DFBU/tests/test_model_file_operations.py::TestModelFileIdentity::test_files_are_identical_same_file PASSED [ 62%]
+DFBU/tests/test_model_file_operations.py::TestModelFileIdentity::test_files_are_identical_different_size PASSED [ 63%]
+DFBU/tests/test_model_file_operations.py::TestModelFileIdentity::test_files_are_identical_destination_not_exists PASSED [ 63%]
+DFBU/tests/test_model_file_operations.py::TestModelFileIdentity::test_copy_file_skip_identical_optimization PASSED [ 63%]
+DFBU/tests/test_model_file_operations.py::TestModelDirectoryCopying::test_copy_directory_with_multiple_files PASSED [ 64%]
+DFBU/tests/test_model_file_operations.py::TestModelDirectoryCopying::test_copy_directory_with_nested_structure PASSED [ 64%]
+DFBU/tests/test_model_file_operations.py::TestModelDirectoryCopying::test_copy_directory_skip_identical_files PASSED [ 64%]
+DFBU/tests/test_model_file_operations.py::TestModelPathSizeCalculation::test_calculate_path_size_single_file PASSED [ 65%]
+DFBU/tests/test_model_file_operations.py::TestModelPathSizeCalculation::test_calculate_path_size_directory PASSED [ 65%]
+DFBU/tests/test_model_file_operations.py::TestModelPathSizeCalculation::test_calculate_path_size_nonexistent PASSED [ 65%]
+DFBU/tests/test_model_file_operations.py::TestModelPathSizeCalculation::test_get_dotfile_sizes_multiple_paths PASSED [ 66%]
+DFBU/tests/test_model_file_operations.py::TestModelArchiveOperations::test_create_archive_single_file PASSED [ 66%]
+DFBU/tests/test_model_file_operations.py::TestModelArchiveOperations::test_create_archive_multiple_files PASSED [ 66%]
+DFBU/tests/test_model_file_operations.py::TestModelArchiveOperations::test_rotate_archives_deletes_oldest PASSED [ 67%]
+DFBU/tests/test_model_file_operations.py::TestModelRestoreOperations::test_discover_restore_files_finds_all_files PASSED [ 67%]
+DFBU/tests/test_model_file_operations.py::TestModelRestoreOperations::test_reconstruct_restore_paths_home_directory PASSED [ 67%]
+DFBU/tests/test_model_file_operations.py::TestModelRestoreOperations::test_reconstruct_restore_paths_root_directory PASSED [ 68%]
+DFBU/tests/test_model_file_operations.py::TestModelConfidentCodePaths::test_copy_file_confident_execution PASSED [ 68%]
+DFBU/tests/test_model_file_operations.py::TestModelConfidentCodePaths::test_create_directory_confident_execution PASSED [ 68%]
+DFBU/tests/test_model_file_operations.py::TestModelConfidentCodePaths::test_create_archive_returns_path_on_success PASSED [ 69%]
+DFBU/tests/test_model_file_operations.py::TestModelConfidentCodePaths::test_create_rotating_backup_returns_path_on_success PASSED [ 69%]
+DFBU/tests/test_model_file_operations.py::TestModelConfidentCodePaths::test_discover_restore_files_confident_execution PASSED [ 69%]
+DFBU/tests/test_multiple_paths.py::TestModelBackwardCompatibility::test_validate_dotfile_with_legacy_path PASSED [ 70%]
+DFBU/tests/test_multiple_paths.py::TestModelBackwardCompatibility::test_validate_dotfile_with_new_paths PASSED [ 70%]
+DFBU/tests/test_multiple_paths.py::TestModelBackwardCompatibility::test_save_config_single_path_as_path PASSED [ 70%]
+DFBU/tests/test_multiple_paths.py::TestModelBackwardCompatibility::test_save_config_multiple_paths_as_paths PASSED [ 71%]
+DFBU/tests/test_multiple_paths.py::TestModelValidationAndSizes::test_validate_dotfile_paths_with_multiple_paths PASSED [ 71%]
+DFBU/tests/test_multiple_paths.py::TestModelValidationAndSizes::test_get_dotfile_sizes_sums_all_paths PASSED [ 71%]
+DFBU/tests/test_multiple_paths.py::TestModelValidationAndSizes::test_get_dotfile_sizes_with_directory PASSED [ 71%]
+DFBU/tests/test_multiple_paths.py::TestModelValidationAndSizes::test_get_dotfile_sizes_with_nonexistent_paths PASSED [ 72%]
+DFBU/tests/test_multiple_paths.py::TestModelAddUpdate::test_add_dotfile_with_multiple_paths PASSED [ 72%]
+DFBU/tests/test_multiple_paths.py::TestModelAddUpdate::test_update_dotfile_with_multiple_paths PASSED [ 72%]
+DFBU/tests/test_multiple_paths.py::TestModelRoundTrip::test_save_load_roundtrip_single_path PASSED [ 73%]
+DFBU/tests/test_multiple_paths.py::TestModelRoundTrip::test_save_load_roundtrip_multiple_paths PASSED [ 73%]
+DFBU/tests/test_multiple_paths.py::TestModelRoundTrip::test_save_load_roundtrip_mixed PASSED [ 73%]
+DFBU/tests/test_view_comprehensive.py::TestNumericTableWidgetItem::test_numeric_item_less_than_comparison PASSED [ 74%]
+DFBU/tests/test_view_comprehensive.py::TestNumericTableWidgetItem::test_numeric_item_with_none_values PASSED [ 74%]
+DFBU/tests/test_view_comprehensive.py::TestNumericTableWidgetItem::test_numeric_item_both_none_values PASSED [ 74%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_dialog_initialization_add_mode PASSED [ 75%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_dialog_initialization_update_mode PASSED [ 75%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_dialog_legacy_path_format PASSED [ 75%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_add_path_to_list PASSED [ 76%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_add_path_prevents_duplicates PASSED [ 76%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_add_path_ignores_empty_input PASSED [ 76%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_remove_selected_paths PASSED [ 77%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_get_paths_returns_all_items PASSED [ 77%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_browse_path_selects_file PASSED [ 77%]
+DFBU/tests/test_view_comprehensive.py::TestAddDotfileDialog::test_browse_path_falls_back_to_directory PASSED [ 78%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindow::test_main_window_initialization PASSED [ 78%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindow::test_window_connects_viewmodel_signals PASSED [ 78%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindow::test_window_saves_geometry_on_close PASSED [ 79%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindow::test_window_restores_geometry_on_startup PASSED [ 79%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowActions::test_load_config_action_triggers_command FAILED [ 79%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowActions::test_save_config_action_triggers_command PASSED [ 80%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowActions::test_add_dotfile_opens_dialog PASSED [ 80%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowActions::test_update_dotfile_requires_selection FAILED [ 80%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowActions::test_remove_dotfile_requires_selection FAILED [ 81%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowBackupRestore::test_start_backup_creates_worker FAILED [ 81%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowBackupRestore::test_start_restore_requires_directory PASSED [ 81%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowBackupRestore::test_progress_updated_displays_correctly FAILED [ 82%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowBackupRestore::test_operation_finished_resets_ui FAILED [ 82%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowDotfileDisplay::test_update_dotfile_table_populates_rows PASSED [ 82%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowDotfileDisplay::test_table_displays_validation_status PASSED [ 83%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowOptionsTab::test_options_update_from_viewmodel PASSED [ 83%]
+DFBU/tests/test_view_comprehensive.py::TestMainWindowOptionsTab::test_save_options_updates_viewmodel PASSED [ 83%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelInitialization::test_viewmodel_init_with_model PASSED [ 84%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelInitialization::test_viewmodel_signals_exist PASSED [ 84%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelSettings::test_save_settings_stores_geometry PASSED [ 84%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelSettings::test_save_settings_stores_window_state PASSED [ 85%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelSettings::test_save_restore_settings_roundtrip PASSED [ 85%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelDotfileCommands::test_command_add_dotfile_single_path PASSED [ 85%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelDotfileCommands::test_command_add_dotfile_multiple_paths PASSED [ 85%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelDotfileCommands::test_command_update_dotfile_changes_fields PASSED [ 86%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelDotfileCommands::test_command_remove_dotfile_by_index PASSED [ 86%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelDotfileCommands::test_command_toggle_dotfile_enabled PASSED [ 86%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelConfigOperations::test_command_load_config_success PASSED [ 87%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelConfigOperations::test_command_save_config_creates_file PASSED [ 87%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelPropertyAccess::test_get_dotfile_count PASSED [ 87%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelPropertyAccess::test_get_dotfile_list PASSED [ 88%]
+DFBU/tests/test_viewmodel_core.py::TestViewModelPropertyAccess::test_get_dotfile_validation PASSED [ 88%]
+DFBU/tests/test_viewmodel_core.py::TestBackupWorker::test_backup_worker_initialization PASSED [ 88%]
+DFBU/tests/test_viewmodel_core.py::TestBackupWorker::test_backup_worker_set_model PASSED [ 89%]
+DFBU/tests/test_viewmodel_core.py::TestBackupWorker::test_backup_worker_set_modes PASSED [ 89%]
+DFBU/tests/test_viewmodel_core.py::TestRestoreWorker::test_restore_worker_initialization PASSED [ 89%]
+DFBU/tests/test_viewmodel_core.py::TestRestoreWorker::test_restore_worker_set_model PASSED [ 90%]
+DFBU/tests/test_viewmodel_core.py::TestRestoreWorker::test_restore_worker_set_source_directory PASSED [ 90%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCategories::test_get_unique_categories_empty PASSED [ 90%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCategories::test_get_unique_categories_single PASSED [ 91%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCategories::test_get_unique_categories_multiple_unique PASSED [ 91%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCategories::test_get_unique_categories_with_duplicates PASSED [ 91%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCategories::test_get_unique_subcategories_empty PASSED [ 92%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCategories::test_get_unique_subcategories_multiple_unique PASSED [ 92%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCommands::test_command_add_dotfile_single_path PASSED [ 92%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCommands::test_command_add_dotfile_multiple_paths PASSED [ 93%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCommands::test_command_update_dotfile_change_paths PASSED [ 93%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelCommands::test_command_update_dotfile_reduce_paths PASSED [ 93%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelBackupProcessing::test_mirror_backup_processes_all_paths PASSED [ 94%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelBackupProcessing::test_archive_backup_includes_all_paths PASSED [ 94%]
+DFBU/tests/test_viewmodel_multiple_paths.py::TestViewModelBackupProcessing::test_backup_skips_disabled_dotfiles PASSED [ 94%]
+DFBU/tests/test_workers_comprehensive.py::TestBackupWorkerSignals::test_worker_emits_progress_signal PASSED [ 95%]
+DFBU/tests/test_workers_comprehensive.py::TestBackupWorkerSignals::test_worker_emits_item_processed_signal PASSED [ 95%]
+DFBU/tests/test_workers_comprehensive.py::TestBackupWorkerSignals::test_worker_emits_backup_finished_signal PASSED [ 95%]
+DFBU/tests/test_workers_comprehensive.py::TestBackupWorkerSignals::test_worker_emits_item_skipped_signal FAILED [ 96%]
+DFBU/tests/test_workers_comprehensive.py::TestBackupWorkerSignals::test_worker_handles_no_model_gracefully PASSED [ 96%]
+DFBU/tests/test_workers_comprehensive.py::TestBackupWorkerModes::test_worker_mirror_mode_only PASSED [ 96%]
+DFBU/tests/test_workers_comprehensive.py::TestBackupWorkerDirectoryProcessing::test_worker_processes_directory_recursively PASSED [ 97%]
+DFBU/tests/test_workers_comprehensive.py::TestRestoreWorkerSignals::test_restore_worker_emits_progress PASSED [ 97%]
+DFBU/tests/test_workers_comprehensive.py::TestRestoreWorkerSignals::test_restore_worker_emits_finished_signal FAILED [ 97%]
+DFBU/tests/test_workers_comprehensive.py::TestRestoreWorkerSignals::test_restore_worker_handles_no_model PASSED [ 98%]
+DFBU/tests/test_workers_comprehensive.py::TestRestoreWorkerSignals::test_restore_worker_handles_empty_source PASSED [ 98%]
+DFBU/tests/test_workers_comprehensive.py::TestRestoreWorkerFileOperations::test_restore_worker_restores_files PASSED [ 98%]
+DFBU/tests/test_workers_comprehensive.py::TestWorkerThreadManagement::test_backup_worker_can_be_stopped PASSED [ 99%]
+DFBU/tests/test_workers_comprehensive.py::TestWorkerThreadManagement::test_restore_worker_can_be_stopped PASSED [ 99%]
+DFBU/tests/test_workers_comprehensive.py::TestWorkerErrorHandling::test_backup_worker_handles_permission_errors PASSED [ 99%]
+DFBU/tests/test_workers_comprehensive.py::TestWorkerErrorHandling::test_backup_worker_skips_disabled_dotfiles PASSED [100%]
+
+=================================== FAILURES ===================================
+________ TestMainWindowActions.test_load_config_action_triggers_command ________
+DFBU/tests/test_view_comprehensive.py:374: in test_load_config_action_triggers_command
+    mock_command.assert_called_once_with("/path/to/config.toml")
+/usr/lib64/python3.14/unittest/mock.py:997: in assert_called_once_with
+    return self.assert_called_with(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib64/python3.14/unittest/mock.py:985: in assert_called_with
+    raise AssertionError(_error_message()) from cause
+E   AssertionError: expected call not found.
+E   Expected: command_load_config('/path/to/config.toml')
+E     Actual: command_load_config()
+_________ TestMainWindowActions.test_update_dotfile_requires_selection _________
+DFBU/tests/test_view_comprehensive.py:421: in test_update_dotfile_requires_selection
+    mock_warning.assert_called_once()
+/usr/lib64/python3.14/unittest/mock.py:964: in assert_called_once
+    raise AssertionError(msg)
+E   AssertionError: Expected 'warning' to have been called once. Called 0 times.
+_________ TestMainWindowActions.test_remove_dotfile_requires_selection _________
+DFBU/tests/test_view_comprehensive.py:434: in test_remove_dotfile_requires_selection
+    mock_warning.assert_called_once()
+/usr/lib64/python3.14/unittest/mock.py:964: in assert_called_once
+    raise AssertionError(msg)
+E   AssertionError: Expected 'warning' to have been called once. Called 0 times.
+_________ TestMainWindowBackupRestore.test_start_backup_creates_worker _________
+DFBU/tests/test_view_comprehensive.py:456: in test_start_backup_creates_worker
+    window._on_start_backup()
+DFBU/gui/view.py:643: in _on_start_backup
+    self.progress_bar.setVisible(True)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'NoneType' object has no attribute 'setVisible'
+_____ TestMainWindowBackupRestore.test_progress_updated_displays_correctly _____
+DFBU/tests/test_view_comprehensive.py:485: in test_progress_updated_displays_correctly
+    window._on_progress_updated(50)
+DFBU/gui/view.py:704: in _on_progress_updated
+    self.progress_bar.setValue(value)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'NoneType' object has no attribute 'setValue'
+________ TestMainWindowBackupRestore.test_operation_finished_resets_ui _________
+DFBU/tests/test_view_comprehensive.py:496: in test_operation_finished_resets_ui
+    window.progress_bar.setValue(50)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'NoneType' object has no attribute 'setValue'
+________ TestBackupWorkerSignals.test_worker_emits_item_skipped_signal _________
+DFBU/tests/test_workers_comprehensive.py:187: in test_worker_emits_item_skipped_signal
+    assert len(skipped_items) > 0
+E   assert 0 > 0
+E    +  where 0 = len([])
+______ TestRestoreWorkerSignals.test_restore_worker_emits_finished_signal ______
+DFBU/tests/test_workers_comprehensive.py:345: in test_restore_worker_emits_finished_signal
+    assert len(finished_called) == 1
+E   assert 0 == 1
+E    +  where 0 = len([])
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.14.0-final-0 ________________
+
+Name                                           Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------------
+DFBU/core/__init__.py                              3      0   100%
+DFBU/core/common_types.py                          3      0   100%
+DFBU/core/validation.py                           48      1    98%   154
+DFBU/dfbu-gui.py                                  48     48     0%   61-171
+DFBU/dfbu.py                                     469    229    51%   256, 276, 286, 680, 684-685, 702-704, 727-734, 746-804, 844, 882-931, 1054-1068, 1078-1104, 1117-1118, 1134-1166, 1187-1191, 1205-1226, 1240-1244, 1259-1263, 1279, 1296-1333, 1353-1382, 1393-1466
+DFBU/gui/__init__.py                               4      0   100%
+DFBU/gui/backup_orchestrator.py                  143      8    94%   194, 201, 407, 457-464
+DFBU/gui/config_manager.py                       163     22    87%   84, 87, 91-92, 101-103, 116-117, 121-122, 213-216, 280-283, 388, 415, 477
+DFBU/gui/constants.py                              6      0   100%
+DFBU/gui/file_operations.py                      220     44    80%   105-106, 123-124, 166-168, 199-201, 316-317, 351-360, 381, 392-393, 415-419, 450-452, 455-460, 498, 546-548, 552-553, 572, 584-586, 592-593, 604-605, 654, 674
+DFBU/gui/model.py                                117      0   100%
+DFBU/gui/statistics_tracker.py                    41      4    90%   71, 77, 82, 153
+DFBU/gui/view.py                                 559    182    67%   169, 177, 416-418, 584-585, 589-598, 603-606, 611, 620-623, 644-647, 651-665, 676-700, 707-711, 716-723, 727-728, 733-749, 753-770, 774-782, 798-839, 883, 891, 928, 983, 987, 1001-1006, 1010-1015, 1025, 1083, 1092-1108, 1125-1131, 1136-1139, 1154-1180, 1190-1245, 1257-1287, 1294-1316, 1321-1324
+DFBU/gui/viewmodel.py                            360    129    64%   130, 142-144, 156-157, 177, 181-183, 196-197, 201-204, 212, 234, 245, 253, 290-347, 370, 467-499, 588, 602, 631, 635, 660-680, 690-707, 719-722, 902, 911-912, 917, 926-948, 975, 1002-1004, 1024, 1033, 1043, 1053, 1057-1066, 1070-1078, 1088
+DFBU/tests/test_backup_orchestrator.py           341      0   100%
+DFBU/tests/test_cli_integration.py               168      1    99%   464
+DFBU/tests/test_cli_menu.py                      141      0   100%
+DFBU/tests/test_config_validation.py             105      0   100%
+DFBU/tests/test_dfbu_cli.py                      150      0   100%
+DFBU/tests/test_dotfile_class.py                 103      0   100%
+DFBU/tests/test_file_operations.py               121      0   100%
+DFBU/tests/test_gui_init.py                       29      0   100%
+DFBU/tests/test_model.py                         241      0   100%
+DFBU/tests/test_model_additional_coverage.py     262      0   100%
+DFBU/tests/test_model_file_operations.py         248      1    99%   486
+DFBU/tests/test_multiple_paths.py                144      1    99%   343
+DFBU/tests/test_view_comprehensive.py            262      8    97%   459, 488, 497-507
+DFBU/tests/test_viewmodel_core.py                187      1    99%   413
+DFBU/tests/test_viewmodel_multiple_paths.py      156      1    99%   336
+DFBU/tests/test_workers_comprehensive.py         249      7    97%   36, 178, 308, 336, 400, 489, 535
+----------------------------------------------------------------------------
+TOTAL                                           5091    687    87%
+Coverage HTML written to dir htmlcov
+=========================== short test summary info ============================
+FAILED DFBU/tests/test_view_comprehensive.py::TestMainWindowActions::test_load_config_action_triggers_command - AssertionError: expected call not found.
+Expected: command_load_config('/path/to/config.toml')
+  Actual: command_load_config()
+FAILED DFBU/tests/test_view_comprehensive.py::TestMainWindowActions::test_update_dotfile_requires_selection - AssertionError: Expected 'warning' to have been called once. Called 0 times.
+FAILED DFBU/tests/test_view_comprehensive.py::TestMainWindowActions::test_remove_dotfile_requires_selection - AssertionError: Expected 'warning' to have been called once. Called 0 times.
+FAILED DFBU/tests/test_view_comprehensive.py::TestMainWindowBackupRestore::test_start_backup_creates_worker - AttributeError: 'NoneType' object has no attribute 'setVisible'
+FAILED DFBU/tests/test_view_comprehensive.py::TestMainWindowBackupRestore::test_progress_updated_displays_correctly - AttributeError: 'NoneType' object has no attribute 'setValue'
+FAILED DFBU/tests/test_view_comprehensive.py::TestMainWindowBackupRestore::test_operation_finished_resets_ui - AttributeError: 'NoneType' object has no attribute 'setValue'
+FAILED DFBU/tests/test_workers_comprehensive.py::TestBackupWorkerSignals::test_worker_emits_item_skipped_signal - assert 0 > 0
+ +  where 0 = len([])
+FAILED DFBU/tests/test_workers_comprehensive.py::TestRestoreWorkerSignals::test_restore_worker_emits_finished_signal - assert 0 == 1
+ +  where 0 = len([])
+======================== 8 failed, 299 passed in 16.48s ========================
