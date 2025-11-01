@@ -164,7 +164,7 @@ class TestBackupWorkflowIntegration:
                     "subcategory": "bash",
                     "application": "bash",
                     "description": "Bash config",
-                    "path": "~/.bashrc",
+                    "paths": ["~/.bashrc"],
                 }
             ],
         }
@@ -259,7 +259,7 @@ class TestComponentIntegration:
                     "subcategory": "bash",
                     "application": "bash",
                     "description": "Bash configuration",
-                    "path": "~/.bashrc",
+                    "paths": ["~/.bashrc"],
                 }
             ],
         }
@@ -275,7 +275,7 @@ class TestComponentIntegration:
 
         # Test PathAssembler can process the paths
         dotfile = validated_dotfiles[0]
-        source_path = Path(dotfile["path"]).expanduser()
+        source_path = Path(dotfile["paths"][0]).expanduser()
         destination = PathAssembler.assemble_dest_path(
             Path(tmp_path / "backups"),
             source_path,
@@ -431,7 +431,7 @@ class TestWorkflowValidation:
                     "subcategory": "bash",
                     "application": "bash",
                     "description": "Test config",
-                    "path": str(tmp_path / "source" / ".testrc"),
+                    "paths": [str(tmp_path / "source" / ".testrc")],
                 }
             ],
         }
@@ -469,7 +469,7 @@ class TestWorkflowValidation:
                     "subcategory": "bash",
                     "application": "bash",
                     "description": "Bash config",
-                    "path": "~/.bashrc",
+                    "paths": ["~/.bashrc"],
                 }
             ],
         }
@@ -509,7 +509,7 @@ class TestWorkflowValidation:
                     "subcategory": "test",
                     "application": "test",
                     "description": "Test file",
-                    "path": str(source_file),
+                    "paths": [str(source_file)],
                 }
             ],
         }
@@ -521,7 +521,7 @@ class TestWorkflowValidation:
         dotfile = validated_dotfiles[0]
         destination = PathAssembler.assemble_dest_path(
             Path(dotfile["mirror_dir"]),
-            Path(dotfile["path"]),
+            Path(dotfile["paths"][0]),
             validated_options["hostname_subdir"],
             validated_options["date_subdir"],
         )

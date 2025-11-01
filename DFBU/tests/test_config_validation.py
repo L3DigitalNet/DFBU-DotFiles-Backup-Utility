@@ -131,7 +131,7 @@ class TestConfigValidator:
             "subcategory": "Bash",
             "application": "Bash",
             "description": "Bash configuration",
-            "path": "~/.bashrc",
+            "paths": ["~/.bashrc"],  # Updated to use paths list
             "mirror_dir": "~/backup/mirror",
             "archive_dir": "~/backup/archive",
         }
@@ -144,7 +144,7 @@ class TestConfigValidator:
         assert result["subcategory"] == "Bash"
         assert result["application"] == "Bash"
         assert result["description"] == "Bash configuration"
-        assert result["path"] == "~/.bashrc"
+        assert result["paths"] == ["~/.bashrc"]  # Updated to check paths list
         assert result["mirror_dir"] == "~/backup/mirror"
         assert result["archive_dir"] == "~/backup/archive"
 
@@ -161,7 +161,8 @@ class TestConfigValidator:
         assert result["subcategory"] == "Unknown"
         assert result["application"] == "Unknown"
         assert result["description"] == "None"
-        assert result["path"] == ""
+        # Empty paths list when no path provided
+        assert result["paths"] == [""]  # Updated to check paths list with empty string
         assert result["mirror_dir"] == "~/DFBU_Mirror"
         assert result["archive_dir"] == "~/DFBU_Archives"
 
@@ -170,7 +171,7 @@ class TestConfigValidator:
         # Arrange
         raw_dotfile = {
             "category": "Shell",
-            "path": "~/.bashrc",
+            "paths": ["~/.bashrc"],  # Updated to use paths list
         }
 
         # Act
@@ -178,7 +179,7 @@ class TestConfigValidator:
 
         # Assert - Specified fields preserved
         assert result["category"] == "Shell"
-        assert result["path"] == "~/.bashrc"
+        assert result["paths"] == ["~/.bashrc"]  # Updated to check paths list
         # Missing fields use defaults
         assert result["subcategory"] == "Unknown"
         assert result["application"] == "Unknown"
@@ -206,14 +207,14 @@ class TestConfigValidator:
                     "subcategory": "Bash",
                     "application": "Bash",
                     "description": "Bash config",
-                    "path": "~/.bashrc",
+                    "paths": ["~/.bashrc"],  # Updated to use paths list
                 },
                 {
                     "category": "Editor",
                     "subcategory": "Vim",
                     "application": "Vim",
                     "description": "Vim config",
-                    "path": "~/.vimrc",
+                    "paths": ["~/.vimrc"],  # Updated to use paths list
                 },
             ],
         }
@@ -232,13 +233,13 @@ class TestConfigValidator:
 
         # Assert first dotfile merged with paths
         assert dotfiles[0]["category"] == "Shell"
-        assert dotfiles[0]["path"] == "~/.bashrc"
+        assert dotfiles[0]["paths"] == ["~/.bashrc"]  # Updated to check paths list
         assert dotfiles[0]["mirror_dir"] == "~/test/mirror"
         assert dotfiles[0]["archive_dir"] == "~/test/archive"
 
         # Assert second dotfile
         assert dotfiles[1]["category"] == "Editor"
-        assert dotfiles[1]["path"] == "~/.vimrc"
+        assert dotfiles[1]["paths"] == ["~/.vimrc"]  # Updated to check paths list
 
     def test_validate_config_missing_sections(self) -> None:
         """Test config validation handles missing sections gracefully."""

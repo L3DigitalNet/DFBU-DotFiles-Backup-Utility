@@ -47,9 +47,11 @@ class TestDotFileInitialization:
             "subcategory": "bash",
             "application": "bash",
             "description": "Bash configuration file",
-            "path": str(source_file),
+            "paths": [str(source_file)],  # Updated to use paths list
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
+            "enabled": True,
         }
 
         options = Options(
@@ -90,9 +92,11 @@ class TestDotFileInitialization:
             "subcategory": "application",
             "application": "various",
             "description": "Configuration directory",
-            "path": str(source_dir),
+            "paths": [str(source_dir)],  # Updated to use paths list
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
+            "enabled": True,
         }
 
         options = Options(
@@ -128,9 +132,11 @@ class TestDotFileInitialization:
             "subcategory": "vim",
             "application": "vim",
             "description": "Vim configuration",
-            "path": str(source_file),
+            "paths": [str(source_file)],  # Updated to use paths list
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
+            "enabled": True,
         }
 
         options = Options(
@@ -162,9 +168,11 @@ class TestDotFileInitialization:
             "subcategory": "bash",
             "application": "bash",
             "description": "Bash configuration",
-            "path": "~/.bashrc",
+            "paths": ["~/.bashrc"],  # Updated to use paths list
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
+            "enabled": True,
         }
 
         options = Options(
@@ -203,8 +211,9 @@ class TestDotFileDestinationPaths:
             "subcategory": "bash",
             "application": "bash",
             "description": "Bash config",
-            "path": str(source_file),
+            "paths": [str(source_file)],
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
         }
 
@@ -242,8 +251,9 @@ class TestDotFileDestinationPaths:
             "subcategory": "bash",
             "application": "bash",
             "description": "Bash config",
-            "path": str(source_file),
+            "paths": [str(source_file)],
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
         }
 
@@ -280,8 +290,9 @@ class TestDotFileRelativePaths:
             "subcategory": "bash",
             "application": "bash",
             "description": "Bash config",
-            "path": str(Path.home() / ".bashrc"),
+            "paths": [str(Path.home() / ".bashrc")],
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
         }
 
@@ -313,8 +324,9 @@ class TestDotFileRelativePaths:
             "subcategory": "config",
             "application": "system",
             "description": "System config",
-            "path": "/etc/fstab",
+            "paths": ["/etc/fstab"],
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
         }
 
@@ -354,8 +366,9 @@ class TestDotFileStringRepresentation:
             "subcategory": "bash",
             "application": "bash",
             "description": "Bash configuration file",
-            "path": str(source_file),
+            "paths": [str(source_file)],
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
         }
 
@@ -395,8 +408,9 @@ class TestDotFileStringRepresentation:
             "subcategory": "app",
             "application": "various",
             "description": "Config directory",
-            "path": str(source_dir),
+            "paths": [str(source_dir)],
             "mirror_dir": str(tmp_path / "mirror"),
+            "enabled": True,
             "archive_dir": str(tmp_path / "archive"),
         }
 
