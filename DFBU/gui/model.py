@@ -807,7 +807,12 @@ class DFBUModel:
                     return False
 
             # Use Path.copy() with metadata preservation (Python 3.14+ required)
-            src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
+            # Fall back to shutil.copy2 for older Python versions
+            try:
+                src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
+            except AttributeError:
+                # Fallback for Python < 3.14
+                shutil.copy2(src_path, dest_path)
             return True
 
         except (OSError, PermissionError):
@@ -834,38 +839,38 @@ class DFBUModel:
         if not self.check_readable(src_path):
             return results
 
-        # Gather all files recursively
+        # Process files iteratively to avoid loading all into memory
         try:
-            files = [f for f in src_path.rglob("*") if f.is_file()]
+            # Use iterator for memory efficiency with large directories
+            for file_path in src_path.rglob("*"):
+                if not file_path.is_file():
+                    continue
+
+                # Skip files without read permissions
+                if not self.check_readable(file_path):
+                    results.append((file_path, None, False, False))
+                    continue
+
+                # Calculate destination path maintaining structure
+                try:
+                    file_relative = file_path.relative_to(src_path)
+                    file_dest = dest_base / file_relative
+
+                    # Check if file is identical and can be skipped
+                    if skip_identical and self.files_are_identical(file_path, file_dest):
+                        results.append((file_path, file_dest, True, True))
+                    else:
+                        # Copy file
+                        success = self.copy_file(
+                            file_path, file_dest, create_parent=True, skip_identical=False
+                        )
+                        results.append((file_path, file_dest, success, False))
+
+                except (ValueError, OSError):
+                    results.append((file_path, None, False, False))
+
         except (OSError, PermissionError):
             return results
-
-        # Process each file
-        for file_path in files:
-            # Skip files without read permissions
-            if not self.check_readable(file_path):
-                results.append((file_path, None, False, False))
-                continue
-
-            # Calculate destination path maintaining structure
-            try:
-                file_relative = file_path.relative_to(src_path)
-                file_dest = dest_base / file_relative
-
-                # Check if file is identical and can be skipped
-                was_skipped = False
-                if skip_identical and self.files_are_identical(file_path, file_dest):
-                    was_skipped = True
-                    results.append((file_path, file_dest, True, True))
-                else:
-                    # Copy file
-                    success = self.copy_file(
-                        file_path, file_dest, create_parent=True, skip_identical=False
-                    )
-                    results.append((file_path, file_dest, success, False))
-
-            except (ValueError, OSError):
-                results.append((file_path, None, False, False))
 
         return results
 
@@ -897,7 +902,7 @@ class DFBUModel:
         try:
             # Create compressed TAR.GZ archive
             with tarfile.open(archive_path, "w:gz") as tar:
-                for path, exists, is_dir in dotfiles_to_archive:
+                for path, exists, _is_dir in dotfiles_to_archive:
                     if exists:
                         tar.add(path)
 
@@ -934,7 +939,7 @@ class DFBUModel:
 
             # Sort by modification time
             archives = [
-                path for path, mtime in sorted(archive_list, key=lambda x: x[1])
+                path for path, _mtime in sorted(archive_list, key=lambda x: x[1])
             ]
         except OSError:
             return deleted_archives
@@ -1241,9 +1246,9 @@ class DFBUModel:
             # New format: paths is already a list
             paths_value = raw_dotfile["paths"]
             if isinstance(paths_value, list):
-                paths = paths_value
+                # Type: ignore needed for dynamic TOML data
+                paths = [str(p) for p in paths_value]  # type: ignore[misc]
             else:
-                # Fallback: treat as single path
                 paths = [str(paths_value)]
         elif "path" in raw_dotfile:
             # Legacy format: convert single path to list
