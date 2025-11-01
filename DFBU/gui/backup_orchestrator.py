@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 DFBU BackupOrchestrator - Backup and Restore Coordination Component
 
@@ -35,6 +36,8 @@ Functions:
 """
 
 import sys
+import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -113,13 +116,16 @@ class BackupOrchestrator:
         Returns:
             Dict mapping dotfile index to (exists, is_dir, type_str) tuple
         """
+        # Initialize validation results dictionary
         validation_results: dict[int, tuple[bool, bool, str]] = {}
 
+        # Iterate through all dotfile entries
         for i, dotfile in enumerate(dotfiles):
-            # Check all paths in this dotfile entry
+            # Initialize flags for path existence and type checking
             any_exists = False
             any_is_dir = False
 
+            # Check all paths in this dotfile entry
             for path_str in dotfile["paths"]:
                 if not path_str:
                     continue
@@ -144,9 +150,9 @@ class BackupOrchestrator:
         self,
         dotfiles: list[DotFileDict],
         options: OptionsDict,
-        progress_callback: callable | None = None,
-        item_processed_callback: callable | None = None,
-        item_skipped_callback: callable | None = None,
+        progress_callback: Callable[[int], None] | None = None,
+        item_processed_callback: Callable[[str, str], None] | None = None,
+        item_skipped_callback: Callable[[str, str], None] | None = None,
     ) -> tuple[int, int]:
         """
         Execute mirror backup for all enabled dotfiles.
@@ -161,36 +167,43 @@ class BackupOrchestrator:
         Returns:
             Tuple of (successful_items, total_items)
         """
-        # Validate which dotfiles exist
+        # Validate which dotfiles exist in filesystem
         validation_results = self.validate_dotfile_paths(dotfiles)
 
-        # Count total items that exist
+        # Count total items that exist (for accurate progress calculation)
         total_items = len([v for v in validation_results.values() if v[0]])
 
+        # Return early if no valid dotfiles found
         if total_items == 0:
             return 0, 0
 
-        processed_count = 0
+        # Initialize counters for tracking backup progress
+        processed_count = 0  # Tracks individual files processed
+        completed_items = 0  # Tracks dotfile entries completed
 
-        # Process each dotfile
-        for i, dotfile in enumerate(dotfiles):
+        # Process each dotfile entry in configuration
+        for dotfile in dotfiles:
             # Skip disabled dotfiles
             if not dotfile.get("enabled", True):
                 continue
 
-            # Process each path
+            # Process each path in dotfile entry
             for path_str in dotfile["paths"]:
+                # Skip empty path strings
                 if not path_str:
                     continue
 
+                # Expand path with environment variables and user home directory
                 src_path = self.file_ops.expand_path(path_str)
 
+                # Skip non-existent paths
                 if not src_path.exists():
                     continue
 
+                # Determine if path is directory or file
                 is_dir = src_path.is_dir()
 
-                # Assemble destination path
+                # Build destination path with hostname and date subdirectories
                 dest_path = self.file_ops.assemble_dest_path(
                     self.mirror_base_dir,
                     src_path,
@@ -198,7 +211,7 @@ class BackupOrchestrator:
                     options["date_subdir"],
                 )
 
-                # Process based on type
+                # Process based on file type (directory vs file)
                 if is_dir:
                     file_count = self._process_directory_backup(
                         src_path,
@@ -208,7 +221,7 @@ class BackupOrchestrator:
                         item_skipped_callback=item_skipped_callback,
                     )
                     if file_count > 0:
-                        processed_count += 1
+                        processed_count += file_count
                 elif self._process_file_backup(
                     src_path,
                     dest_path,
@@ -218,9 +231,12 @@ class BackupOrchestrator:
                 ):
                     processed_count += 1
 
-                # Update progress
+                # Increment completed items counter for progress tracking
+                completed_items += 1
+
+                # Update progress based on completed items (not files processed)
                 if progress_callback and total_items > 0:
-                    progress = int((processed_count / total_items) * 100)
+                    progress = int((completed_items / total_items) * 100)
                     progress_callback(progress)
 
         return processed_count, total_items
@@ -238,34 +254,39 @@ class BackupOrchestrator:
         Returns:
             Path to created archive, or None if failed
         """
-        # Build list of items to archive
+        # Build list of items to include in archive (tuples of path, enabled, is_dir)
         items_to_archive: list[tuple[Path, bool, bool]] = []
 
+        # Collect all enabled dotfile paths that exist
         for dotfile in dotfiles:
             # Skip disabled dotfiles
             if not dotfile.get("enabled", True):
                 continue
 
-            # Process each path
+            # Process each path in dotfile entry
             for path_str in dotfile["paths"]:
+                # Skip empty path strings
                 if not path_str:
                     continue
 
+                # Expand path with environment variables and user home directory
                 src_path = self.file_ops.expand_path(path_str)
 
+                # Add existing paths to archive list
                 if src_path.exists():
                     is_dir = src_path.is_dir()
                     items_to_archive.append((src_path, True, is_dir))
 
+        # Return None if no items found to archive
         if not items_to_archive:
             return None
 
-        # Create archive
+        # Create compressed archive with timestamp
         archive_path = self.file_ops.create_archive(
             items_to_archive, self.archive_base_dir, options["hostname_subdir"]
         )
 
-        # Rotate old archives if configured
+        # Rotate old archives if enabled and archive created successfully
         if archive_path and options["rotate_archives"]:
             self.file_ops.rotate_archives(
                 self.archive_base_dir,
@@ -278,8 +299,8 @@ class BackupOrchestrator:
     def execute_restore(
         self,
         src_dir: Path,
-        progress_callback: callable | None = None,
-        item_processed_callback: callable | None = None,
+        progress_callback: Callable[[int], None] | None = None,
+        item_processed_callback: Callable[[str, str], None] | None = None,
     ) -> tuple[int, int]:
         """
         Execute restore operation from backup directory.
@@ -292,28 +313,32 @@ class BackupOrchestrator:
         Returns:
             Tuple of (successful_items, total_items)
         """
-        # Discover all files in backup
+        # Discover all files in backup directory recursively
         src_files = self.file_ops.discover_restore_files(src_dir)
         total_items = len(src_files)
 
+        # Return early if no files found in backup
         if total_items == 0:
             return 0, 0
 
-        # Reconstruct original paths
+        # Reconstruct original filesystem paths from backup structure
         restore_paths = self.file_ops.reconstruct_restore_paths(src_files)
 
+        # Initialize counter for successful restore operations
         processed_count = 0
 
-        # Copy files to restored locations
+        # Copy each file from backup to original location
         for src_path, dest_path in restore_paths:
+            # Skip if path reconstruction failed
             if dest_path is None:
                 continue
 
-            # Copy file
+            # Copy file with metadata preservation
             success = self.file_ops.copy_file(
                 src_path, dest_path, create_parent=True, skip_identical=False
             )
 
+            # Track restore statistics and notify callbacks
             if success:
                 processed_count += 1
                 self.stats_tracker.record_item_processed(0.0)
@@ -322,7 +347,7 @@ class BackupOrchestrator:
             else:
                 self.stats_tracker.record_item_failed()
 
-            # Update progress
+            # Update progress callback with percentage completed
             if progress_callback and total_items > 0:
                 progress = int((processed_count / total_items) * 100)
                 progress_callback(progress)
@@ -334,8 +359,8 @@ class BackupOrchestrator:
         src_path: Path,
         dest_path: Path,
         skip_identical: bool,
-        item_processed_callback: callable | None = None,
-        item_skipped_callback: callable | None = None,
+        item_processed_callback: Callable[[str, str], None] | None = None,
+        item_skipped_callback: Callable[[str, str], None] | None = None,
     ) -> bool:
         """
         Process single file mirror backup.
@@ -350,29 +375,29 @@ class BackupOrchestrator:
         Returns:
             True if successful or skipped, False otherwise
         """
-        import time
-
+        # Record operation start time for statistics
         start_time = time.perf_counter()
 
-        # Check readability
+        # Verify source file is readable
         if not self.file_ops.check_readable(src_path):
             if item_skipped_callback:
                 item_skipped_callback(str(src_path), "Permission denied")
             self.stats_tracker.record_item_skipped()
             return False
 
-        # Check if identical
+        # Skip copying if files are identical (optimization)
         if skip_identical and self.file_ops.files_are_identical(src_path, dest_path):
             if item_skipped_callback:
                 item_skipped_callback(str(src_path), "File unchanged")
             self.stats_tracker.record_item_skipped()
             return True
 
-        # Copy file
+        # Perform file copy operation with metadata preservation
         success = self.file_ops.copy_file(
             src_path, dest_path, create_parent=True, skip_identical=skip_identical
         )
 
+        # Record statistics and notify callbacks based on operation result
         if success:
             elapsed = time.perf_counter() - start_time
             self.stats_tracker.record_item_processed(elapsed)
@@ -388,8 +413,8 @@ class BackupOrchestrator:
         src_path: Path,
         dest_path: Path,
         skip_identical: bool,
-        item_processed_callback: callable | None = None,
-        item_skipped_callback: callable | None = None,
+        item_processed_callback: Callable[[str, str], None] | None = None,
+        item_skipped_callback: Callable[[str, str], None] | None = None,
     ) -> int:
         """
         Process directory mirror backup recursively.
@@ -404,19 +429,19 @@ class BackupOrchestrator:
         Returns:
             Number of successfully copied files
         """
-        # Check readability
+        # Verify source directory is readable
         if not self.file_ops.check_readable(src_path):
             if item_skipped_callback:
                 item_skipped_callback(str(src_path), "Permission denied")
             self.stats_tracker.record_item_skipped()
             return 0
 
-        # Copy directory
+        # Recursively copy directory contents with metadata preservation
         results = self.file_ops.copy_directory(
             src_path, dest_path, skip_identical=skip_identical
         )
 
-        # Process results
+        # Process results and track statistics for each file
         success_count = 0
         for src_file, dest_file, success, skipped in results:
             if success:

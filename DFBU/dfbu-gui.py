@@ -1,4 +1,5 @@
-"""
+#!/usr/bin/env python3
+r"""
 DFBU GUI - Dotfiles Backup Utility (Desktop Edition)
 
 Description:
@@ -10,7 +11,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-18-2025
-Date Changed: 10-31-2025
+Date Changed: 11-01-2025
 License: MIT
 
 Features:
@@ -79,8 +80,8 @@ except ImportError:
     print("Install it with: pip install PySide6")
     sys.exit(1)
 
-# Application version - synchronized with pyproject.toml
-__version__: Final[str] = "0.5.3"
+# Application version
+__version__: Final[str] = "0.5.6"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
 DEFAULT_CONFIG_PATH: Final[Path] = Path(__file__).parent / "data" / "dfbu-config.toml"
@@ -126,13 +127,17 @@ class Application:
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
     def _auto_load_config(self) -> None:
-        """Auto-load configuration from previous session if available."""
+        """Auto-load configuration from previous session or default config."""
         # Load settings to get previous config path
         settings = self.viewmodel.load_settings()
         config_path = settings.get("config_path", "")
 
-        # If valid config path exists, load it automatically
+        # If valid config path exists from previous session, load it
         if config_path and Path(config_path).exists():
+            self.viewmodel.command_load_config()
+        # Otherwise, load the default config if it exists
+        elif DEFAULT_CONFIG_PATH.exists():
+            # Model was initialized with DEFAULT_CONFIG_PATH, just load it
             self.viewmodel.command_load_config()
 
     def run(self) -> int:

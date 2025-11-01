@@ -10,7 +10,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-30-2025
-Date Changed: 10-31-2025
+Date Changed: 11-01-2025
 License: MIT
 
 Features:
@@ -385,39 +385,65 @@ class MainWindow(QMainWindow):
 
     def setup_ui(self) -> None:
         """Initialize the user interface by loading from .ui file."""
-        # Load UI file
+        # Load UI file (contains QMainWindow definition)
         ui_file_path = Path(__file__).parent / "designer" / "main_window_complete.ui"
-
         loader = QUiLoader()
-        ui_widget = loader.load(str(ui_file_path), self)
+        loaded_window = loader.load(str(ui_file_path), None)
 
-        # Set loaded widget as central widget
-        self.setCentralWidget(ui_widget)
+        # Extract components from loaded QMainWindow to avoid nesting
+        # Qt doesn't allow QMainWindow within QMainWindow, so we extract and reparent
+        if hasattr(loaded_window, "centralWidget"):
+            ui_widget = loaded_window.centralWidget()
+            if ui_widget:
+                ui_widget.setParent(self)
+                self.setCentralWidget(ui_widget)
+
+            # Extract and set menubar if present
+            if hasattr(loaded_window, "menuBar"):
+                menu_bar = loaded_window.menuBar()
+                if menu_bar:
+                    menu_bar.setParent(self)
+                    self.setMenuBar(menu_bar)
+
+            # Extract and set statusbar if present
+            if hasattr(loaded_window, "statusBar"):
+                status_bar = loaded_window.statusBar()
+                if status_bar:
+                    status_bar.setParent(self)
+                    self.setStatusBar(status_bar)
+        else:
+            # Fallback for non-QMainWindow UI files
+            ui_widget = loaded_window
+            ui_widget.setParent(self)
+            self.setCentralWidget(ui_widget)
 
         # Set window title with version
         self.setWindowTitle(f"{self.PROJECT_NAME} v{self.version}")
 
-        # Get references to UI elements from the loaded widget
-        self._setup_widget_references(ui_widget)
+        # Get references to all UI widgets and menu actions
+        self._setup_widget_references(ui_widget, loaded_window)
 
-        # Connect signals for UI elements
+        # Connect signals to handler methods
         self._connect_ui_signals()
 
-        # Configure table widget
+        # Configure table widget properties
         self._configure_table_widget()
 
-        # Set initial status
+        # Set initial status message
         self.status_bar.showMessage("Ready - Load configuration to begin")
 
-    def _setup_widget_references(self, ui_widget: QWidget) -> None:
+    def _setup_widget_references(
+        self, ui_widget: QWidget, loaded_window: QWidget
+    ) -> None:
         """
         Get references to UI elements from the loaded widget.
 
         Args:
-            ui_widget: The loaded UI widget containing all elements
+            ui_widget: Central widget containing all UI elements
+            loaded_window: Original loaded QMainWindow for finding menu actions
         """
-        # Central widget and layouts (we know these exist from the UI file)
-        self.central_widget: QWidget = ui_widget.findChild(QWidget, "central_widget")  # type: ignore[assignment]
+        # Store reference to central widget
+        self.central_widget: QWidget = ui_widget  # type: ignore[assignment]
         self.tab_widget: QTabWidget = ui_widget.findChild(QTabWidget, "tab_widget")  # type: ignore[assignment]
 
         # Backup tab widgets
@@ -457,14 +483,14 @@ class MainWindow(QMainWindow):
         self.status_bar = self.statusBar()
         self.progress_bar: QProgressBar = ui_widget.findChild(QProgressBar, "progress_bar")  # type: ignore[assignment]
 
-        # Menu actions
-        self.action_load_config: QAction = ui_widget.findChild(QAction, "actionLoadConfig")  # type: ignore[assignment]
-        self.action_exit: QAction = ui_widget.findChild(QAction, "actionExit")  # type: ignore[assignment]
-        self.action_start_backup: QAction = ui_widget.findChild(QAction, "actionStartBackup")  # type: ignore[assignment]
-        self.action_start_restore: QAction = ui_widget.findChild(QAction, "actionStartRestore")  # type: ignore[assignment]
-        self.action_about: QAction = ui_widget.findChild(QAction, "actionAbout")  # type: ignore[assignment]
+        # Menu actions from menubar (accessed from loaded_window before it goes out of scope)
+        self.action_load_config: QAction = loaded_window.findChild(QAction, "actionLoadConfig")  # type: ignore[assignment]
+        self.action_exit: QAction = loaded_window.findChild(QAction, "actionExit")  # type: ignore[assignment]
+        self.action_start_backup: QAction = loaded_window.findChild(QAction, "actionStartBackup")  # type: ignore[assignment]
+        self.action_start_restore: QAction = loaded_window.findChild(QAction, "actionStartRestore")  # type: ignore[assignment]
+        self.action_about: QAction = loaded_window.findChild(QAction, "actionAbout")  # type: ignore[assignment]
 
-        # Create progress labels (not in UI file, will be added dynamically)
+        # Dynamic progress labels (created programmatically, not from UI file)
         self.progress_label = QLabel("Ready")
         self.restore_progress_label = QLabel("Ready")
 

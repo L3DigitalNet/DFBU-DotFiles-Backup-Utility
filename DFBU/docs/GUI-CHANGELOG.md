@@ -18,9 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Project Structure**: Updated imports to use `core.common_types` and `core.validation` from new `core/` package
-- **Import Organization**: All GUI modules now import shared utilities from centralized `core/` subdirectory
-
 ### Deprecated
 
 ### Removed
@@ -28,6 +25,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [0.5.6] - 2025-11-01
+
+### Fixed
+
+- **UI Loading Architecture**: Resolved QMainWindow nesting issue preventing GUI display
+  - Fixed blank window problem where UI elements were not visible after configuration load
+  - Implemented proper component extraction from loaded QMainWindow (centralWidget, menuBar, statusBar)
+  - Changed UI loading to avoid nesting QMainWindows by loading without parent and explicitly reparenting components
+  - Fixed widget reference lookup to use correct parent containers (loaded_window for menu actions)
+  - Resolved "Internal C++ object already deleted" error by proper component lifecycle management
+
+### Changed
+
+- **Code Cleanup**: Refined view.py for clarity and maintainability
+  - Simplified setup_ui() method with clearer inline comments
+  - Streamlined UI loading logic and component extraction flow
+  - Enhanced _setup_widget_references() docstrings for better clarity
+  - Improved code readability while maintaining all functionality
+  - Updated date changed headers to reflect current implementation
+
+## [0.5.5] - 2025-11-01
+
+### Added
+
+- **Test Coverage Enhancement**: Comprehensive test suite for backup_orchestrator.py
+  - Created test_backup_orchestrator.py with 25 new test cases
+  - Increased backup_orchestrator.py coverage from 24% to 94%
+  - Added tests for initialization, validation, mirror backup, archive backup, and restore operations
+  - Improved overall project test coverage from 57% to 62%
+  - Total test count increased from 282 to 307 tests
+
+### Changed
+
+- **Documentation Enhancement**: Comprehensive inline comment additions to backup_orchestrator.py
+  - Added descriptive comments for each significant code block following repository standards
+  - Enhanced code readability with context explanations for complex logic
+  - Improved AI autocompletion context with clear block-level documentation
+  - Added shebang line to module header per repository standards
+- **Header Updates**: Updated backup_orchestrator.py header to reflect current implementation
+
+## [0.5.4] - 2025-11-01
+
+### Changed
+
+- **Project Structure**: Updated imports to use `core.common_types` and `core.validation` from new `core/` package
+- **Import Organization**: All GUI modules now import shared utilities from centralized `core/` subdirectory
 
 ## [0.5.3] - 2025-10-31
 
