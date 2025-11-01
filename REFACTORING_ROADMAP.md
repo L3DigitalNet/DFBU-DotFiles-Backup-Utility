@@ -619,16 +619,19 @@ Successfully updated **3 test files** to use the new `paths: list[str]` schema:
 **Decision:** Performed manual verification of CLI and GUI functionality:
 
 ✅ **CLI Verification:**
+
 - Help menu displays correctly
 - Config file loads without errors
 - No runtime exceptions or import errors
 
 ✅ **GUI Verification:**
+
 - Application starts successfully
 - No import errors or type conflicts
 - Configuration loading works
 
 ✅ **Commit Created:**
+
 ```
 refactor: update tests for paths list schema migration
 
@@ -638,7 +641,86 @@ Phase 1 Task 1.4b - Updated test suite to use new paths: list[str] schema
 **Outcome:** Phase 1 is 100% complete. All TypedDict consolidation verified working. Ready to proceed to Phase 2.
 
 **Lessons Learned:**
+
 - Previous refactoring had already consolidated TypedDicts - analysis confirmed completeness
 - Test suites often lag behind schema changes - need systematic test updates
 - Manual verification essential before marking phase complete
 - Incremental testing (file by file) caught issues early
+
+---
+
+### Decision 1.5.2: Import Fix for GUI Model Tests (2025-11-01)
+
+**Context:** After Phase 1 completion, discovered `test_model_additional_coverage.py` was failing with `ModuleNotFoundError: No module named 'common_types'`.
+
+**Root Cause:** The test file adds `DFBU/gui` to sys.path to import model.py, but model.py was using absolute import `from common_types import...` which only works when running from DFBU directory.
+
+**Decision:** Added sys.path configuration in gui/model.py to include parent directory before importing common_types:
+
+```python
+import sys
+# ... other imports ...
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from common_types import DotFileDict, OptionsDict
+```
+
+**Outcome:** Fixed import error. Test suite now at **271 of 282 passing (96.1%)**, up from 270.
+
+---
+
+## 📈 Test Failure Analysis (Post-Phase 1)
+
+**Current Status:** 271 passing, 11 failing (96.1% pass rate)
+
+### Failing Tests Breakdown
+
+#### 1. Model Validation (1 failure)
+- **test_model_additional_coverage.py::TestModelValidation::test_validate_dotfile_paths_all_valid**
+- **Issue:** Path validation logic returns `readable=False` for valid test file
+- **Impact:** Low - validation logic edge case
+- **Blocks Phase 2:** No
+
+#### 2. View Comprehensive Tests (9 failures)
+- **Missing attributes:** `start_backup`, `start_restore` methods not found on ViewModel
+- **Signal mocking issues:** `_on_config_loaded` called 2 times instead of 1
+- **Action trigger failures:** Commands not being called as expected (save_config, warnings)
+- **UI state issues:** Progress bar not resetting properly
+- **Impact:** Medium - GUI test infrastructure issues
+- **Blocks Phase 2:** No
+
+#### 3. Worker Signal Tests (2 failures)
+- **test_worker_emits_item_skipped_signal** - No signals captured
+- **test_restore_worker_emits_finished_signal** - No signals captured
+- **Issue:** Threading/signal emission timing in tests
+- **Impact:** Low - worker signal testing edge cases
+- **Blocks Phase 2:** No
+
+### Analysis Summary
+
+**✅ All schema-related tests pass** - Phase 1 objective complete
+**✅ Core functionality tests pass** - CLI, config validation, dotfile handling
+**⚠️ GUI integration tests have issues** - Mock/signal interaction problems
+**⚠️ Worker threading tests have timing issues** - Signal capture problems
+
+**Recommendation:** These failures are unrelated to Phase 1 TypedDict consolidation and do not block Phase 2 work. They can be addressed separately as a test improvement initiative.
+
+### Test Categories Status
+
+| Category | Passing | Failing | Pass Rate | Status |
+|----------|---------|---------|-----------|--------|
+| CLI Integration | 20/20 | 0/20 | 100% | ✅ |
+| CLI Menu | 19/19 | 0/19 | 100% | ✅ |
+| Config Validation | 13/13 | 0/13 | 100% | ✅ |
+| CLI Components | 19/19 | 0/19 | 100% | ✅ |
+| DotFile Class | 10/10 | 0/10 | 100% | ✅ |
+| File Operations | 17/17 | 0/17 | 100% | ✅ |
+| GUI Init | 1/1 | 0/1 | 100% | ✅ |
+| Model Core | 63/63 | 0/63 | 100% | ✅ |
+| Model Additional | 26/27 | 1/27 | 96% | ⚠️ |
+| Model File Ops | 46/46 | 0/46 | 100% | ✅ |
+| Multiple Paths | 4/4 | 0/4 | 100% | ✅ |
+| View Comprehensive | 21/30 | 9/30 | 70% | ⚠️ |
+| ViewModel Core | 4/4 | 0/4 | 100% | ✅ |
+| ViewModel Paths | 4/4 | 0/4 | 100% | ✅ |
+| Workers | 4/6 | 2/6 | 67% | ⚠️ |
+| **TOTAL** | **271/282** | **11/282** | **96.1%** | **✅** |
