@@ -890,8 +890,9 @@ class DFBUModel:
         if not self.create_directory(archive_base):
             return None, False
 
-        # Generate timestamped archive filename
-        archive_name = f"dotfiles-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.tar.gz"
+        # Generate timestamped archive filename with microseconds for uniqueness
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
+        archive_name = f"dotfiles-{timestamp}.tar.gz"
         archive_path = archive_base / archive_name
 
         try:
@@ -905,6 +906,128 @@ class DFBUModel:
 
         except (OSError, tarfile.TarError):
             return archive_path, False
+
+    def perform_mirror_backup(self) -> bool:
+        """
+        Perform mirror backup of all enabled dotfiles.
+
+        Copies files and directories to mirror destination, maintaining directory
+        structure and preserving metadata. Uses copy_file and copy_directory
+        methods for actual file operations.
+
+        Returns:
+            True if backup completed successfully, False if any errors occurred
+        """
+        # Reset statistics for new backup operation
+        self.reset_statistics()
+
+        # Check if mirror backup is enabled
+        if not self.options.get("mirror_enabled", True):
+            return False
+
+        success = True
+
+        # Process each dotfile entry
+        for index, dotfile in enumerate(self.dotfiles):
+            # Skip disabled dotfiles
+            if not dotfile.get("enabled", True):
+                continue
+
+            # Process each path in the dotfile
+            paths = dotfile.get("paths", [dotfile.get("path", "")])
+            if isinstance(paths, str):
+                paths = [paths]
+
+            for path_str in paths:
+                if not path_str:
+                    continue
+
+                # Expand and validate source path
+                src_path = self.expand_path(path_str)
+                if not src_path.exists():
+                    self.record_item_skipped()
+                    continue
+
+                # Assemble destination path for mirror backup
+                dest_path = self._assemble_dest_path(
+                    self.mirror_base_dir, src_path, dotfile
+                )
+
+                # Copy file or directory
+                if src_path.is_file():
+                    copy_success = self.copy_file(
+                        src_path, dest_path, create_parent=True, skip_identical=True
+                    )
+                elif src_path.is_dir():
+                    results = self.copy_directory(
+                        src_path, dest_path, skip_identical=True
+                    )
+                    copy_success = len(results) > 0 and all(
+                        result[2] for result in results
+                    )
+                    # Update statistics for each file in directory
+                    for _, _, file_success, skipped in results:
+                        if file_success:
+                            if skipped:
+                                self.record_item_skipped()
+                            else:
+                                self.record_item_processed(
+                                    0.0
+                                )  # Time will be set by actual copy
+                        else:
+                            self.record_item_failed()
+                else:
+                    copy_success = False
+
+                if not copy_success:
+                    success = False
+                    self.record_item_failed()
+                elif src_path.is_file():
+                    self.record_item_processed(0.0)  # Time will be set by actual copy
+
+        return success
+
+    def _assemble_dest_path(
+        self, base_dir: Path, src_path: Path, dotfile: DotFileDict
+    ) -> Path:
+        """
+        Assemble destination path for backup operations.
+
+        Args:
+            base_dir: Base destination directory (mirror or archive)
+            src_path: Source file/directory path
+            dotfile: Dotfile configuration dictionary
+
+        Returns:
+            Assembled destination path
+        """
+        # Determine if path is relative to home directory
+        is_relative_to_home = self._is_relative_to_home(src_path)
+
+        # Calculate relative path from home or root
+        if is_relative_to_home:
+            src_relative = src_path.relative_to(Path.home())
+            prefix = "home"
+        else:
+            src_relative = src_path.relative_to(Path("/"))
+            prefix = "root"
+
+        # Build destination path components
+        dest_parts = [base_dir]
+
+        # Add hostname subdirectory if configured
+        if self.options.get("hostname_subdir", True):
+            dest_parts.append(Path(self.hostname))
+
+        # Add date subdirectory if configured
+        if self.options.get("date_subdir", False):
+            dest_parts.append(Path(time.strftime("%Y-%m-%d")))
+
+        # Add prefix and relative path
+        dest_parts.extend([Path(prefix), src_relative])
+
+        # Use efficient path construction
+        return Path(*dest_parts)
 
     def rotate_archives(self) -> list[Path]:
         """

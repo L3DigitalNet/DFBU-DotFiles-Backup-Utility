@@ -1241,7 +1241,7 @@ class MainWindow(QMainWindow):
 
             path_item = QTableWidgetItem(path_display)
             # Tooltip shows description and all paths
-            tooltip_text = f"{dotfile['description']}\n\nPaths:\n" + "\n".join(paths)
+            tooltip_text = f"{dotfile['description']}\n\nPaths:\n{'\n'.join(paths)}"
             path_item.setToolTip(tooltip_text)
             self.dotfile_table.setItem(row_idx, 7, path_item)
 

@@ -583,12 +583,8 @@ class PathAssembler:
             dest_parts.append(Path(time.strftime("%Y-%m-%d")))
         dest_parts.extend([Path(prefix), src_relative])
 
-        # Combine all path components into final destination path
-        final_path: Path = dest_parts[0]
-        for part in dest_parts[1:]:
-            final_path = final_path / part
-
-        return final_path
+        # Use efficient path construction
+        return Path(*dest_parts)
 
 
 class ConfigValidator:
@@ -900,7 +896,7 @@ class MirrorBackup:
 
         # Gather all files in directory tree recursively
         files: list[Path] = [
-            Path(file) for file in dotfile.src_path.rglob("*") if file.is_file()
+            file for file in dotfile.src_path.rglob("*") if file.is_file()
         ]
 
         # Process each file in the directory
@@ -968,10 +964,9 @@ class ArchiveBackup:
             archive_base_dest_path: Base destination path for archives
             dry_run: Whether to simulate operations
         """
-        # Generate timestamped archive filename for uniqueness
-        archive_name: str = (
-            "dotfiles-" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".tar.gz"
-        )
+        # Generate timestamped archive filename with microseconds for uniqueness
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
+        archive_name: str = f"dotfiles-{timestamp}.tar.gz"
         archive_path: Path = archive_base_dest_path / archive_name
 
         # Create archive base directory if it doesn't exist
@@ -1391,7 +1386,7 @@ def create_src_file_list(
 
 def create_dest_restore_paths(
     src_files: list[Path],
-) -> list[Path]:
+) -> list[Path | None]:
     """
     Create destination restore paths by reconstructing original paths from backup structure.
 
@@ -1402,9 +1397,10 @@ def create_dest_restore_paths(
         src_files: list of source file paths from backup directory
 
     Returns:
-        list of destination file paths where files should be restored
+        list of destination file paths where files should be restored,
+        or None for files that couldn't be processed
     """
-    full_paths: list[Path] = []
+    full_paths: list[Path | None] = []
     hostname: str = gethostname()
 
     # Process each source file to reconstruct original destination path
@@ -1415,30 +1411,46 @@ def create_dest_restore_paths(
             r_host: Path = Path(*src_path.parts[hostname_index + 1 :])
         except ValueError:
             print(
-                f"{RED}Error:{RESET} Could not find hostname directory '{hostname}' in path: "
-                f"{DEFAULT.underline}{src_path}{RESET}"
+                f"{RED}Error:{RESET} Could not find hostname directory "
+                f"'{hostname}' in path: {DEFAULT.underline}{src_path}{RESET}"
             )
+            # Add None as placeholder to maintain list alignment
+            full_paths.append(None)
             continue
 
         # Reconstruct destination path based on home or root directory location
         if "home" in r_host.parts:
-            # Extract path after home directory marker and build full home path
-            home_index: int = r_host.parts.index("home")
-            r_home: Path = Path(*r_host.parts[home_index + 1 :])
-            full_path: Path = Path.home() / r_home
-            full_paths.append(full_path)
+            try:
+                # Extract path after home directory marker and build full home path
+                home_index: int = r_host.parts.index("home")
+                r_home: Path = Path(*r_host.parts[home_index + 1 :])
+                full_path: Path = Path.home() / r_home
+                full_paths.append(full_path)
+            except (ValueError, IndexError):
+                print(
+                    f"{RED}Error:{RESET} Invalid home directory structure in: "
+                    f"{DEFAULT.underline}{src_path}{RESET}"
+                )
+                full_paths.append(None)
         elif "root" in r_host.parts:
-            # Extract path after root directory marker and build full absolute path
-            root_index: int = r_host.parts.index("root")
-            r_root: Path = Path(*r_host.parts[root_index + 1 :])
-            full_path: Path = Path("/") / r_root
-            full_paths.append(full_path)
+            try:
+                # Extract path after root directory marker and build full absolute path
+                root_index: int = r_host.parts.index("root")
+                r_root: Path = Path(*r_host.parts[root_index + 1 :])
+                full_path: Path = Path("/") / r_root
+                full_paths.append(full_path)
+            except (ValueError, IndexError):
+                print(
+                    f"{RED}Error:{RESET} Invalid root directory structure in: "
+                    f"{DEFAULT.underline}{src_path}{RESET}"
+                )
+                full_paths.append(None)
         else:
             print(
-                f"{RED}Error:{RESET} Could not determine if file is from home or root directory:\n"
-                f"  {DEFAULT.underline}{src_path}{RESET}"
+                f"{RED}Error:{RESET} Could not determine if file is from "
+                f"home or root directory:\n  {DEFAULT.underline}{src_path}{RESET}"
             )
-            continue
+            full_paths.append(None)
 
     return full_paths
 
@@ -1481,13 +1493,16 @@ def copy_files_restore(
             )
 
 
-def main() -> None:
+def main() -> int:
     """
     Main entry point for DFBU application with dual-mode workflow.
 
     Orchestrates complete backup or restore workflow including mode selection,
     configuration loading, user confirmation, and operation execution. Handles
     both mirror and archive backup modes as well as interactive restore.
+
+    Returns:
+        Exit code: 0 for success, 1 for error
     """
     print(f"{BLUE.bold}Dotfiles Backup Utility (DFBU){RESET} ver. {__version__}\n")
 
@@ -1553,7 +1568,22 @@ def main() -> None:
         src_files: list[Path] = create_src_file_list(src_dir)
 
         # Map source files to their original destination paths
-        dest_paths: list[Path] = create_dest_restore_paths(src_files)
+        dest_paths_with_none: list[Path | None] = create_dest_restore_paths(src_files)
+
+        # Filter out files that couldn't be processed and align lists
+        valid_pairs = [
+            (src, dest)
+            for src, dest in zip(src_files, dest_paths_with_none, strict=True)
+            if dest is not None
+        ]
+
+        if not valid_pairs:
+            print(f"{RED}Error:{RESET} No valid files could be restored.")
+            return 1
+
+        valid_src_files, valid_dest_paths = zip(*valid_pairs, strict=True)
+        src_files = list(valid_src_files)
+        dest_paths = list(valid_dest_paths)
 
         # Display summary of proposed restore operations
         CLIHandler.display_restore_summary(src_files, dest_paths)
@@ -1563,6 +1593,8 @@ def main() -> None:
             copy_files_restore(src_files, dest_paths, dry_run)
         else:
             print("Restore operation cancelled by user.")
+
+    return 0
 
 
 if __name__ == "__main__":
