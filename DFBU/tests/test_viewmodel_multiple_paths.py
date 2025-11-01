@@ -287,7 +287,7 @@ class TestViewModelBackupProcessing:
         viewmodel.model.options["archive_enabled"] = True
 
         # Run archive backup
-        archive_path, success = viewmodel.model.create_archive(
+        archive_path = viewmodel.model.create_archive(
             [
                 (test_file1, True, False),
                 (test_file2, True, False),
@@ -295,7 +295,6 @@ class TestViewModelBackupProcessing:
         )
 
         # Verify archive was created
-        assert success is True
         assert archive_path is not None
         assert archive_path.exists()
 

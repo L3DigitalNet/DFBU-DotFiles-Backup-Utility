@@ -24,7 +24,7 @@ For installation and usage instructions, see the main [README.md](../README.md) 
 The application follows the Model-View-ViewModel architectural pattern:
 
 - **Model**: Business logic and data management (DFBUModel as facade)
-- **View**: PySide6 GUI components (MainWindow)  
+- **View**: PySide6 GUI components (MainWindow)
 - **ViewModel**: Presentation logic and state management (DFBUViewModel)
 
 ### Model Layer Components (v0.4.0+)
@@ -32,6 +32,7 @@ The application follows the Model-View-ViewModel architectural pattern:
 The Model layer uses a facade pattern with specialized components:
 
 #### DFBUModel (Facade)
+
 - **Lines**: 583 (reduced from 1,178, 50.5% reduction)
 - **Role**: Coordinates all model components via delegation
 - **Components**: ConfigManager, FileOperations, BackupOrchestrator, StatisticsTracker
@@ -39,6 +40,7 @@ The Model layer uses a facade pattern with specialized components:
 - **Backward Compatibility**: Full API compatibility maintained via property setters
 
 #### ConfigManager
+
 - **Lines**: 555
 - **Responsibilities**:
   - Configuration file I/O (load, save with rotating backups)
@@ -48,6 +50,7 @@ The Model layer uses a facade pattern with specialized components:
   - GUI-specific enabled field handling
 
 #### FileOperations
+
 - **Lines**: 620
 - **Responsibilities**:
   - Path expansion and validation
@@ -58,6 +61,7 @@ The Model layer uses a facade pattern with specialized components:
   - Metadata-based file comparison
 
 #### BackupOrchestrator
+
 - **Lines**: 420
 - **Responsibilities**:
   - Mirror backup coordination
@@ -68,6 +72,7 @@ The Model layer uses a facade pattern with specialized components:
   - Statistics integration
 
 #### StatisticsTracker
+
 - **Lines**: 158
 - **Responsibilities**:
   - Operation metrics tracking

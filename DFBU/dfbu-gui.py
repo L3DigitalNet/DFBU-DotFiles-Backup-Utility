@@ -71,7 +71,7 @@ from gui.view import MainWindow
 from gui.viewmodel import DFBUViewModel
 
 
-# Import PySide6 with proper error handling
+# External dependency: PySide6 required for desktop GUI framework (Qt bindings for Python)
 try:
     from PySide6.QtWidgets import QApplication
 except ImportError:
@@ -79,6 +79,7 @@ except ImportError:
     print("Install it with: pip install PySide6")
     sys.exit(1)
 
+# Application version - synchronized with pyproject.toml
 __version__: Final[str] = "0.5.3"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"

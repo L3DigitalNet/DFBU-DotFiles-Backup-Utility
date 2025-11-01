@@ -43,8 +43,9 @@ import time
 from pathlib import Path
 from typing import Any, Final
 
-# Local import
-from model import DFBUModel, DotFileDict
+# Local imports
+from common_types import DotFileDict
+from model import DFBUModel
 
 # PySide6 imports for signals and threading
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
@@ -206,45 +207,56 @@ class BackupWorker(QThread):
 
     def _process_mirror_backup(self) -> None:
         """Process mirror backup for all configured dotfiles."""
-        # Model must be set before running
+        # Model must be set before running (architectural guarantee)
         if not self.model:
             return
 
-        # Get validation results
+        # Validate which dotfiles exist on the filesystem before attempting backup
+        # Returns dict mapping index -> (exists, is_dir, type_str) tuple
         validation_results = self.model.validate_dotfile_paths()
+
+        # Count total items that actually exist (exist flag is first tuple element)
+        # This gives us the denominator for progress calculation
         total_items = len([v for v in validation_results.values() if v[0]])
 
+        # Nothing to back up - emit error and exit early
         if total_items == 0:
             self.error_occurred.emit("Mirror Backup", "No items found to backup")
             return
 
+        # Track number of successfully processed items for progress updates
         processed_count = 0
 
-        # Process each dotfile
+        # Iterate through all configured dotfiles by index
         for i in range(self.model.get_dotfile_count()):
             dotfile = self.model.get_dotfile_by_index(i)
             if not dotfile:
                 continue
 
-            # Skip disabled dotfiles
+            # Skip disabled dotfiles - user may have temporarily disabled certain entries
             if not dotfile.get("enabled", True):
                 continue
 
             # Process each path in the dotfile's paths list
+            # Note: GUI supports multiple paths per dotfile entry (unlike CLI)
             for path_str in dotfile["paths"]:
+                # Skip empty path strings (validation should prevent this, but be safe)
                 if not path_str:
                     continue
 
-                # Expand source path
+                # Expand tilde (~) and environment variables in path string
                 src_path = self.model.expand_path(path_str)
 
-                # Check if path exists
+                # Check if source path exists on filesystem
+                # Non-existent paths are skipped silently (already reported in validation)
                 if not src_path.exists():
                     continue
 
+                # Determine if source is directory or file for proper handling
                 is_dir = src_path.is_dir()
 
-                # Assemble destination path
+                # Assemble destination path using configured directory structure
+                # Includes hostname and date subdirectories based on options
                 dest_path = self.model.assemble_dest_path(
                     self.model.mirror_base_dir,
                     src_path,
@@ -253,90 +265,116 @@ class BackupWorker(QThread):
                 )
 
                 # Process based on type with skip_identical optimization
+                # skip_identical=True avoids copying unchanged files (metadata comparison)
                 if is_dir:
+                    # Process directory recursively - returns count of successfully copied files
                     file_count = self._process_directory(
                         src_path, dest_path, skip_identical=True
                     )
+                    # Only increment processed_count if at least one file was copied
                     if file_count > 0:
                         processed_count += 1
                 elif self._process_file(src_path, dest_path, skip_identical=True):
+                    # Process single file - increment on success
                     processed_count += 1
 
-                # Update progress with zero division protection
+                # Update progress bar with percentage complete
+                # Zero division protection (total_items guaranteed > 0 from earlier check)
                 if total_items > 0:
                     progress = int((processed_count / total_items) * 100)
                     self.progress_updated.emit(progress)
 
     def _process_archive_backup(self) -> None:
         """Create compressed archive of configured dotfiles."""
-        # Model must be set before running
+        # Model must be set before running (architectural guarantee)
         if not self.model:
             return
 
-        # Build list of items to archive
+        # Build list of items to include in archive
+        # Tuple format: (path, exists, is_dir) for model.create_archive()
         items_to_archive: list[tuple[Path, bool, bool]] = []
+
+        # Iterate through all configured dotfiles
         for i in range(self.model.get_dotfile_count()):
             dotfile = self.model.get_dotfile_by_index(i)
             if not dotfile:
                 continue
 
-            # Skip disabled dotfiles
+            # Skip disabled dotfiles - respect user's enable/disable settings
             if not dotfile.get("enabled", True):
                 continue
 
             # Process each path in the dotfile's paths list
+            # Note: Archives can contain multiple paths per dotfile entry
             for path_str in dotfile["paths"]:
+                # Skip empty path strings
                 if not path_str:
                     continue
 
-                # Expand source path
+                # Expand tilde (~) and environment variables in path
                 src_path = self.model.expand_path(path_str)
 
-                # Check if path exists and add to archive list
+                # Only include paths that actually exist on the filesystem
+                # Non-existent paths are silently skipped from archive
                 if src_path.exists():
+                    # Determine type for tarfile processing
                     is_dir = src_path.is_dir()
+                    # Add to archive list with metadata (path, exists=True, is_dir)
                     items_to_archive.append((src_path, True, is_dir))
 
+        # Nothing to archive - emit error and exit early
         if not items_to_archive:
             self.error_occurred.emit("Archive Backup", "No items found to archive")
             return
 
-        # Create archive
-        archive_path, success = self.model.create_archive(items_to_archive)
+        # Create compressed TAR.GZ archive with timestamp
+        # Returns Path to created archive or None on failure
+        archive_path = self.model.create_archive(items_to_archive)
 
-        if success and archive_path:
+        if archive_path:
+            # Archive created successfully - emit success signal
             self.item_processed.emit("Archive created", str(archive_path))
 
-            # Rotate archives if enabled
+            # Rotate (delete) old archives if rotation is enabled
+            # Maintains max_archives limit by deleting oldest archives first
             if self.model.options["rotate_archives"]:
                 deleted = self.model.rotate_archives()
+                # Emit signal for each deleted archive for UI feedback
                 for deleted_path in deleted:
                     self.item_processed.emit("Archive deleted", str(deleted_path))
         else:
+            # Archive creation failed - emit error signal
             self.error_occurred.emit("Archive Backup", "Failed to create archive")
 
     def run(self) -> None:
         """Main thread execution method for backup operations."""
-        # Model must be set before running
+        # Model must be set before running (architectural guarantee)
         if not self.model:
             return
 
+        # Start timing for performance metrics
         start_time = time.perf_counter()
+
+        # Reset statistics from any previous backup operation
+        # Ensures clean slate for current backup run
         self.model.reset_statistics()
 
-        # Process mirror backup if enabled
+        # Process mirror backup if enabled in configuration
+        # Mirror backup = uncompressed file copies maintaining directory structure
         if self.mirror_mode:
             self._process_mirror_backup()
 
-        # Process archive backup if enabled
+        # Process archive backup if enabled in configuration
+        # Archive backup = compressed TAR.GZ with timestamped filename
         if self.archive_mode:
             self._process_archive_backup()
 
-        # Record total time
+        # Calculate and record total elapsed time for statistics
         end_time = time.perf_counter()
         self.model.statistics.total_time = end_time - start_time
 
-        # Emit completion signal
+        # Emit completion signal to notify ViewModel/View of finished operation
+        # ViewModel will disconnect signals and display statistics summary
         self.backup_finished.emit()
 
 
@@ -390,59 +428,74 @@ class RestoreWorker(QThread):
 
     def run(self) -> None:
         """Main thread execution method for restore operations."""
-        # Model and source must be set before running
+        # Model and source directory must be set before running (architectural guarantee)
         if not self.model or not self.source_directory:
             return
 
+        # Start timing for performance metrics
         start_time = time.perf_counter()
+
+        # Reset statistics from any previous restore operation
         self.model.reset_statistics()
 
-        # Discover files in source directory
+        # Discover all files in source directory recursively
+        # Returns list of Path objects for all files found
         src_files = self.model.discover_restore_files(self.source_directory)
 
+        # No files found in backup directory - emit error and exit
         if not src_files:
             self.error_occurred.emit("Restore", "No files found in source directory")
             return
 
-        # Reconstruct original paths
+        # Reconstruct original destination paths from backup directory structure
+        # Parses hostname/home or hostname/root structure to rebuild original paths
+        # Returns list of (src_path, dest_path) tuples where dest_path may be None on failure
         restore_paths = self.model.reconstruct_restore_paths(src_files)
 
-        # Filter out failed reconstructions
+        # Filter out paths where reconstruction failed (dest_path is None)
+        # Only process files where we successfully determined the original location
         valid_paths = [(src, dest) for src, dest in restore_paths if dest is not None]
 
+        # Could not reconstruct any valid paths - emit error and exit
         if not valid_paths:
             self.error_occurred.emit(
                 "Restore", "Could not reconstruct any original paths"
             )
             return
 
+        # Track total files for progress calculation
         total_files = len(valid_paths)
 
-        # Copy each file
+        # Copy each file back to its original location
         for i, (src_path, dest_path) in enumerate(valid_paths):
+            # Start timing for individual file processing
             file_start = time.perf_counter()
 
-            # Copy file
+            # Copy file with metadata preservation and parent directory creation
+            # Will overwrite existing files at destination
             success = self.model.copy_file(src_path, dest_path, create_parent=True)
 
             if success:
+                # File restored successfully - record timing and emit success signal
                 elapsed = time.perf_counter() - file_start
                 self.model.record_item_processed(elapsed)
                 self.item_processed.emit(str(src_path), str(dest_path))
             else:
+                # File restoration failed - record failure and emit error signal
                 self.model.record_item_failed()
                 self.error_occurred.emit(str(src_path), "Failed to restore file")
 
-            # Update progress with zero division protection
+            # Update progress bar with percentage complete
+            # i+1 because enumerate is zero-based but we want 1-indexed progress
             if total_files > 0:
                 progress = int((i + 1) / total_files * 100)
                 self.progress_updated.emit(progress)
 
-        # Record total time
+        # Calculate and record total elapsed time for statistics
         end_time = time.perf_counter()
         self.model.statistics.total_time = end_time - start_time
 
-        # Emit completion signal
+        # Emit completion signal to notify ViewModel/View of finished operation
         self.restore_finished.emit()
 
 

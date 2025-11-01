@@ -41,8 +41,12 @@ Functions:
 from pathlib import Path
 from typing import Any, Final
 
+# Local imports
+from common_types import DotFileDict
+from constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QCloseEvent, QColor
+from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -50,7 +54,6 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QFileDialog,
     QFormLayout,
-    QGroupBox,
     QHBoxLayout,
     QHeaderView,
     QLabel,
@@ -61,7 +64,6 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QSpinBox,
-    QStatusBar,
     QTableWidget,
     QTableWidgetItem,
     QTabWidget,
@@ -69,8 +71,6 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
-# Local import
 from viewmodel import DFBUViewModel
 
 
@@ -143,8 +143,8 @@ class AddDotfileDialog(QDialog):
         self.setWindowTitle(
             "Update Dotfile Entry" if self.is_update_mode else "Add Dotfile Entry"
         )
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(400)
+        self.setMinimumWidth(MIN_DIALOG_WIDTH)
+        self.setMinimumHeight(MIN_DIALOG_HEIGHT)
 
         # Create main layout
         main_layout = QVBoxLayout(self)
@@ -303,7 +303,7 @@ class AddDotfileDialog(QDialog):
         Returns:
             List of path strings
         """
-        paths = []
+        paths: list[str] = []
         for i in range(self.paths_list.count()):
             path_text = self.paths_list.item(i).text().strip()
             if path_text:
@@ -366,7 +366,6 @@ class MainWindow(QMainWindow):
     """
 
     PROJECT_NAME: Final[str] = "DFBU GUI"
-    STATUS_MESSAGE_TIMEOUT_MS: Final[int] = 3000  # 3 seconds
 
     def __init__(self, viewmodel: DFBUViewModel, version: str) -> None:
         """
@@ -385,185 +384,140 @@ class MainWindow(QMainWindow):
         self._load_settings()
 
     def setup_ui(self) -> None:
-        """Initialize the user interface."""
+        """Initialize the user interface by loading from .ui file."""
+        # Load UI file
+        ui_file_path = Path(__file__).parent / "designer" / "main_window_complete.ui"
+
+        loader = QUiLoader()
+        ui_widget = loader.load(str(ui_file_path), self)
+
+        # Set loaded widget as central widget
+        self.setCentralWidget(ui_widget)
+
+        # Set window title with version
         self.setWindowTitle(f"{self.PROJECT_NAME} v{self.version}")
-        self.setMinimumSize(1000, 700)
 
-        # Create central widget and main layout
-        self.central_widget = QWidget()
-        self.setCentralWidget(self.central_widget)
-        self.main_layout = QVBoxLayout(self.central_widget)
+        # Get references to UI elements from the loaded widget
+        self._setup_widget_references(ui_widget)
 
-        # Setup menu bar
-        self.setup_menu_bar()
+        # Connect signals for UI elements
+        self._connect_ui_signals()
 
-        # Create tab widget for different views
-        self.tab_widget = QTabWidget()
-        self.main_layout.addWidget(self.tab_widget)
+        # Configure table widget
+        self._configure_table_widget()
 
-        # Setup tabs
-        self.setup_backup_tab()
-        self.setup_restore_tab()
-        self.setup_config_tab()
-
-        # Setup status bar
-        self.status_bar = QStatusBar()
-        self.setStatusBar(self.status_bar)
+        # Set initial status
         self.status_bar.showMessage("Ready - Load configuration to begin")
 
-        # Setup progress bar
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setVisible(False)
-        self.status_bar.addPermanentWidget(self.progress_bar)
+    def _setup_widget_references(self, ui_widget: QWidget) -> None:
+        """
+        Get references to UI elements from the loaded widget.
 
-    def setup_menu_bar(self) -> None:
-        """Create the application menu bar."""
-        menubar = self.menuBar()
+        Args:
+            ui_widget: The loaded UI widget containing all elements
+        """
+        # Central widget and layouts (we know these exist from the UI file)
+        self.central_widget: QWidget = ui_widget.findChild(QWidget, "central_widget")  # type: ignore[assignment]
+        self.tab_widget: QTabWidget = ui_widget.findChild(QTabWidget, "tab_widget")  # type: ignore[assignment]
 
-        # File menu
-        file_menu = menubar.addMenu("&File")
+        # Backup tab widgets
+        self.config_path_edit: QLineEdit = ui_widget.findChild(QLineEdit, "config_path_edit")  # type: ignore[assignment]
+        self.load_config_btn: QPushButton = ui_widget.findChild(QPushButton, "load_config_btn")  # type: ignore[assignment]
+        self.dotfile_table: QTableWidget = ui_widget.findChild(QTableWidget, "dotfile_table")  # type: ignore[assignment]
+        self.total_size_label: QLabel = ui_widget.findChild(QLabel, "total_size_label")  # type: ignore[assignment]
+        self.add_dotfile_btn: QPushButton = ui_widget.findChild(QPushButton, "add_dotfile_btn")  # type: ignore[assignment]
+        self.update_dotfile_btn: QPushButton = ui_widget.findChild(QPushButton, "update_dotfile_btn")  # type: ignore[assignment]
+        self.remove_dotfile_btn: QPushButton = ui_widget.findChild(QPushButton, "remove_dotfile_btn")  # type: ignore[assignment]
+        self.toggle_enabled_btn: QPushButton = ui_widget.findChild(QPushButton, "toggle_enabled_btn")  # type: ignore[assignment]
+        self.save_dotfiles_btn: QPushButton = ui_widget.findChild(QPushButton, "save_dotfiles_btn")  # type: ignore[assignment]
+        self.mirror_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "mirror_checkbox")  # type: ignore[assignment]
+        self.archive_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "archive_checkbox")  # type: ignore[assignment]
+        self.backup_btn: QPushButton = ui_widget.findChild(QPushButton, "backup_btn")  # type: ignore[assignment]
+        self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "operation_log")  # type: ignore[assignment]
 
-        load_config_action = QAction("&Load Configuration...", self)
-        load_config_action.setShortcut("Ctrl+O")
-        load_config_action.triggered.connect(self._on_browse_config)
-        file_menu.addAction(load_config_action)
+        # Restore tab widgets
+        self.restore_source_edit: QLineEdit = ui_widget.findChild(QLineEdit, "restore_source_edit")  # type: ignore[assignment]
+        self.browse_restore_btn: QPushButton = ui_widget.findChild(QPushButton, "browse_restore_btn")  # type: ignore[assignment]
+        self.restore_btn: QPushButton = ui_widget.findChild(QPushButton, "restore_btn")  # type: ignore[assignment]
+        self.restore_operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "restore_operation_log")  # type: ignore[assignment]
 
-        file_menu.addSeparator()
+        # Configuration tab widgets
+        self.config_mirror_path_edit: QLineEdit = ui_widget.findChild(QLineEdit, "config_mirror_path_edit")  # type: ignore[assignment]
+        self.config_archive_path_edit: QLineEdit = ui_widget.findChild(QLineEdit, "config_archive_path_edit")  # type: ignore[assignment]
+        self.config_mirror_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_mirror_checkbox")  # type: ignore[assignment]
+        self.config_archive_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_archive_checkbox")  # type: ignore[assignment]
+        self.config_hostname_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_hostname_checkbox")  # type: ignore[assignment]
+        self.config_date_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_date_checkbox")  # type: ignore[assignment]
+        self.config_compression_spinbox: QSpinBox = ui_widget.findChild(QSpinBox, "config_compression_spinbox")  # type: ignore[assignment]
+        self.config_rotate_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_rotate_checkbox")  # type: ignore[assignment]
+        self.config_max_archives_spinbox: QSpinBox = ui_widget.findChild(QSpinBox, "config_max_archives_spinbox")  # type: ignore[assignment]
+        self.save_config_btn: QPushButton = ui_widget.findChild(QPushButton, "save_config_btn")  # type: ignore[assignment]
 
-        exit_action = QAction("E&xit", self)
-        exit_action.setShortcut("Ctrl+Q")
-        exit_action.triggered.connect(self.close)
-        file_menu.addAction(exit_action)
+        # Status bar and progress bar
+        self.status_bar = self.statusBar()
+        self.progress_bar: QProgressBar = ui_widget.findChild(QProgressBar, "progress_bar")  # type: ignore[assignment]
 
-        # Operations menu
-        operations_menu = menubar.addMenu("&Operations")
+        # Menu actions
+        self.action_load_config: QAction = ui_widget.findChild(QAction, "actionLoadConfig")  # type: ignore[assignment]
+        self.action_exit: QAction = ui_widget.findChild(QAction, "actionExit")  # type: ignore[assignment]
+        self.action_start_backup: QAction = ui_widget.findChild(QAction, "actionStartBackup")  # type: ignore[assignment]
+        self.action_start_restore: QAction = ui_widget.findChild(QAction, "actionStartRestore")  # type: ignore[assignment]
+        self.action_about: QAction = ui_widget.findChild(QAction, "actionAbout")  # type: ignore[assignment]
 
-        backup_action = QAction("Start &Backup", self)
-        backup_action.setShortcut("Ctrl+B")
-        backup_action.triggered.connect(self._on_start_backup)
-        operations_menu.addAction(backup_action)
+        # Create progress labels (not in UI file, will be added dynamically)
+        self.progress_label = QLabel("Ready")
+        self.restore_progress_label = QLabel("Ready")
 
-        restore_action = QAction("Start &Restore", self)
-        restore_action.setShortcut("Ctrl+R")
-        restore_action.triggered.connect(self._on_start_restore)
-        operations_menu.addAction(restore_action)
-
-        # Help menu
-        help_menu = menubar.addMenu("&Help")
-
-        about_action = QAction("&About", self)
-        about_action.triggered.connect(self._show_about)
-        help_menu.addAction(about_action)
-
-    def setup_backup_tab(self) -> None:
-        """Create the backup operations tab."""
-        backup_tab = QWidget()
-        backup_layout = QVBoxLayout(backup_tab)
-
-        # Configuration section
-        config_group = self._create_config_section()
-        backup_layout.addWidget(config_group)
-
-        # Dotfile list section
-        dotfile_group = self._create_dotfile_list_section()
-        backup_layout.addWidget(dotfile_group)
-
-        # Backup options section
-        options_group = self._create_backup_options_section()
-        backup_layout.addWidget(options_group)
-
-        # Operation log section
-        log_group = self._create_operation_log_section()
-        backup_layout.addWidget(log_group)
-
-        self.tab_widget.addTab(backup_tab, "Backup")
-
-    def setup_restore_tab(self) -> None:
-        """Create the restore operations tab."""
-        restore_tab = QWidget()
-        restore_layout = QVBoxLayout(restore_tab)
-
-        # Source selection section
-        source_group = self._create_restore_source_section()
-        restore_layout.addWidget(source_group)
-
-        # Restore information section
-        info_group = self._create_restore_info_section()
-        restore_layout.addWidget(info_group)
-
-        # Operation log section
-        log_group = self._create_operation_log_section_restore()
-        restore_layout.addWidget(log_group)
-
-        restore_layout.addStretch()
-
-        self.tab_widget.addTab(restore_tab, "Restore")
-
-    def setup_config_tab(self) -> None:
-        """Create the configuration display tab."""
-        config_tab = QWidget()
-        config_layout = QVBoxLayout(config_tab)
-
-        # Options display section
-        options_group = self._create_options_display_section()
-        config_layout.addWidget(options_group)
-
-        config_layout.addStretch()
-
-        self.tab_widget.addTab(config_tab, "Configuration")
-
-    def _create_config_section(self) -> QGroupBox:
-        """Create configuration file selection section."""
-        group = QGroupBox("Configuration File")
-        layout = QHBoxLayout()
-
-        # Configuration path input
-        self.config_path_edit = QLineEdit()
-        self.config_path_edit.setPlaceholderText("Path to dfbu-config.toml")
-        self.config_path_edit.setReadOnly(True)
-        layout.addWidget(self.config_path_edit)
-
-        # Browse button
-        browse_btn = QPushButton("Browse...")
-        browse_btn.clicked.connect(self._on_browse_config)
-        layout.addWidget(browse_btn)
-
-        # Load button
-        self.load_config_btn = QPushButton("Load Configuration")
+    def _connect_ui_signals(self) -> None:
+        """Connect UI element signals to handler methods."""
+        # Backup tab connections
+        browse_config_btn: QPushButton = self.central_widget.findChild(QPushButton, "browse_config_btn")  # type: ignore[assignment]
+        browse_config_btn.clicked.connect(self._on_browse_config)
         self.load_config_btn.clicked.connect(self._on_load_config)
-        layout.addWidget(self.load_config_btn)
-
-        group.setLayout(layout)
-        return group
-
-    def _create_dotfile_list_section(self) -> QGroupBox:
-        """Create dotfile list display section."""
-        group = QGroupBox("Configured Dotfiles")
-        layout = QVBoxLayout()
-
-        # Create table for dotfile display
-        self.dotfile_table = QTableWidget()
-        self.dotfile_table.setColumnCount(8)
-        self.dotfile_table.setHorizontalHeaderLabels(
-            [
-                "Enabled",
-                "Status",
-                "Category",
-                "Subcategory",
-                "Application",
-                "Type",
-                "Size",
-                "Path",
-            ]
+        self.add_dotfile_btn.clicked.connect(self._on_add_dotfile)
+        self.update_dotfile_btn.clicked.connect(self._on_update_dotfile)
+        self.remove_dotfile_btn.clicked.connect(self._on_remove_dotfile)
+        self.toggle_enabled_btn.clicked.connect(self._on_toggle_dotfile_enabled)
+        self.save_dotfiles_btn.clicked.connect(self._on_save_dotfile_config)
+        self.mirror_checkbox.stateChanged.connect(self._on_mirror_checkbox_changed)
+        self.archive_checkbox.stateChanged.connect(self._on_archive_checkbox_changed)
+        self.backup_btn.clicked.connect(self._on_start_backup)
+        self.dotfile_table.itemSelectionChanged.connect(
+            self._on_dotfile_selection_changed
         )
 
-        # Configure table properties
-        self.dotfile_table.setAlternatingRowColors(True)
-        self.dotfile_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.dotfile_table.setSelectionBehavior(
-            QTableWidget.SelectionBehavior.SelectRows
-        )
+        # Restore tab connections
+        self.browse_restore_btn.clicked.connect(self._on_browse_restore_source)
+        self.restore_btn.clicked.connect(self._on_start_restore)
 
+        # Configuration tab connections
+        browse_mirror_btn: QPushButton = self.central_widget.findChild(QPushButton, "browse_mirror_btn")  # type: ignore[assignment]
+        browse_archive_btn: QPushButton = self.central_widget.findChild(QPushButton, "browse_archive_btn")  # type: ignore[assignment]
+        browse_mirror_btn.clicked.connect(self._on_browse_mirror_dir)
+        browse_archive_btn.clicked.connect(self._on_browse_archive_dir)
+        self.config_mirror_path_edit.textChanged.connect(self._on_config_changed)
+        self.config_archive_path_edit.textChanged.connect(self._on_config_changed)
+        self.config_mirror_checkbox.stateChanged.connect(self._on_config_changed)
+        self.config_archive_checkbox.stateChanged.connect(self._on_config_changed)
+        self.config_hostname_checkbox.stateChanged.connect(self._on_config_changed)
+        self.config_date_checkbox.stateChanged.connect(self._on_config_changed)
+        self.config_compression_spinbox.valueChanged.connect(self._on_config_changed)
+        self.config_rotate_checkbox.stateChanged.connect(
+            self._on_rotate_checkbox_changed
+        )
+        self.config_rotate_checkbox.stateChanged.connect(self._on_config_changed)
+        self.config_max_archives_spinbox.valueChanged.connect(self._on_config_changed)
+        self.save_config_btn.clicked.connect(self._on_save_config)
+
+        # Menu action connections
+        self.action_load_config.triggered.connect(self._on_browse_config)
+        self.action_exit.triggered.connect(self.close)
+        self.action_start_backup.triggered.connect(self._on_start_backup)
+        self.action_start_restore.triggered.connect(self._on_start_restore)
+        self.action_about.triggered.connect(self._show_about)
+
+    def _configure_table_widget(self) -> None:
+        """Configure the dotfile table widget properties."""
         # Set column resize modes
         header = self.dotfile_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -574,297 +528,6 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(7, QHeaderView.ResizeMode.Stretch)
-
-        layout.addWidget(self.dotfile_table)
-
-        # Total size label
-        self.total_size_label = QLabel("Total Size (enabled): Calculating...")
-        self.total_size_label.setStyleSheet("font-weight: bold; padding: 5px;")
-        layout.addWidget(self.total_size_label)
-
-        # Add/Remove buttons
-        button_layout = QHBoxLayout()
-        button_layout.addStretch()
-
-        self.add_dotfile_btn = QPushButton("Add Dotfile")
-        self.add_dotfile_btn.clicked.connect(self._on_add_dotfile)
-        button_layout.addWidget(self.add_dotfile_btn)
-
-        self.update_dotfile_btn = QPushButton("Update Selected")
-        self.update_dotfile_btn.clicked.connect(self._on_update_dotfile)
-        self.update_dotfile_btn.setEnabled(False)
-        button_layout.addWidget(self.update_dotfile_btn)
-
-        self.toggle_enabled_btn = QPushButton("Toggle Enabled/Disabled")
-        self.toggle_enabled_btn.clicked.connect(self._on_toggle_dotfile_enabled)
-        self.toggle_enabled_btn.setEnabled(False)
-        button_layout.addWidget(self.toggle_enabled_btn)
-
-        self.remove_dotfile_btn = QPushButton("Remove Selected")
-        self.remove_dotfile_btn.clicked.connect(self._on_remove_dotfile)
-        self.remove_dotfile_btn.setEnabled(False)
-        button_layout.addWidget(self.remove_dotfile_btn)
-
-        button_layout.addStretch()
-
-        self.save_dotfiles_btn = QPushButton("Save Dotfile Config")
-        self.save_dotfiles_btn.clicked.connect(self._on_save_dotfile_config)
-        self.save_dotfiles_btn.setEnabled(False)
-        button_layout.addWidget(self.save_dotfiles_btn)
-
-        layout.addLayout(button_layout)
-
-        # Connect table selection changed signal
-        self.dotfile_table.itemSelectionChanged.connect(
-            self._on_dotfile_selection_changed
-        )
-
-        group.setLayout(layout)
-        return group
-
-    def _create_backup_options_section(self) -> QGroupBox:
-        """Create backup options and controls section."""
-        group = QGroupBox("Backup Options")
-        layout = QVBoxLayout()
-
-        # Backup mode checkboxes
-        mode_layout = QHBoxLayout()
-
-        self.mirror_checkbox = QCheckBox("Mirror Backup (uncompressed)")
-        self.mirror_checkbox.setChecked(True)
-        self.mirror_checkbox.stateChanged.connect(self._on_mirror_checkbox_changed)
-        mode_layout.addWidget(self.mirror_checkbox)
-
-        self.archive_checkbox = QCheckBox("Archive Backup (compressed)")
-        self.archive_checkbox.stateChanged.connect(self._on_archive_checkbox_changed)
-        mode_layout.addWidget(self.archive_checkbox)
-
-        mode_layout.addStretch()
-        layout.addLayout(mode_layout)
-
-        # Backup button
-        button_layout = QHBoxLayout()
-        self.backup_btn = QPushButton("Start Backup")
-        self.backup_btn.clicked.connect(self._on_start_backup)
-        self.backup_btn.setEnabled(False)
-        button_layout.addStretch()
-        button_layout.addWidget(self.backup_btn)
-        layout.addLayout(button_layout)
-
-        group.setLayout(layout)
-        return group
-
-    def _create_operation_log_section(self) -> QGroupBox:
-        """Create operation log display section."""
-        group = QGroupBox("Operation Log")
-        layout = QVBoxLayout()
-
-        # Progress label
-        self.progress_label = QLabel("Ready")
-        layout.addWidget(self.progress_label)
-
-        # Operation log text area
-        self.operation_log = QTextEdit()
-        self.operation_log.setReadOnly(True)
-        self.operation_log.setMaximumHeight(200)
-        layout.addWidget(self.operation_log)
-
-        group.setLayout(layout)
-        return group
-
-    def _create_restore_source_section(self) -> QGroupBox:
-        """Create restore source selection section."""
-        group = QGroupBox("Restore Source")
-        layout = QVBoxLayout()
-
-        # Information label
-        info_label = QLabel(
-            "Select the backup directory containing the hostname folder.\n"
-            "Example: ~/GitHub/dotfiles/ (containing hostname subdirectory)"
-        )
-        info_label.setWordWrap(True)
-        layout.addWidget(info_label)
-
-        # Source path input
-        path_layout = QHBoxLayout()
-
-        self.restore_source_edit = QLineEdit()
-        self.restore_source_edit.setPlaceholderText(
-            "Path to backup directory with hostname"
-        )
-        self.restore_source_edit.setReadOnly(True)
-        path_layout.addWidget(self.restore_source_edit)
-
-        # Browse button
-        self.browse_restore_btn = QPushButton("Browse...")
-        self.browse_restore_btn.clicked.connect(self._on_browse_restore_source)
-        path_layout.addWidget(self.browse_restore_btn)
-
-        layout.addLayout(path_layout)
-
-        # Restore button
-        button_layout = QHBoxLayout()
-        self.restore_btn = QPushButton("Start Restore")
-        self.restore_btn.clicked.connect(self._on_start_restore)
-        self.restore_btn.setEnabled(False)
-        button_layout.addStretch()
-        button_layout.addWidget(self.restore_btn)
-        layout.addLayout(button_layout)
-
-        group.setLayout(layout)
-        return group
-
-    def _create_restore_info_section(self) -> QGroupBox:
-        """Create restore information section."""
-        group = QGroupBox("Restore Information")
-        layout = QVBoxLayout()
-
-        info_text = QLabel(
-            "Restore will:\n"
-            "• Discover all files in the selected backup directory\n"
-            "• Reconstruct original file paths based on backup structure\n"
-            "• Copy files back to their original locations\n"
-            "• Create necessary parent directories\n"
-            "• Preserve file metadata and permissions\n\n"
-            "WARNING: This will overwrite existing files at destination paths."
-        )
-        info_text.setWordWrap(True)
-        layout.addWidget(info_text)
-
-        group.setLayout(layout)
-        return group
-
-    def _create_operation_log_section_restore(self) -> QGroupBox:
-        """Create operation log display section for restore tab."""
-        group = QGroupBox("Operation Log")
-        layout = QVBoxLayout()
-
-        # Progress label
-        self.restore_progress_label = QLabel("Ready")
-        layout.addWidget(self.restore_progress_label)
-
-        # Operation log text area
-        self.restore_operation_log = QTextEdit()
-        self.restore_operation_log.setReadOnly(True)
-        self.restore_operation_log.setMaximumHeight(200)
-        layout.addWidget(self.restore_operation_log)
-
-        group.setLayout(layout)
-        return group
-
-    def _create_options_display_section(self) -> QGroupBox:
-        """Create editable options configuration section."""
-        group = QGroupBox("Configuration Settings")
-        main_layout = QVBoxLayout()
-
-        # Create form layout for configuration options
-        form_layout = QFormLayout()
-
-        # Paths section
-        paths_label = QLabel("Backup Paths")
-        paths_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
-        form_layout.addRow(paths_label)
-
-        # Mirror directory path
-        mirror_path_layout = QHBoxLayout()
-        self.config_mirror_path_edit = QLineEdit()
-        self.config_mirror_path_edit.setPlaceholderText("Mirror backup directory")
-        self.config_mirror_path_edit.textChanged.connect(self._on_config_changed)
-        mirror_path_layout.addWidget(self.config_mirror_path_edit)
-        browse_mirror_btn = QPushButton("Browse...")
-        browse_mirror_btn.clicked.connect(self._on_browse_mirror_dir)
-        mirror_path_layout.addWidget(browse_mirror_btn)
-        form_layout.addRow("Mirror Directory:", mirror_path_layout)
-
-        # Archive directory path
-        archive_path_layout = QHBoxLayout()
-        self.config_archive_path_edit = QLineEdit()
-        self.config_archive_path_edit.setPlaceholderText("Archive backup directory")
-        self.config_archive_path_edit.textChanged.connect(self._on_config_changed)
-        archive_path_layout.addWidget(self.config_archive_path_edit)
-        browse_archive_btn = QPushButton("Browse...")
-        browse_archive_btn.clicked.connect(self._on_browse_archive_dir)
-        archive_path_layout.addWidget(browse_archive_btn)
-        form_layout.addRow("Archive Directory:", archive_path_layout)
-
-        # Backup modes section
-        modes_label = QLabel("Backup Modes")
-        modes_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
-        form_layout.addRow(modes_label)
-
-        # Mirror backup checkbox
-        self.config_mirror_checkbox = QCheckBox("Enable mirror backup (uncompressed)")
-        self.config_mirror_checkbox.stateChanged.connect(self._on_config_changed)
-        form_layout.addRow("Mirror Backup:", self.config_mirror_checkbox)
-
-        # Archive backup checkbox
-        self.config_archive_checkbox = QCheckBox("Enable archive backup (compressed)")
-        self.config_archive_checkbox.stateChanged.connect(self._on_config_changed)
-        form_layout.addRow("Archive Backup:", self.config_archive_checkbox)
-
-        # Directory structure section
-        structure_label = QLabel("Directory Structure")
-        structure_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
-        form_layout.addRow(structure_label)
-
-        # Hostname subdirectory checkbox
-        self.config_hostname_checkbox = QCheckBox("Include hostname in backup path")
-        self.config_hostname_checkbox.stateChanged.connect(self._on_config_changed)
-        form_layout.addRow("Hostname Subdir:", self.config_hostname_checkbox)
-
-        # Date subdirectory checkbox
-        self.config_date_checkbox = QCheckBox("Include date in backup path")
-        self.config_date_checkbox.stateChanged.connect(self._on_config_changed)
-        form_layout.addRow("Date Subdir:", self.config_date_checkbox)
-
-        # Archive options section
-        archive_opts_label = QLabel("Archive Options")
-        archive_opts_label.setStyleSheet("font-weight: bold; margin-top: 10px;")
-        form_layout.addRow(archive_opts_label)
-
-        # Compression level spinbox
-        self.config_compression_spinbox = QSpinBox()
-        self.config_compression_spinbox.setMinimum(0)
-        self.config_compression_spinbox.setMaximum(9)
-        self.config_compression_spinbox.setToolTip(
-            "0 = no compression, 9 = maximum compression"
-        )
-        self.config_compression_spinbox.valueChanged.connect(self._on_config_changed)
-        form_layout.addRow("Compression Level:", self.config_compression_spinbox)
-
-        # Archive rotation checkbox
-        self.config_rotate_checkbox = QCheckBox("Enable archive rotation")
-        self.config_rotate_checkbox.stateChanged.connect(
-            self._on_rotate_checkbox_changed
-        )
-        self.config_rotate_checkbox.stateChanged.connect(self._on_config_changed)
-        form_layout.addRow("Rotate Archives:", self.config_rotate_checkbox)
-
-        # Max archives spinbox
-        self.config_max_archives_spinbox = QSpinBox()
-        self.config_max_archives_spinbox.setMinimum(1)
-        self.config_max_archives_spinbox.setMaximum(100)
-        self.config_max_archives_spinbox.setToolTip(
-            "Maximum number of archives to keep"
-        )
-        self.config_max_archives_spinbox.valueChanged.connect(self._on_config_changed)
-        form_layout.addRow("Max Archives:", self.config_max_archives_spinbox)
-
-        main_layout.addLayout(form_layout)
-
-        # Save button
-        button_layout = QHBoxLayout()
-        button_layout.addStretch()
-        self.save_config_btn = QPushButton("Save Configuration")
-        self.save_config_btn.clicked.connect(self._on_save_config)
-        self.save_config_btn.setEnabled(False)
-        button_layout.addWidget(self.save_config_btn)
-        main_layout.addLayout(button_layout)
-
-        main_layout.addStretch()
-
-        group.setLayout(main_layout)
-        return group
 
     def _connect_viewmodel_signals(self) -> None:
         """Connect ViewModel signals to View slots."""
@@ -1151,7 +814,7 @@ class MainWindow(QMainWindow):
 
     def _populate_dotfile_table(
         self,
-        dotfiles: list,
+        dotfiles: list[DotFileDict],
         validation: dict[int, tuple[bool, bool, str]],
         sizes: dict[int, int],
     ) -> None:
@@ -1620,7 +1283,7 @@ class MainWindow(QMainWindow):
         status_text = "enabled" if new_status else "disabled"
         self.status_bar.showMessage(
             f"Dotfile '{dotfile['application']}' {status_text}",
-            self.STATUS_MESSAGE_TIMEOUT_MS,
+            STATUS_MESSAGE_TIMEOUT_MS,
         )
 
         # Perform lightweight table update without re-validation

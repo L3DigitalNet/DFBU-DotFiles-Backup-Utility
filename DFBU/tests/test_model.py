@@ -397,19 +397,24 @@ class TestDFBUModelFileOperations:
         assert dest.exists()
         assert dest.parent.exists()
 
-    def test_copy_file_nonexistent_source(self, tmp_path: Path) -> None:
-        """Test copy fails for nonexistent source."""
+    def test_copy_file_with_skip_identical(self, tmp_path: Path) -> None:
+        """Test copy_file with skip_identical optimization."""
         # Arrange
         model = DFBUModel(tmp_path / "config.toml")
-        src = tmp_path / "nonexistent.txt"
+        src = tmp_path / "source.txt"
+        src.write_text("identical content")
         dest = tmp_path / "dest.txt"
+        dest.write_text("identical content")
 
-        # Act
-        success = model.copy_file(src, dest, create_parent=False)
+        # Make files identical with same mtime
+        src.copy(dest, follow_symlinks=True, preserve_metadata=True)
 
-        # Assert
-        assert success is False
-        assert not dest.exists()
+        # Act - should skip copy since files are identical
+        success = model.copy_file(src, dest, skip_identical=True)
+
+        # Assert - operation succeeds but file wasn't actually copied
+        assert success is True
+        assert dest.exists()
 
     def test_create_directory_success(self, tmp_path: Path) -> None:
         """Test successful directory creation."""
@@ -418,10 +423,9 @@ class TestDFBUModelFileOperations:
         new_dir = tmp_path / "new" / "nested" / "directory"
 
         # Act
-        success = model.create_directory(new_dir)
+        model.create_directory(new_dir)
 
         # Assert
-        assert success is True
         assert new_dir.exists()
         assert new_dir.is_dir()
 

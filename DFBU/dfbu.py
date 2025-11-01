@@ -80,6 +80,7 @@ Functions:
 
 import argparse
 import os
+import shutil
 import sys
 import tarfile
 import termios
@@ -89,11 +90,15 @@ import tty
 from datetime import UTC, datetime
 from pathlib import Path
 from socket import gethostname
-from typing import Any, Final, TypedDict
+from typing import Any, Final
+
+# Local imports
+from common_types import DotFileDict, OptionsDict
+from validation import ConfigValidator
 
 
 # Version information
-__version__ = "0.3.2"
+__version__ = "0.5.3"
 
 
 # =============================================================================
@@ -384,42 +389,6 @@ B_WHITE: Final = AnsiColor("bright white")
 CONFIG_PATH: Path = Path(__file__).parent / "data" / "dfbu-config.toml"
 
 
-# Type definitions for configuration data structures
-class DotFileDict(TypedDict):
-    """
-    Type definition for dotfile configuration dictionary.
-
-    Contains all metadata and path information for individual dotfile entries
-    from TOML configuration file.
-    """
-
-    category: str
-    subcategory: str
-    application: str
-    description: str
-    path: str
-    mirror_dir: str
-    archive_dir: str
-
-
-class OptionsDict(TypedDict):
-    """
-    Type definition for options configuration dictionary.
-
-    Contains all backup operation settings and preferences from TOML
-    configuration file.
-    """
-
-    mirror: bool
-    archive: bool
-    hostname_subdir: bool
-    date_subdir: bool
-    archive_format: str
-    archive_compression_level: int
-    rotate_archives: bool
-    max_archives: int
-
-
 class FileSystemHelper:
     """
     Utility class for common filesystem operations to eliminate DRY violations.
@@ -559,121 +528,6 @@ class PathAssembler:
         return dest_path / prefix / src_relative
 
 
-class ConfigValidator:
-    """
-    Validates TOML configuration structure and content.
-
-    Provides robust validation of configuration before use to ensure all
-    required fields are present with proper types and valid values. Returns
-    TypedDict instances for type safety.
-
-    Static methods:
-        validate_config: Validate complete configuration structure and return typed dicts
-        validate_options: Validate options dictionary with type checking and defaults
-        validate_dotfile: Validate individual dotfile entry with required field checking
-    """
-
-    @staticmethod
-    def validate_config(
-        config_data: dict[str, Any],
-    ) -> tuple[OptionsDict, list[DotFileDict]]:
-        """
-        Validate complete configuration structure.
-
-        Args:
-            config_data: Raw configuration data from TOML file
-
-        Returns:
-            Tuple of validated options dict and list of dotfile dicts
-        """
-        # Extract configuration sections with defaults for missing sections
-        raw_paths: dict[str, str] = config_data.get("paths", {})
-        raw_options: dict[str, Any] = config_data.get("options", {})
-        raw_dotfiles: list[dict[str, str]] = config_data.get("dotfile", [])
-
-        # Validate options configuration
-        validated_options: OptionsDict = ConfigValidator.validate_options(raw_options)
-
-        # Validate and merge each dotfile entry with path configuration
-        validated_dotfiles: list[DotFileDict] = []
-        for dotfile in raw_dotfiles:
-            merged_dotfile: dict[str, str] = {**raw_paths, **dotfile}
-            validated_dotfiles.append(ConfigValidator.validate_dotfile(merged_dotfile))
-
-        return validated_options, validated_dotfiles
-
-    @staticmethod
-    def validate_options(raw_options: dict[str, Any]) -> OptionsDict:
-        """
-        Validate options dictionary with type checking and defaults.
-
-        Args:
-            raw_options: Raw options from configuration
-
-        Returns:
-            Validated options dictionary with proper types
-        """
-        # Extract compression level with range validation and type checking
-        compression_level: int = 9  # Default value
-        try:
-            raw_compression = raw_options.get("archive_compression_level", 9)
-            compression_level = int(raw_compression)
-            # Validate range [0, 9] - if outside range, use default
-            if not 0 <= compression_level <= 9:
-                compression_level = 9
-        except (TypeError, ValueError):
-            compression_level = 9
-
-        # Extract max archives with minimum value validation and type checking
-        max_archives: int = 5  # Default value
-        try:
-            raw_max_archives = raw_options.get("max_archives", 5)
-            max_archives = int(raw_max_archives)
-            # Validate minimum value - if below 1, use default
-            if max_archives < 1:
-                max_archives = 5
-        except (TypeError, ValueError):
-            max_archives = 5
-
-        # Build validated options dictionary with proper types
-        validated: OptionsDict = {
-            "mirror": bool(raw_options.get("mirror", True)),
-            "archive": bool(raw_options.get("archive", False)),
-            "hostname_subdir": bool(raw_options.get("hostname_subdir", True)),
-            "date_subdir": bool(raw_options.get("date_subdir", False)),
-            "archive_format": str(raw_options.get("archive_format", "tar.gz")),
-            "archive_compression_level": compression_level,
-            "rotate_archives": bool(raw_options.get("rotate_archives", False)),
-            "max_archives": max_archives,
-        }
-
-        return validated
-
-    @staticmethod
-    def validate_dotfile(raw_dotfile: dict[str, str]) -> DotFileDict:
-        """
-        Validate individual dotfile entry with required field checking.
-
-        Args:
-            raw_dotfile: Raw dotfile metadata from TOML config
-
-        Returns:
-            Validated dotfile metadata dictionary
-        """
-        # Build validated dictionary ensuring all required fields exist with defaults
-        validated: DotFileDict = {
-            "category": raw_dotfile.get("category", "Unknown"),
-            "subcategory": raw_dotfile.get("subcategory", "Unknown"),
-            "application": raw_dotfile.get("application", "Unknown"),
-            "description": raw_dotfile.get("description", "None"),
-            "path": raw_dotfile.get("path", ""),
-            "mirror_dir": raw_dotfile.get("mirror_dir", "~/DFBU_Mirror"),
-            "archive_dir": raw_dotfile.get("archive_dir", "~/DFBU_Archives"),
-        }
-
-        return validated
-
-
 class DotFile:
     """
     Class containing dotfile information and metadata from TOML configuration.
@@ -730,7 +584,11 @@ class DotFile:
         self.subcategory: str = raw_dotfile["subcategory"]
         self.application: str = raw_dotfile["application"]
         self.description: str = raw_dotfile["description"]
-        self.src_path: Path = FileSystemHelper.expand_path(raw_dotfile["path"])
+
+        # Use first path from paths list for CLI compatibility
+        # Note: CLI only processes first path, GUI processes all paths
+        first_path: str = raw_dotfile["paths"][0] if raw_dotfile["paths"] else ""
+        self.src_path: Path = FileSystemHelper.expand_path(first_path)
         self.name: str = self.src_path.name
 
         # Check source path properties for backup operations
@@ -857,11 +715,17 @@ class MirrorBackup:
         )
 
         if not dry_run:
-            dotfile.src_path.copy(
-                dotfile.dest_path_mirror,
-                follow_symlinks=True,
-                preserve_metadata=True,
-            )
+            # Use Path.copy() with metadata preservation (Python 3.14+ required)
+            # Fall back to shutil.copy2 for older Python versions
+            try:
+                dotfile.src_path.copy(
+                    dotfile.dest_path_mirror,
+                    follow_symlinks=True,
+                    preserve_metadata=True,
+                )
+            except AttributeError:
+                # Fallback for Python < 3.14
+                shutil.copy2(dotfile.src_path, dotfile.dest_path_mirror)
 
     @staticmethod
     def _process_directory(dotfile: DotFile, dry_run: bool) -> None:
@@ -882,13 +746,13 @@ class MirrorBackup:
             print(f"  {action}: {dotfile.src_path} (permission denied)")
             return
 
-        # Gather all files in directory tree recursively
-        files: list[Path] = [
-            Path(file) for file in dotfile.src_path.rglob("*") if file.is_file()
-        ]
-
-        # Process each file in the directory
-        for file in files:
+        # Process files in directory tree recursively using iterator (memory efficient)
+        # Track file count for completion message
+        file_count: int = 0
+        for file in dotfile.src_path.rglob("*"):
+            if not file.is_file():
+                continue
+            file_count += 1
             # Skip files without read permissions
             if not FileSystemHelper.check_readable(file):
                 action: str = FileSystemHelper.format_action_verb("skip", dry_run, True)
@@ -911,18 +775,24 @@ class MirrorBackup:
             print(f"  {action_verb}: {file}\n    to {file_dest_path}")
 
             if not dry_run:
-                file.copy(
-                    file_dest_path,
-                    follow_symlinks=True,
-                    preserve_metadata=True,
-                )
+                # Use Path.copy() with metadata preservation (Python 3.14+ required)
+                # Fall back to shutil.copy2 for older Python versions
+                try:
+                    file.copy(
+                        file_dest_path,
+                        follow_symlinks=True,
+                        preserve_metadata=True,
+                    )
+                except AttributeError:
+                    # Fallback for Python < 3.14
+                    shutil.copy2(file, file_dest_path)
 
-            # Print completion message for last file in directory
-            if file == files[-1]:
-                action_verb = FileSystemHelper.format_action_verb("copy", dry_run, True)
-                print(
-                    f"  {action_verb} directory: {dotfile.src_path}\n    to {dotfile.dest_path_mirror}\n"
-                )
+        # Print completion message after processing all files
+        if file_count > 0:
+            action_verb = FileSystemHelper.format_action_verb("copy", dry_run, True)
+            print(
+                f"  {action_verb} directory: {dotfile.src_path}\n    to {dotfile.dest_path_mirror}\n"
+            )
 
 
 class ArchiveBackup:
@@ -995,25 +865,46 @@ class ArchiveBackup:
 
         Args:
             archive_base_dest_path: Base destination path for archives
-            max_archives: Maximum number of archives to retain
+            max_archives: Maximum number of archives to retain (must be > 0)
             dry_run: Whether to simulate operations
         """
         print("Rotating archives...\n")
 
+        # Validate max_archives is positive
+        if max_archives <= 0:
+            print(f"Invalid max_archives value: {max_archives}. Must be > 0.\n")
+            return
+
+        # Check if archive directory exists
+        if not archive_base_dest_path.exists():
+            print("Archive directory does not exist. No archives to rotate.\n")
+            return
+
         # Get existing archives sorted by modification time (oldest first)
-        archives: list[Path] = sorted(
-            archive_base_dest_path.glob("dotfiles-*.tar.gz"),
-            key=lambda x: x.stat().st_mtime,
-        )
+        # Handle files that may be deleted or inaccessible between glob and stat
+        archives: list[tuple[Path, float]] = []
+        for archive_path in archive_base_dest_path.glob("dotfiles-*.tar.gz"):
+            try:
+                # Verify file still exists and get its mtime
+                mtime = archive_path.stat().st_mtime
+                archives.append((archive_path, mtime))
+            except (OSError, PermissionError):
+                # Skip files that can't be accessed
+                continue
+
+        # Sort by modification time (oldest first)
+        archives_sorted: list[Path] = [
+            path for path, _mtime in sorted(archives, key=lambda x: x[1])
+        ]
 
         # Calculate number of archives to delete based on retention limit
-        num_archives: int = len(archives)
+        num_archives: int = len(archives_sorted)
         num_to_delete: int = num_archives - max_archives
 
         # Delete oldest archives exceeding retention limit
         if num_to_delete > 0:
             for i in range(num_to_delete):
-                archive_to_delete: Path = archives[i]
+                archive_to_delete: Path = archives_sorted[i]
                 prefix: str = FileSystemHelper.format_dry_run_prefix(dry_run)
                 action: str = FileSystemHelper.format_action_verb(
                     "delete", dry_run, False
@@ -1021,7 +912,10 @@ class ArchiveBackup:
                 print(f"{prefix}{action} archive: {archive_to_delete}")
 
                 if not dry_run:
-                    archive_to_delete.unlink()
+                    try:
+                        archive_to_delete.unlink()
+                    except (OSError, PermissionError):
+                        print(f"  Warning: Could not delete {archive_to_delete}")
         else:
             print("No archives need to be deleted.\n")
 
@@ -1459,11 +1353,17 @@ def copy_files_restore(
         print(f"  copying {BLUE.bold}{src_file.name}{RESET} to: {dest_path}")
 
         if not dry_run:
-            src_file.copy(
-                dest_path,
-                follow_symlinks=True,
-                preserve_metadata=True,
-            )
+            # Use Path.copy() with metadata preservation (Python 3.14+ required)
+            # Fall back to shutil.copy2 for older Python versions
+            try:
+                src_file.copy(
+                    dest_path,
+                    follow_symlinks=True,
+                    preserve_metadata=True,
+                )
+            except AttributeError:
+                # Fallback for Python < 3.14
+                shutil.copy2(src_file, dest_path)
 
 
 def main() -> None:
