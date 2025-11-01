@@ -93,8 +93,8 @@ from socket import gethostname
 from typing import Any, Final
 
 # Local imports
-from common_types import DotFileDict, OptionsDict
-from validation import ConfigValidator
+from core.common_types import DotFileDict, OptionsDict
+from core.validation import ConfigValidator
 
 
 # Version information

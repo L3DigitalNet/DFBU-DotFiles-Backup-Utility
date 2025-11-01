@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Project Structure**: Updated imports to use `core.common_types` and `core.validation` from new `core/` package
+- **Import Organization**: All GUI modules now import shared utilities from centralized `core/` subdirectory
+
 ### Deprecated
 
 ### Removed

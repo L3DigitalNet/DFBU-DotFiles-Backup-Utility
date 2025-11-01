@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Project Structure**: Moved `common_types.py` and `validation.py` to new `core/` subdirectory for better organization
+- **Imports**: Updated all import statements to use `from core.common_types` and `from core.validation` patterns
+- **Core Package**: Created `core/__init__.py` to expose shared utilities (`DotFileDict`, `OptionsDict`, `ConfigValidator`)
+
 ### Deprecated
 
 ### Removed
@@ -43,7 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now coordinates 4 focused components via delegation
   - Added property setters for `config_path`, `mirror_base_dir`, and `archive_base_dir` for backward compatibility
   - Maintains full API compatibility with existing ViewModel
-- **Architecture Improvements**: 
+- **Architecture Improvements**:
   - Implemented facade pattern for clean component composition
   - Dependency injection via expand_path callback from FileOperations to ConfigManager
   - Each component now has single, well-defined responsibility

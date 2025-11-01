@@ -44,7 +44,7 @@ from pathlib import Path
 from typing import Any, Final
 
 # Local imports
-from common_types import DotFileDict
+from core.common_types import DotFileDict
 from model import DFBUModel
 
 # PySide6 imports for signals and threading

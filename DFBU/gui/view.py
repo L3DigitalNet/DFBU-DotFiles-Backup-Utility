@@ -42,8 +42,8 @@ from pathlib import Path
 from typing import Any, Final
 
 # Local imports
-from common_types import DotFileDict
 from constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
+from core.common_types import DotFileDict
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QCloseEvent, QColor
 from PySide6.QtUiTools import QUiLoader

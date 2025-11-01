@@ -41,7 +41,7 @@ from typing import TYPE_CHECKING
 
 # Local imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from common_types import DotFileDict, OptionsDict
+from core.common_types import DotFileDict, OptionsDict
 
 
 # Type checking imports to avoid circular dependencies

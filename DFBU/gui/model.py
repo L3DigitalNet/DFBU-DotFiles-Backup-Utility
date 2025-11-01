@@ -40,10 +40,10 @@ from socket import gethostname
 # Local imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from backup_orchestrator import BackupOrchestrator
-from common_types import DotFileDict, OptionsDict
 
 # Import component classes
 from config_manager import ConfigManager
+from core.common_types import DotFileDict, OptionsDict
 from file_operations import FileOperations
 from statistics_tracker import BackupStatistics, StatisticsTracker
 

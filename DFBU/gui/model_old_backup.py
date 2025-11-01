@@ -59,8 +59,8 @@ import tomli_w
 
 # Local imports - import from parent DFBU directory
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from common_types import DotFileDict, OptionsDict
-from validation import ConfigValidator
+from core.common_types import DotFileDict, OptionsDict
+from core.validation import ConfigValidator
 
 
 # =============================================================================
