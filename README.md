@@ -2,6 +2,16 @@
 
 DFBU is a backup utility originally intended for dotfiles management but was expanded to centralize my other backup needs into a single utility. Includes a limited CLI utility and and GUI application with extended functionality.
 
+## Setup
+
+After cloning, run the setup script to configure Git hooks:
+
+```bash
+./setup-git-hooks.sh
+```
+
+See [Git Hooks Setup](.github/GIT_HOOKS_SETUP.md) for details.
+
 ## Architecture: Independent CLI and GUI Tools
 
 DFBU provides two completely independent tools that can be used separately or together:

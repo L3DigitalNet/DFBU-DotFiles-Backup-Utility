@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU CLIMenu Class Tests
 
@@ -25,8 +23,10 @@ Requirements:
 
 import sys
 from pathlib import Path
-from unittest.mock import Mock, patch, call
+from unittest.mock import Mock, patch
+
 import pytest
+
 
 # Add DFBU directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -49,9 +49,8 @@ class TestCLIMenuRun:
         }
 
         # Act - simulate user selecting option 1
-        with patch("builtins.input", return_value="1"):
-            with patch("builtins.print"):
-                menu.run(menu_options)
+        with patch("builtins.input", return_value="1"), patch("builtins.print"):
+            menu.run(menu_options)
 
         # Assert - function 1 should be called
         mock_func1.assert_called_once()
@@ -71,9 +70,8 @@ class TestCLIMenuRun:
         }
 
         # Act - simulate user selecting option 2
-        with patch("builtins.input", return_value="2"):
-            with patch("builtins.print"):
-                menu.run(menu_options)
+        with patch("builtins.input", return_value="2"), patch("builtins.print"):
+            menu.run(menu_options)
 
         # Assert - only function 2 should be called
         mock_func1.assert_not_called()
@@ -216,11 +214,10 @@ class TestCLIMenuYNQ:
         menu = CLIMenu()
 
         # Act & Assert - should exit on 'q'
-        with patch("builtins.input", return_value="q"):
-            with patch("builtins.print"):
-                with pytest.raises(SystemExit) as exc_info:
-                    menu.ynq("Continue?")
-                assert exc_info.value.code == 0
+        with patch("builtins.input", return_value="q"), patch("builtins.print"):
+            with pytest.raises(SystemExit) as exc_info:
+                menu.ynq("Continue?")
+            assert exc_info.value.code == 0
 
     def test_ynq_quit_full_word(self):
         """Test ynq exits on full 'quit' response."""

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU DotFile Class Tests
 
@@ -26,8 +24,7 @@ Requirements:
 
 import sys
 from pathlib import Path
-from unittest.mock import Mock, patch
-import pytest
+
 
 # Add DFBU directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -55,16 +52,18 @@ class TestDotFileInitialization:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": False,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": False,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act - create DotFile instance
         dotfile = DotFile(raw_dotfile, options)
@@ -96,16 +95,18 @@ class TestDotFileInitialization:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": False,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": False,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act - create DotFile instance
         dotfile = DotFile(raw_dotfile, options)
@@ -132,16 +133,18 @@ class TestDotFileInitialization:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": False,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": False,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act - create DotFile instance
         dotfile = DotFile(raw_dotfile, options)
@@ -164,16 +167,18 @@ class TestDotFileInitialization:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": False,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": False,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act - create DotFile instance
         dotfile = DotFile(raw_dotfile, options)
@@ -203,16 +208,18 @@ class TestDotFileDestinationPaths:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": False,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": False,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act
         dotfile = DotFile(raw_dotfile, options)
@@ -240,16 +247,18 @@ class TestDotFileDestinationPaths:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": True,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": True,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act
         dotfile = DotFile(raw_dotfile, options)
@@ -276,16 +285,18 @@ class TestDotFileRelativePaths:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": False,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": False,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act
         dotfile = DotFile(raw_dotfile, options)
@@ -307,16 +318,18 @@ class TestDotFileRelativePaths:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": False,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": False,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act
         dotfile = DotFile(raw_dotfile, options)
@@ -346,16 +359,18 @@ class TestDotFileStringRepresentation:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": False,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": False,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act
         dotfile = DotFile(raw_dotfile, options)
@@ -385,16 +400,18 @@ class TestDotFileStringRepresentation:
             "archive_dir": str(tmp_path / "archive"),
         }
 
-        options = Options({
-            "mirror": True,
-            "archive": False,
-            "hostname_subdir": False,
-            "date_subdir": False,
-            "archive_format": "tar.gz",
-            "archive_compression_level": 9,
-            "rotate_archives": False,
-            "max_archives": 5,
-        })
+        options = Options(
+            {
+                "mirror": True,
+                "archive": False,
+                "hostname_subdir": False,
+                "date_subdir": False,
+                "archive_format": "tar.gz",
+                "archive_compression_level": 9,
+                "rotate_archives": False,
+                "max_archives": 5,
+            }
+        )
 
         # Act
         dotfile = DotFile(raw_dotfile, options)

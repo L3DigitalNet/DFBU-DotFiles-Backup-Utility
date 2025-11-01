@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU CLI Integration Tests
 
@@ -26,21 +24,19 @@ Requirements:
 
 import sys
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
-import pytest
+from unittest.mock import patch
+
 
 # Add DFBU directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from dfbu import (
-    Options,
-    ConfigValidator,
-    PathAssembler,
-    FileSystemHelper,
-    MirrorBackup,
-    ArchiveBackup,
-    CLIHandler,
     AnsiColor,
+    CLIHandler,
+    ConfigValidator,
+    FileSystemHelper,
+    Options,
+    PathAssembler,
 )
 
 
@@ -139,6 +135,8 @@ class TestCLIArgumentParsing:
 
             # Assert - verify compression level
             assert options.archive_compression_level == level
+
+
 class TestBackupWorkflowIntegration:
     """Test complete backup workflow integration."""
 
@@ -172,7 +170,9 @@ class TestBackupWorkflowIntegration:
         }
 
         # Act - validate config
-        validated_options, validated_dotfiles = ConfigValidator.validate_config(config_data)
+        validated_options, validated_dotfiles = ConfigValidator.validate_config(
+            config_data
+        )
 
         # Assert - verify structure
         assert isinstance(validated_options, dict)
@@ -225,13 +225,17 @@ class TestBackupWorkflowIntegration:
         }
 
         # Act - validate config and create Options
-        validated_options, validated_dotfiles = ConfigValidator.validate_config(config_data)
+        validated_options, validated_dotfiles = ConfigValidator.validate_config(
+            config_data
+        )
         options = Options(validated_options)
 
         # Assert - verify workflow completed
         assert options.mirror is True
         assert options.archive is False
         assert len(validated_dotfiles) == 0
+
+
 class TestComponentIntegration:
     """Test integration between CLI components."""
 
@@ -261,7 +265,9 @@ class TestComponentIntegration:
         }
 
         # Act - validate config
-        validated_options, validated_dotfiles = ConfigValidator.validate_config(config_data)
+        validated_options, validated_dotfiles = ConfigValidator.validate_config(
+            config_data
+        )
 
         # Assert - config should be valid
         assert isinstance(validated_options, dict)
@@ -317,7 +323,7 @@ class TestComponentIntegration:
     def test_cli_handler_parse_args_defaults(self):
         """Test CLIHandler parse_args returns defaults with no arguments."""
         # Arrange - mock sys.argv with no arguments
-        with patch('sys.argv', ['dfbu.py']):
+        with patch("sys.argv", ["dfbu.py"]):
             # Act - parse arguments
             dry_run, force = CLIHandler.parse_args()
 
@@ -328,7 +334,7 @@ class TestComponentIntegration:
     def test_cli_handler_parse_args_dry_run(self):
         """Test CLIHandler parse_args handles --dry-run flag."""
         # Arrange - mock sys.argv with --dry-run
-        with patch('sys.argv', ['dfbu.py', '--dry-run']):
+        with patch("sys.argv", ["dfbu.py", "--dry-run"]):
             # Act - parse arguments
             dry_run, force = CLIHandler.parse_args()
 
@@ -339,13 +345,15 @@ class TestComponentIntegration:
     def test_cli_handler_parse_args_force(self):
         """Test CLIHandler parse_args handles --force flag."""
         # Arrange - mock sys.argv with --force
-        with patch('sys.argv', ['dfbu.py', '--force']):
+        with patch("sys.argv", ["dfbu.py", "--force"]):
             # Act - parse arguments
             dry_run, force = CLIHandler.parse_args()
 
             # Assert - force should be True
             assert dry_run is False
             assert force is True
+
+
 class TestAnsiColorIntegration:
     """Test ANSI color formatting integration."""
 
@@ -379,7 +387,7 @@ class TestAnsiColorIntegration:
         # These are module-level constants like RED, GREEN, BLUE, etc.
 
         # Import and test a color constant
-        from dfbu import RED, GREEN, BLUE
+        from dfbu import BLUE, GREEN, RED
 
         # Assert - constants should be AnsiColor instances
         assert isinstance(RED, AnsiColor)
@@ -394,6 +402,8 @@ class TestAnsiColorIntegration:
 
         # Assert - should contain ANSI codes
         assert "\033[" in color.code or "\u001b[" in color.code
+
+
 class TestWorkflowValidation:
     """Test complete workflow validation scenarios."""
 
@@ -427,7 +437,9 @@ class TestWorkflowValidation:
         }
 
         # Act - validate config and create Options
-        validated_options, validated_dotfiles = ConfigValidator.validate_config(config_data)
+        validated_options, validated_dotfiles = ConfigValidator.validate_config(
+            config_data
+        )
         options = Options(validated_options)
 
         # Assert - workflow completed successfully
@@ -463,7 +475,9 @@ class TestWorkflowValidation:
         }
 
         # Act - validate through complete workflow
-        validated_options, validated_dotfiles = ConfigValidator.validate_config(config_data)
+        validated_options, validated_dotfiles = ConfigValidator.validate_config(
+            config_data
+        )
 
         # Assert - all validations should pass
         assert isinstance(validated_options, dict)
@@ -501,7 +515,9 @@ class TestWorkflowValidation:
         }
 
         # Act - validate config and assemble path
-        validated_options, validated_dotfiles = ConfigValidator.validate_config(config_data)
+        validated_options, validated_dotfiles = ConfigValidator.validate_config(
+            config_data
+        )
         dotfile = validated_dotfiles[0]
         destination = PathAssembler.assemble_dest_path(
             Path(dotfile["mirror_dir"]),

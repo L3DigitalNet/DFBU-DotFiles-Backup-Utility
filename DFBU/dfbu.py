@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Dotfiles Backup Utility (DFBU)
 
@@ -9,8 +8,8 @@ Description:
 Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
-Date Created: 10-18-2025
-Date Changed: 10-31-2025
+Date Created: 10-18-2024
+Date Changed: 11-01-2025
 License: MIT
 
 Features:
@@ -87,14 +86,14 @@ import termios
 import time
 import tomllib
 import tty
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from socket import gethostname
 from typing import Any, Final, TypedDict
 
 
 # Version information
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 
 # =============================================================================
@@ -196,9 +195,6 @@ class AnsiColor:
         Args:
             fg_color: Foreground color name
             bg_color: Background color name
-
-        Returns:
-            None
         """
         # Normalize input colors to lowercase and strip whitespace
         self.fg_color: str = fg_color.lower().strip()
@@ -238,9 +234,6 @@ class AnsiColor:
         """
         Get ANSI color code with bold styling.
 
-        Args:
-            None
-
         Returns:
             ANSI escape sequence with bold formatting
         """
@@ -250,9 +243,6 @@ class AnsiColor:
     def dim(self) -> str:
         """
         Get ANSI color code with dim styling.
-
-        Args:
-            None
 
         Returns:
             ANSI escape sequence with dim formatting
@@ -264,9 +254,6 @@ class AnsiColor:
         """
         Get ANSI color code with underline styling.
 
-        Args:
-            None
-
         Returns:
             ANSI escape sequence with underline formatting
         """
@@ -277,9 +264,6 @@ class AnsiColor:
         """
         Get ANSI color code with blinking styling.
 
-        Args:
-            None
-
         Returns:
             ANSI escape sequence with blinking formatting
         """
@@ -289,9 +273,6 @@ class AnsiColor:
     def hidden(self) -> str:
         """
         Get ANSI color code with hidden text styling.
-
-        Args:
-            None
 
         Returns:
             ANSI escape sequence with hidden text formatting
@@ -319,13 +300,10 @@ class CLIMenu:
         menu_options: dict[str, Any],
     ) -> None:
         """
-        Display menu options with numbered selection and handle user input.
+        Display menu with numbered selection and handle user input.
 
         Args:
             menu_options: Dictionary mapping option names to functions
-
-        Returns:
-            None
         """
         # Display numbered menu options to user
         print("\nMenu Options:")
@@ -350,10 +328,7 @@ class CLIMenu:
                 print("\nInvalid input or quit by user. Exiting...")
                 sys.exit(0)
 
-    def ynq(
-        self,
-        prompt: str,
-    ) -> bool:
+    def ynq(self, prompt: str) -> bool:
         """
         Display yes/no/quit prompt and handle user input.
 
@@ -361,7 +336,7 @@ class CLIMenu:
             prompt: Question to display to user
 
         Returns:
-            True for 'yes', False for 'no'. Exits program on 'quit'
+            True for yes, False for no. Exits program on quit
         """
         # Loop until valid response is entered
         while True:
@@ -575,16 +550,13 @@ class PathAssembler:
         )
         prefix: str = "home" if is_relative_to_home else "root"
 
-        # Build destination path components based on configuration options
-        dest_parts: list[Path] = [base_path]
+        # Build destination path using direct Path concatenation
+        dest_path: Path = base_path
         if hostname_subdir:
-            dest_parts.append(Path(gethostname()))
+            dest_path = dest_path / gethostname()
         if date_subdir:
-            dest_parts.append(Path(time.strftime("%Y-%m-%d")))
-        dest_parts.extend([Path(prefix), src_relative])
-
-        # Use efficient path construction
-        return Path(*dest_parts)
+            dest_path = dest_path / time.strftime("%Y-%m-%d")
+        return dest_path / prefix / src_relative
 
 
 class ConfigValidator:
@@ -641,14 +613,26 @@ class ConfigValidator:
         Returns:
             Validated options dictionary with proper types
         """
-        # Extract and validate compression level with range checking
-        compression_level: int = raw_options.get("archive_compression_level", 9)
-        if not isinstance(compression_level, int) or not (0 <= compression_level <= 9):
+        # Extract compression level with range validation and type checking
+        compression_level: int = 9  # Default value
+        try:
+            raw_compression = raw_options.get("archive_compression_level", 9)
+            compression_level = int(raw_compression)
+            # Validate range [0, 9] - if outside range, use default
+            if not 0 <= compression_level <= 9:
+                compression_level = 9
+        except (TypeError, ValueError):
             compression_level = 9
 
-        # Extract and validate max archives with minimum value checking
-        max_archives: int = raw_options.get("max_archives", 5)
-        if not isinstance(max_archives, int) or max_archives < 1:
+        # Extract max archives with minimum value validation and type checking
+        max_archives: int = 5  # Default value
+        try:
+            raw_max_archives = raw_options.get("max_archives", 5)
+            max_archives = int(raw_max_archives)
+            # Validate minimum value - if below 1, use default
+            if max_archives < 1:
+                max_archives = 5
+        except (TypeError, ValueError):
             max_archives = 5
 
         # Build validated options dictionary with proper types
@@ -774,6 +758,9 @@ class DotFile:
     def __str__(self) -> str:
         """
         String representation of dotfile.
+
+        Returns:
+            Formatted string with metadata and paths
         """
         return (
             f"[{self.type}] {BLUE.bold}{self.name}{RESET}: "
@@ -782,7 +769,8 @@ class DotFile:
             f"{MAGENTA}{self.application}{RESET}\n"
             f"  Description: {self.description}\n"
             f"  Source path: {DEFAULT.underline}{self.src_path}{RESET}\n"
-            f"  Mirror destination: {DEFAULT.underline}{self.dest_path_mirror}{RESET}\n"
+            f"  Mirror destination: "
+            f"{DEFAULT.underline}{self.dest_path_mirror}{RESET}\n"
         )
 
     def _get_relative_path(self) -> Path:
@@ -896,7 +884,7 @@ class MirrorBackup:
 
         # Gather all files in directory tree recursively
         files: list[Path] = [
-            file for file in dotfile.src_path.rglob("*") if file.is_file()
+            Path(file) for file in dotfile.src_path.rglob("*") if file.is_file()
         ]
 
         # Process each file in the directory
@@ -964,9 +952,10 @@ class ArchiveBackup:
             archive_base_dest_path: Base destination path for archives
             dry_run: Whether to simulate operations
         """
-        # Generate timestamped archive filename with microseconds for uniqueness
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
-        archive_name: str = f"dotfiles-{timestamp}.tar.gz"
+        # Generate timestamped archive filename for uniqueness
+        archive_name: str = (
+            "dotfiles-" + datetime.now(UTC).strftime("%Y-%m-%d_%H-%M-%S") + ".tar.gz"
+        )
         archive_path: Path = archive_base_dest_path / archive_name
 
         # Create archive base directory if it doesn't exist
@@ -1078,17 +1067,27 @@ class Options:
     def __str__(self) -> str:
         """
         String representation of options.
+
+        Returns:
+            Formatted string with all option values
         """
+        archive_format: str = self.archive_format if self.archive else "N/A"
+        compression: int | str = (
+            self.archive_compression_level if self.archive else "N/A"
+        )
+        rotate: bool | str = self.rotate_archives if self.archive else "N/A"
+        max_archives: int | str = self.max_archives if self.archive else "N/A"
+
         return (
             f"The following options are set:\n"
             f"  Uncompressed mirror: {self.mirror}\n"
             f"  Create archive: {self.archive}\n"
             f"  Use hostname subdirectory: {self.hostname_subdir}\n"
             f"  Use date subdirectory: {self.date_subdir}\n"
-            f"  Archive format: {self.archive_format if self.archive else 'N/A'}\n"
-            f"  Archive compression level: {self.archive_compression_level if self.archive else 'N/A'}\n"
-            f"  Rotate archives: {self.rotate_archives if self.archive else 'N/A'}\n"
-            f"  Maximum number of archives to keep: {self.max_archives if self.archive else 'N/A'}\n"
+            f"  Archive format: {archive_format}\n"
+            f"  Archive compression level: {compression}\n"
+            f"  Rotate archives: {rotate}\n"
+            f"  Maximum number of archives to keep: {max_archives}\n"
         )
 
 
@@ -1115,7 +1114,7 @@ class CLIHandler:
         Parse command-line arguments.
 
         Returns:
-            tuple[bool, bool]: (dry_run, force) flags
+            Tuple of (dry_run, force) flags
         """
         parser: argparse.ArgumentParser = argparse.ArgumentParser(
             description="Dotfiles Backup Utility (DFBU)",
@@ -1145,7 +1144,7 @@ class CLIHandler:
         Get user input to choose backup or restore mode.
 
         Returns:
-            str: The validated mode ("backup" or "restore")
+            Validated mode string (backup or restore)
         """
         print("Choose backup mode:")
         print("  1. backup files")
@@ -1169,7 +1168,7 @@ class CLIHandler:
         Get user input for source path to restore from.
 
         Returns:
-            Path: The validated source path
+            Validated source path
         """
         while True:
             print(
@@ -1208,7 +1207,7 @@ class CLIHandler:
             prompt: Confirmation prompt text
 
         Returns:
-            bool: True if user confirms, False otherwise
+            True if user confirms, False otherwise
         """
         menu: CLIMenu = CLIMenu()
         return menu.ynq(prompt)
@@ -1282,10 +1281,11 @@ class CLIHandler:
         """
         print(f"\n{DEFAULT.bold}The following files will be restored:{RESET}\n")
 
-        for src_file, dest_file in zip(src_files, dest_files, strict=False):
+        for src_file, dest_file in zip(src_files, dest_files, strict=True):
             if src_file.is_file():
                 print(
-                    f"  {BLUE.bold}{src_file.name}{RESET}: {DEFAULT}{src_file}{RESET}\n"
+                    f"  {BLUE.bold}{src_file.name}{RESET}: "
+                    f"{DEFAULT}{src_file}{RESET}\n"
                     f"    -> {DEFAULT}{dest_file}{RESET}\n"
                 )
 
@@ -1308,7 +1308,7 @@ def wait_for_spacebar() -> None:
         tty.setraw(sys.stdin.fileno())
 
         while True:
-            char = sys.stdin.read(1)
+            char: str = sys.stdin.read(1)
             if char == " ":  # Spacebar pressed
                 break
             if char == "\x03":  # Ctrl+C
@@ -1332,16 +1332,14 @@ def load_config() -> tuple[OptionsDict, list[DotFileDict]]:
         tuple containing validated OptionsDict and list of DotFileDict objects
     """
     # Read TOML configuration file in binary mode
-    with open(CONFIG_PATH, "rb") as toml_file:
+    with CONFIG_PATH.open("rb") as toml_file:
         config_data: dict[str, Any] = tomllib.load(toml_file)
 
     # Validate configuration structure and return typed dictionaries
     return ConfigValidator.validate_config(config_data)
 
 
-def sort_dotfiles(
-    dotfiles: list[DotFile],
-) -> list[DotFile]:
+def sort_dotfiles(dotfiles: list[DotFile]) -> list[DotFile]:
     """
     Sort dotfiles by category, subcategory, then application name.
 
@@ -1353,16 +1351,14 @@ def sort_dotfiles(
     Returns:
         sorted list of DotFile objects
     """
-    dotfiles.sort(key=lambda dotfile: dotfile.application)
-    dotfiles.sort(key=lambda dotfile: dotfile.subcategory)
-    dotfiles.sort(key=lambda dotfile: dotfile.category)
+    dotfiles.sort(key=lambda df: df.application)
+    dotfiles.sort(key=lambda df: df.subcategory)
+    dotfiles.sort(key=lambda df: df.category)
 
     return dotfiles
 
 
-def create_src_file_list(
-    src_dir: Path,
-) -> list[Path]:
+def create_src_file_list(src_dir: Path) -> list[Path]:
     """
     Create list of all files in directory recursively for restore operations.
 
@@ -1375,20 +1371,13 @@ def create_src_file_list(
     Returns:
         list of all file Path objects found recursively
     """
-    src_files: list[Path] = []
-
-    for file in src_dir.rglob("*"):
-        if file.is_file():
-            src_files.append(file)
-
-    return src_files
+    return [file for file in src_dir.rglob("*") if file.is_file()]
 
 
-def create_dest_restore_paths(
-    src_files: list[Path],
-) -> list[Path | None]:
+def create_dest_restore_paths(src_files: list[Path]) -> list[Path]:
     """
-    Create destination restore paths by reconstructing original paths from backup structure.
+    Create destination restore paths by reconstructing original paths from
+    backup structure.
 
     Parses backup directory structure (hostname/home or hostname/root) and
     reconstructs original absolute paths for file restoration.
@@ -1397,10 +1386,9 @@ def create_dest_restore_paths(
         src_files: list of source file paths from backup directory
 
     Returns:
-        list of destination file paths where files should be restored,
-        or None for files that couldn't be processed
+        list of destination file paths where files should be restored
     """
-    full_paths: list[Path | None] = []
+    full_paths: list[Path] = []
     hostname: str = gethostname()
 
     # Process each source file to reconstruct original destination path
@@ -1414,43 +1402,28 @@ def create_dest_restore_paths(
                 f"{RED}Error:{RESET} Could not find hostname directory "
                 f"'{hostname}' in path: {DEFAULT.underline}{src_path}{RESET}"
             )
-            # Add None as placeholder to maintain list alignment
-            full_paths.append(None)
             continue
 
         # Reconstruct destination path based on home or root directory location
         if "home" in r_host.parts:
-            try:
-                # Extract path after home directory marker and build full home path
-                home_index: int = r_host.parts.index("home")
-                r_home: Path = Path(*r_host.parts[home_index + 1 :])
-                full_path: Path = Path.home() / r_home
-                full_paths.append(full_path)
-            except (ValueError, IndexError):
-                print(
-                    f"{RED}Error:{RESET} Invalid home directory structure in: "
-                    f"{DEFAULT.underline}{src_path}{RESET}"
-                )
-                full_paths.append(None)
+            # Extract path after home directory marker and build full home path
+            home_index: int = r_host.parts.index("home")
+            r_home: Path = Path(*r_host.parts[home_index + 1 :])
+            full_path: Path = Path.home() / r_home
+            full_paths.append(full_path)
         elif "root" in r_host.parts:
-            try:
-                # Extract path after root directory marker and build full absolute path
-                root_index: int = r_host.parts.index("root")
-                r_root: Path = Path(*r_host.parts[root_index + 1 :])
-                full_path: Path = Path("/") / r_root
-                full_paths.append(full_path)
-            except (ValueError, IndexError):
-                print(
-                    f"{RED}Error:{RESET} Invalid root directory structure in: "
-                    f"{DEFAULT.underline}{src_path}{RESET}"
-                )
-                full_paths.append(None)
+            # Extract path after root directory marker and build absolute path
+            root_index: int = r_host.parts.index("root")
+            r_root: Path = Path(*r_host.parts[root_index + 1 :])
+            full_path: Path = Path("/") / r_root
+            full_paths.append(full_path)
         else:
             print(
                 f"{RED}Error:{RESET} Could not determine if file is from "
-                f"home or root directory:\n  {DEFAULT.underline}{src_path}{RESET}"
+                f"home or root directory:\n  "
+                f"{DEFAULT.underline}{src_path}{RESET}"
             )
-            full_paths.append(None)
+            continue
 
     return full_paths
 
@@ -1468,7 +1441,7 @@ def copy_files_restore(
 
     Args:
         src_files: list of source file paths from backup to copy
-        dest_paths: list of destination file paths where files should be restored
+        dest_paths: list of destination file paths where files restored
         dry_run: whether to simulate operations without actual file changes
     """
     # Display mode message with dry-run indicator if applicable
@@ -1476,13 +1449,13 @@ def copy_files_restore(
         print("DRY RUN mode enabled. No files will be copied.\n")
 
     # Create necessary parent directories for all destination paths
-    for p in dest_paths:
-        if not p.parent.exists():
-            FileSystemHelper.create_directory(p.parent, dry_run)
+    for dest_path in dest_paths:
+        if not dest_path.parent.exists():
+            FileSystemHelper.create_directory(dest_path.parent, dry_run)
 
     # Copy files with metadata preservation using Python 3.14 Path.copy()
     print(f"\n{DEFAULT.bold}Processing files:{RESET}\n")
-    for src_file, dest_path in zip(src_files, dest_paths, strict=False):
+    for src_file, dest_path in zip(src_files, dest_paths, strict=True):
         print(f"  copying {BLUE.bold}{src_file.name}{RESET} to: {dest_path}")
 
         if not dry_run:
@@ -1493,23 +1466,19 @@ def copy_files_restore(
             )
 
 
-def main() -> int:
+def main() -> None:
     """
     Main entry point for DFBU application with dual-mode workflow.
 
     Orchestrates complete backup or restore workflow including mode selection,
     configuration loading, user confirmation, and operation execution. Handles
     both mirror and archive backup modes as well as interactive restore.
-
-    Returns:
-        Exit code: 0 for success, 1 for error
     """
     print(f"{BLUE.bold}Dotfiles Backup Utility (DFBU){RESET} ver. {__version__}\n")
 
     # Parse command-line arguments for dry-run and force flags
     dry_run: bool
-    force: bool
-    dry_run, force = CLIHandler.parse_args()
+    dry_run, _ = CLIHandler.parse_args()
 
     # Get user input to choose operation mode (backup or restore)
     mode: str = CLIHandler.get_mode()
@@ -1541,11 +1510,12 @@ def main() -> int:
 
         # Execute archive creation if enabled
         if options.archive:
-            # Determine archive base destination path from configuration with fallback
-            if raw_dotfiles:
-                archive_dir = raw_dotfiles[0].get("archive_dir", "~/DFBU_Archives")
-            else:
-                archive_dir = "~/DFBU_Archives"
+            # Determine archive base destination path from configuration
+            archive_dir: str = (
+                raw_dotfiles[0].get("archive_dir", "~/DFBU_Archives")
+                if raw_dotfiles
+                else "~/DFBU_Archives"
+            )
             archive_base_dest_path: Path = Path(archive_dir).expanduser()
 
             # Add hostname subdirectory if configured
@@ -1568,22 +1538,7 @@ def main() -> int:
         src_files: list[Path] = create_src_file_list(src_dir)
 
         # Map source files to their original destination paths
-        dest_paths_with_none: list[Path | None] = create_dest_restore_paths(src_files)
-
-        # Filter out files that couldn't be processed and align lists
-        valid_pairs = [
-            (src, dest)
-            for src, dest in zip(src_files, dest_paths_with_none, strict=True)
-            if dest is not None
-        ]
-
-        if not valid_pairs:
-            print(f"{RED}Error:{RESET} No valid files could be restored.")
-            return 1
-
-        valid_src_files, valid_dest_paths = zip(*valid_pairs, strict=True)
-        src_files = list(valid_src_files)
-        dest_paths = list(valid_dest_paths)
+        dest_paths: list[Path] = create_dest_restore_paths(src_files)
 
         # Display summary of proposed restore operations
         CLIHandler.display_restore_summary(src_files, dest_paths)
@@ -1593,9 +1548,3 @@ def main() -> int:
             copy_files_restore(src_files, dest_paths, dry_run)
         else:
             print("Restore operation cancelled by user.")
-
-    return 0
-
-
-if __name__ == "__main__":
-    main()

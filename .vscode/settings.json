@@ -61,7 +61,7 @@
         "**/venv": true,
         "**/.venv": true
     },
-    // Markdown Linting Configuration
+    // Markdownlint configuration
     "markdownlint.config": {
         "MD024": false
     }

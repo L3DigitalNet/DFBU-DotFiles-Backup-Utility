@@ -1,6 +1,6 @@
 [project]
 name = "dfbu"
-version = "0.3.1"
+version = "0.3.2"
 description = "Dotfiles Backup Utility - A file backup and restoration utility"
 authors = [
     {name = "Chris Purcell", email = "chris@l3digital.net"}
@@ -60,19 +60,34 @@ select = [
 ]
 
 ignore = [
-    "ANN101",  # Missing type annotation for self in method
-    "ANN102",  # Missing type annotation for cls in classmethod
     "ANN401",  # Dynamically typed expressions (Any) - allow when necessary
     "PLR0913", # Too many arguments - let design dictate
     "PLR2004", # Magic value comparison - acceptable for common values
+    "E501",    # Allow long lines (managed by formatter/documentation)
+    "PLR0911", # Too many return statements can be acceptable
+    "PLR0915", # Function too complex/too many statements allowed when pragmatic
 ]
 
 [tool.ruff.lint.per-file-ignores]
 # Test files can have additional flexibility
 "tests/**/*.py" = [
-    "ANN",     # Type hints less critical in tests
-    "PLR2004", # Magic values acceptable in test data
-    "S101",    # Assert usage (required for pytest)
+    "ANN",      # Type hints less critical in tests
+    "PLR2004",  # Magic values acceptable in test data
+    "S101",     # Assert usage (required for pytest)
+    "PLC0415",  # Allow local imports within tests
+    "RUF059",   # Allow unused unpacking in tests for readability
+    "SIM",      # Simplification suggestions less critical in tests
+]
+"DFBU/tests/**/*.py" = [
+    "ANN",
+    "PLR2004",
+    "S101",
+    "PLC0415",
+    "RUF059",
+    "SIM",
+]
+"DFBU/gui/view.py" = [
+    "N802",  # Qt requires CamelCase event handler names like closeEvent
 ]
 
 [tool.ruff.lint.isort]

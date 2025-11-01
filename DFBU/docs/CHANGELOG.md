@@ -16,14 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- KDiff3 configuration paths for development utility support
-- Krusader user actions configuration path for enhanced file manager functionality
-
 ### Changed
-
-- Import organization improvements with proper ordering
-- Enhanced type safety with strict parameter added to zip() calls
-- Updated type hints for better code clarity
 
 ### Deprecated
 
@@ -32,6 +25,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [0.3.2] - 2025-11-01
+
+### Added
+
+- KDiff3 configuration paths for development utility support
+- Krusader user actions configuration path for enhanced file manager functionality
+
+### Changed
+
+- Import organization improvements with proper ordering
+- Enhanced type safety with strict parameter added to zip() calls
+- Updated type hints for better code clarity
+- Updated Date Changed header to 2025-11-01
+
+### Fixed
+
+- **ConfigValidator.validate_options() - Compression Level**: Fixed validation logic to properly default to 9 for out-of-range values (< 0 or > 9) instead of clamping to range boundaries
+- **ConfigValidator.validate_options() - Max Archives**: Fixed validation logic to properly default to 5 for values below 1 instead of clamping to minimum of 1
+- **Type Safety in Configuration Validation**: Added try-except blocks to handle invalid type conversions (e.g., string values) gracefully, defaulting to safe values (compression_level=9, max_archives=5)
+- Configuration validation now properly handles edge cases: out-of-range integers, invalid types, and missing values
 
 ## [0.3.1] - 2025-10-31
 

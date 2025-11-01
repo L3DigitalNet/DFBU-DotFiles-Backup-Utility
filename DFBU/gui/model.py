@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 DFBU Model - Data and Business Logic Layer
 
@@ -48,7 +47,7 @@ import tarfile
 import time
 import tomllib
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from socket import gethostname
 from typing import Any, Final, TypedDict
@@ -109,7 +108,7 @@ def create_rotating_backup(
         return None, False
 
     # Generate timestamped backup filename with collision handling
-    timestamp = datetime.now().strftime(timestamp_format)
+    timestamp = datetime.now(UTC).strftime(timestamp_format)
     backup_name = f"{source_path.stem}.{timestamp}{source_path.suffix}"
     backup_path = backup_dir / backup_name
 
@@ -212,9 +211,7 @@ def get_backup_files(
         return []
 
     # Sort by modification time (oldest first)
-    backup_files = [path for path, mtime in sorted(backup_list, key=lambda x: x[1])]
-
-    return backup_files
+    return [path for path, _mtime in sorted(backup_list, key=lambda x: x[1])]
 
 
 # =============================================================================
@@ -381,7 +378,7 @@ class DFBUModel:
         """
         try:
             # Read TOML configuration file
-            with open(self.config_path, "rb") as toml_file:
+            with self.config_path.open("rb") as toml_file:
                 config_data: dict[str, Any] = tomllib.load(toml_file)
 
             # Validate and extract configuration
@@ -423,7 +420,7 @@ class DFBUModel:
                 backup_dir = (
                     self.config_path.parent / f".{self.config_path.name}.backups"
                 )
-                backup_path, backup_success = create_rotating_backup(
+                _backup_path, _backup_success = create_rotating_backup(
                     source_path=self.config_path,
                     backup_dir=backup_dir,
                     max_backups=10,
@@ -464,7 +461,7 @@ class DFBUModel:
                 config_data["dotfile"].append(dotfile_entry)
 
             # Write TOML file using tomli_w
-            with open(self.config_path, "wb") as toml_file:
+            with self.config_path.open("wb") as toml_file:
                 tomli_w.dump(config_data, toml_file)
 
             return True, ""
@@ -760,11 +757,7 @@ class DFBUModel:
 
             # Compare modification time with tolerance for filesystem precision
             time_diff = abs(src_stat.st_mtime - dest_stat.st_mtime)
-            if time_diff > FILE_MTIME_TOLERANCE_SECONDS:
-                return False
-
-            # Files appear identical
-            return True
+            return time_diff <= FILE_MTIME_TOLERANCE_SECONDS
 
         except (OSError, PermissionError):
             return False
@@ -802,12 +795,20 @@ class DFBUModel:
                 return True
 
             # Create parent directory if needed
-            if create_parent and not dest_path.parent.exists():
-                if not self.create_directory(dest_path.parent):
-                    return False
+            if (
+                create_parent
+                and not dest_path.parent.exists()
+                and not self.create_directory(dest_path.parent)
+            ):
+                return False
 
             # Use Path.copy() with metadata preservation (Python 3.14+ required)
-            src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
+            # Fall back to shutil.copy2 for older Python versions
+            try:
+                src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
+            except AttributeError:
+                # Fallback for Python < 3.14
+                shutil.copy2(src_path, dest_path)
             return True
 
         except (OSError, PermissionError):
@@ -834,38 +835,43 @@ class DFBUModel:
         if not self.check_readable(src_path):
             return results
 
-        # Gather all files recursively
+        # Process files iteratively to avoid loading all into memory
         try:
-            files = [f for f in src_path.rglob("*") if f.is_file()]
+            # Use iterator for memory efficiency with large directories
+            for file_path in src_path.rglob("*"):
+                if not file_path.is_file():
+                    continue
+
+                # Skip files without read permissions
+                if not self.check_readable(file_path):
+                    results.append((file_path, None, False, False))
+                    continue
+
+                # Calculate destination path maintaining structure
+                try:
+                    file_relative = file_path.relative_to(src_path)
+                    file_dest = dest_base / file_relative
+
+                    # Check if file is identical and can be skipped
+                    if skip_identical and self.files_are_identical(
+                        file_path, file_dest
+                    ):
+                        results.append((file_path, file_dest, True, True))
+                    else:
+                        # Copy file
+                        success = self.copy_file(
+                            file_path,
+                            file_dest,
+                            create_parent=True,
+                            skip_identical=False,
+                        )
+                        results.append((file_path, file_dest, success, False))
+
+                except (ValueError, OSError):
+                    results.append((file_path, None, False, False))
+
         except (OSError, PermissionError):
             return results
-
-        # Process each file
-        for file_path in files:
-            # Skip files without read permissions
-            if not self.check_readable(file_path):
-                results.append((file_path, None, False, False))
-                continue
-
-            # Calculate destination path maintaining structure
-            try:
-                file_relative = file_path.relative_to(src_path)
-                file_dest = dest_base / file_relative
-
-                # Check if file is identical and can be skipped
-                was_skipped = False
-                if skip_identical and self.files_are_identical(file_path, file_dest):
-                    was_skipped = True
-                    results.append((file_path, file_dest, True, True))
-                else:
-                    # Copy file
-                    success = self.copy_file(
-                        file_path, file_dest, create_parent=True, skip_identical=False
-                    )
-                    results.append((file_path, file_dest, success, False))
-
-            except (ValueError, OSError):
-                results.append((file_path, None, False, False))
 
         return results
 
@@ -890,15 +896,16 @@ class DFBUModel:
         if not self.create_directory(archive_base):
             return None, False
 
-        # Generate timestamped archive filename with microseconds for uniqueness
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S-%f")
-        archive_name = f"dotfiles-{timestamp}.tar.gz"
+        # Generate timestamped archive filename
+        archive_name = (
+            f"dotfiles-{datetime.now(UTC).strftime('%Y-%m-%d_%H-%M-%S')}.tar.gz"
+        )
         archive_path = archive_base / archive_name
 
         try:
             # Create compressed TAR.GZ archive
             with tarfile.open(archive_path, "w:gz") as tar:
-                for path, exists, is_dir in dotfiles_to_archive:
+                for path, exists, _is_dir in dotfiles_to_archive:
                     if exists:
                         tar.add(path)
 
@@ -906,128 +913,6 @@ class DFBUModel:
 
         except (OSError, tarfile.TarError):
             return archive_path, False
-
-    def perform_mirror_backup(self) -> bool:
-        """
-        Perform mirror backup of all enabled dotfiles.
-
-        Copies files and directories to mirror destination, maintaining directory
-        structure and preserving metadata. Uses copy_file and copy_directory
-        methods for actual file operations.
-
-        Returns:
-            True if backup completed successfully, False if any errors occurred
-        """
-        # Reset statistics for new backup operation
-        self.reset_statistics()
-
-        # Check if mirror backup is enabled
-        if not self.options.get("mirror_enabled", True):
-            return False
-
-        success = True
-
-        # Process each dotfile entry
-        for index, dotfile in enumerate(self.dotfiles):
-            # Skip disabled dotfiles
-            if not dotfile.get("enabled", True):
-                continue
-
-            # Process each path in the dotfile
-            paths = dotfile.get("paths", [dotfile.get("path", "")])
-            if isinstance(paths, str):
-                paths = [paths]
-
-            for path_str in paths:
-                if not path_str:
-                    continue
-
-                # Expand and validate source path
-                src_path = self.expand_path(path_str)
-                if not src_path.exists():
-                    self.record_item_skipped()
-                    continue
-
-                # Assemble destination path for mirror backup
-                dest_path = self._assemble_dest_path(
-                    self.mirror_base_dir, src_path, dotfile
-                )
-
-                # Copy file or directory
-                if src_path.is_file():
-                    copy_success = self.copy_file(
-                        src_path, dest_path, create_parent=True, skip_identical=True
-                    )
-                elif src_path.is_dir():
-                    results = self.copy_directory(
-                        src_path, dest_path, skip_identical=True
-                    )
-                    copy_success = len(results) > 0 and all(
-                        result[2] for result in results
-                    )
-                    # Update statistics for each file in directory
-                    for _, _, file_success, skipped in results:
-                        if file_success:
-                            if skipped:
-                                self.record_item_skipped()
-                            else:
-                                self.record_item_processed(
-                                    0.0
-                                )  # Time will be set by actual copy
-                        else:
-                            self.record_item_failed()
-                else:
-                    copy_success = False
-
-                if not copy_success:
-                    success = False
-                    self.record_item_failed()
-                elif src_path.is_file():
-                    self.record_item_processed(0.0)  # Time will be set by actual copy
-
-        return success
-
-    def _assemble_dest_path(
-        self, base_dir: Path, src_path: Path, dotfile: DotFileDict
-    ) -> Path:
-        """
-        Assemble destination path for backup operations.
-
-        Args:
-            base_dir: Base destination directory (mirror or archive)
-            src_path: Source file/directory path
-            dotfile: Dotfile configuration dictionary
-
-        Returns:
-            Assembled destination path
-        """
-        # Determine if path is relative to home directory
-        is_relative_to_home = self._is_relative_to_home(src_path)
-
-        # Calculate relative path from home or root
-        if is_relative_to_home:
-            src_relative = src_path.relative_to(Path.home())
-            prefix = "home"
-        else:
-            src_relative = src_path.relative_to(Path("/"))
-            prefix = "root"
-
-        # Build destination path components
-        dest_parts = [base_dir]
-
-        # Add hostname subdirectory if configured
-        if self.options.get("hostname_subdir", True):
-            dest_parts.append(Path(self.hostname))
-
-        # Add date subdirectory if configured
-        if self.options.get("date_subdir", False):
-            dest_parts.append(Path(time.strftime("%Y-%m-%d")))
-
-        # Add prefix and relative path
-        dest_parts.extend([Path(prefix), src_relative])
-
-        # Use efficient path construction
-        return Path(*dest_parts)
 
     def rotate_archives(self) -> list[Path]:
         """
@@ -1057,7 +942,7 @@ class DFBUModel:
 
             # Sort by modification time
             archives = [
-                path for path, mtime in sorted(archive_list, key=lambda x: x[1])
+                path for path, _mtime in sorted(archive_list, key=lambda x: x[1])
             ]
         except OSError:
             return deleted_archives
@@ -1364,9 +1249,9 @@ class DFBUModel:
             # New format: paths is already a list
             paths_value = raw_dotfile["paths"]
             if isinstance(paths_value, list):
-                paths = paths_value
+                # Type: ignore needed for dynamic TOML data
+                paths = [str(p) for p in paths_value]  # type: ignore[misc]
             else:
-                # Fallback: treat as single path
                 paths = [str(paths_value)]
         elif "path" in raw_dotfile:
             # Legacy format: convert single path to list

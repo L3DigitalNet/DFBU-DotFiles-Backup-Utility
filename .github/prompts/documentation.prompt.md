@@ -48,7 +48,8 @@ Handle all documentation tasks for ${file} or project.
 ## Documentation Standards
 ### File Headers
 - Ensure all files have proper headers following repository standards
-- Include shebang, encoding, and complete docstring format as specified in [copilot-instructions.md](../copilot-instructions.md)
+- Include shebang and complete docstring format as specified in [copilot-instructions.md](../copilot-instructions.md)
+- **Note**: UTF-8 encoding headers are NOT required in Python 3 (UTF-8 is the default)
 - Header content must reflect current code implementation
 - Update "Date Changed" to current date
 

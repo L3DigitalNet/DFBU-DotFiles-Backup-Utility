@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU GUI - Dotfiles Backup Utility (Desktop Edition)
 
@@ -63,6 +61,7 @@ import sys
 from pathlib import Path
 from typing import Final
 
+
 # Add gui directory to Python path for module imports BEFORE importing local modules
 sys.path.insert(0, str(Path(__file__).parent / "gui"))
 
@@ -70,6 +69,7 @@ sys.path.insert(0, str(Path(__file__).parent / "gui"))
 from gui.model import DFBUModel
 from gui.view import MainWindow
 from gui.viewmodel import DFBUViewModel
+
 
 # Import PySide6 with proper error handling
 try:
@@ -148,7 +148,6 @@ class Application:
 
     def cleanup(self) -> None:
         """Perform cleanup when application exits."""
-        pass
 
 
 def main() -> int:

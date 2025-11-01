@@ -1,116 +1,9 @@
-# Python Repository Guidelines
-
-## ⛔ CRITICAL BRANCH PROTECTION RULE ⛔
-
-**AI AGENTS MUST NEVER MAKE CODE CHANGES TO THE `main` BRANCH**
-
-### Exception for Human-Initiated Merges:
-**EXCEPTION:** If the merge is initiated by a human using the `/merge_testing_to_main` command, AI agents are then permitted to modify the `main` branch as part of that merge process.
-
-### Enforcement Rules:
-1. **ALL code changes** must be made to the `testing` branch (except during human-initiated `/merge_testing_to_main` command)
-2. **BEFORE making ANY file edits**, verify current branch with: `git branch --show-current`
-3. **IF on `main` branch**, STOP immediately and switch to `testing`: `git checkout testing`
-   - **UNLESS** currently executing a human-initiated `/merge_testing_to_main` command
-4. **NO EXCEPTIONS** except as noted above - This rule applies to:
-   - New files creation
-   - File modifications
-   - File deletions
-   - Any code changes whatsoever
-5. **Merge workflow**: Only humans may initiate merges `testing` → `main` after review
-
-### Verification Steps (MANDATORY before ANY code change):
-```bash
-# Step 1: Check current branch
-git branch --show-current
-
-# Step 2: If output is "main", switch to testing
-git checkout testing
-
-# Step 3: Verify switch was successful
-git branch --show-current  # Must show "testing"
-```
-
-**VIOLATION CONSEQUENCES**: Any AI agent that modifies code on `main` branch is in direct violation of repository policy.
-
----
-
-## ⚠️ PUBLIC REPOSITORY RULES ⚠️
-
-**These rules are MANDATORY for public repositories:**
-
-1. **README.md Minimalism:**
-   - README.md files MUST be very basic and natural-sounding
-   - NEVER write README.md content that appears AI-generated
-   - Humans manually enter most information into README.md files
-   - These are front-facing documents for GitHub visitors
-   - Human maintainer retains full control over README.md contents
-
-2. **Markdown File Minimization:**
-   - Keep .md file creation to absolute minimum
-   - Avoid polluting the repository with excessive documentation files
-   - Only create .md files when absolutely necessary
-
-3. **Documentation Organization:**
-   - ALL general documentation goes in project's `/docs/` directory:
-     - Changelogs (CHANGELOG.md)
-     - Configuration guides
-     - Project documentation (PROJECT-DOC.md)
-     - Usage and functionality documentation
-     - Feature documentation
-   - NEVER create documentation .md files in root or scattered locations
-
-4. **Test Documentation:**
-   - ALL test files and test documentation go in project's `/tests/` directory
-   - Test summaries, test plans, and test results belong in `/tests/`
-   - NEVER create test documentation outside `/tests/` directory
-
----
-
-## Notes
-- Projects use Python 3.14+ features (e.g., `Path.copy()`)
-- #fetch https://docs.python.org/3.14/index.html for latest stdlib documentation
-
-## Critical Requirements (AI Priority Order)
-
-### 1. Environment & Dependencies
-- **Linux-only:** All code for Linux environments exclusively
-- **Standard library first:** Use Python stdlib before external dependencies
-- **Justify externals:** Comment why stdlib is insufficient when adding dependencies
-- **Key modules:** `pathlib`, `json`, `csv`, `datetime`, `collections`, `itertools`, `functools`
-
-### 2. Code Architecture
-- **DRY principle:** Eliminate duplication, centralize shared utilities
-- **Confident design:** Avoid defensive programming, prefer clear initialization
-- **Single source of truth:** Centralize logic, eliminate duplication
-- **Type safety:** Full type hints, modern union syntax (`str | None`)
-
-### 3. Version Strategy
-- **Error handling:** Defer until v1.0.0, focus on clean architecture first
-- **Testing focus:** Happy path and core functionality before v1.0.0
-- **Versioning:** MAJOR.MINOR.PATCH format, start at 0.0.1
-
-## Technical Standards
-
-### Python & Code Quality
-- **Version:** Python 3.14+ minimum
-- **Style:** Strict PEP 8, f-strings only (no `.format()` or `%`)
-- **Types:** Full type hints everywhere - functions, variables, constants, collections
-- **Modern syntax:** `str | None`, `list[str]`, `dict[str, int]`, `Final`, `Protocol`, `TypedDict`
-- **Functions:** Small, focused, descriptive names, max 3 nesting levels
-
-### File Structure (Required)
-- **MUST** include shebang and encoding: `#!/usr/bin/env python3` and `# -*- coding: utf-8 -*-`
-- **MUST** follow standard header format with project-specific Features section
-- **MUST** include inline comments for each significant code block for readability and autocompletion context
-- **MUST** place comments at the top of code blocks explaining their purpose, preferably in one line
-- **MUST** add inline comments for complex logic, Linux-specific implementations, and important decisions
-
-```python
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Project Title - Brief Description
+
+Note: UTF-8 encoding headers are NOT required in Python 3 (UTF-8 is default).
+Do not add encoding declarations unless non-UTF-8 encoding is actually needed.
 
 Description:
     What this module does and why.
@@ -149,7 +42,6 @@ Functions:
     - function1(): Brief description
     - function2(): Brief description
 """
-```
 
 ### Documentation Format
 ```python
@@ -202,7 +94,7 @@ def example_function(param1: str, param2: int) -> str:
 - **Storage:** ALL test files in project's `/tests/` directory
 - **Naming:** Test files start with `test_`, test functions start with `test_`
 - **Assertions:** Use pytest's assert statement only (no unittest-style assertions)
-- **Coverage:** 80%+ for critical paths
+- **Coverage:** 90%+ for critical paths
 - **Focus:** Core functionality and happy paths before v1.0.0
 - **Test Names:** Descriptive names that explain expected behavior
 - **Test Quality:** Keep tests fast, isolated, and deterministic
@@ -256,3 +148,95 @@ When generating code:
 - Excessive defensive programming (scattered None checks, "just in case" conditionals)
 - Complex nested conditionals that could be simplified with clear initialization
 - Type hints that suggest uncertainty (Optional types) when values are guaranteed
+
+## CLI Tool Development Guidelines
+
+*Note: These are CLI-specific requirements. All common requirements (file headers, testing, inline documentation) are defined above.*
+
+### CLI Requirements
+- **MUST** use `argparse` for argument parsing
+- **MUST** implement proper exit codes (0=success, non-zero=error)
+- **MUST** handle SIGINT (Ctrl+C) gracefully
+- **MUST** support `--verbose`, `--quiet`, `--help`, `--version`
+- **MUST** provide progress indicators for long operations
+- **MUST** use logging levels appropriately
+- **MUST** test argument parsing, exit codes, and interactive modes using pytest
+- **MUST** validate CLI behavior through automated testing of command-line interfaces
+
+### CLI-Specific Header Features
+- **MUST** include CLI-specific Features section with:
+  - Proper exit codes (0=success, non-zero=error)
+  - Signal handling for graceful shutdown (SIGINT/Ctrl+C)
+  - Standard CLI options: --verbose, --quiet, --help, --version
+  - Progress indicators for long-running operations
+
+### CLI Code Generation Focus
+- **Framework:** Use `argparse`, `pathlib`, built-in `logging`
+- **Architecture:** Separate parsing → validation → execution
+- **Pattern:** Follow template below
+
+### CLI Code Template
+
+```python
+#!/usr/bin/env python3
+
+def main() -> int:
+    """Main entry point. Returns exit code."""
+    # NOTE: Error handling deferred until v1.0.0 per main guidelines
+    args = parse_arguments()
+    setup_logging(args.verbose, args.quiet)
+    return execute_command(args)
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+## Desktop Application Development Guidelines
+
+*Note: These are Desktop-specific requirements. All common requirements (file headers, testing, inline documentation) are defined above.*
+
+### Desktop Requirements
+- **MUST** implement MVVM (Model–View–ViewModel) for Qt/PySide:
+- **MUST** handle threading for non-blocking UI
+- **MUST** provide user feedback for long operations
+- **MUST** save/restore window state and preferences
+- **MUST** separate business logic from GUI for testing
+- **MUST** test business logic independently of GUI components
+- **MUST** validate UI behavior through integration testing where appropriate
+
+### Desktop Header Requirements
+- **MUST** include Desktop-specific Features section with:
+  - MVVM (Model–View–ViewModel) architectural pattern for clean separation of concerns
+  - Threaded operations to prevent UI blocking
+  - Window state persistence (size, position, preferences)
+  - Responsive user feedback for long operations
+
+### Desktop Code Generation Focus
+- **Framework:** PySide6 first, justify alternatives
+- **Architecture:** Separate business logic from UI, use MVVM
+- **Pattern:** Follow template below
+
+### Desktop Application Template
+
+```python
+#!/usr/bin/env python3
+
+class Application:
+    """Main application controller."""
+
+    def __init__(self):
+        self.model = DataModel()
+        self.view = MainWindow(self)
+        self.setup_event_handlers()
+
+    def setup_event_handlers(self):
+        """Connect UI events to business logic."""
+        self.view.on_save = self.handle_save
+        self.view.on_load = self.handle_load
+
+    def run(self):
+        """Start the application main loop."""
+        # NOTE: Error handling deferred until v1.0.0 per main guidelines
+        self.view.mainloop()
+        self.cleanup()
+```

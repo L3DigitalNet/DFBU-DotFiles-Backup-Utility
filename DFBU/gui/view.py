@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 DFBU View - UI Presentation Layer
 
