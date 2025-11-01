@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Dotfiles Backup Utility (DFBU)
 
@@ -98,7 +99,7 @@ from core.validation import ConfigValidator
 
 
 # Version information
-__version__ = "0.5.3"
+__version__ = "0.5.4"
 
 
 # =============================================================================
@@ -725,7 +726,12 @@ class MirrorBackup:
                 )
             except AttributeError:
                 # Fallback for Python < 3.14
-                shutil.copy2(dotfile.src_path, dotfile.dest_path_mirror)
+                try:
+                    shutil.copy2(dotfile.src_path, dotfile.dest_path_mirror)
+                except (OSError, shutil.Error):
+                    print(f"  Error: Failed to copy {dotfile.src_path}")
+            except OSError:
+                print(f"  Error: Failed to copy {dotfile.src_path}")
 
     @staticmethod
     def _process_directory(dotfile: DotFile, dry_run: bool) -> None:
@@ -785,7 +791,12 @@ class MirrorBackup:
                     )
                 except AttributeError:
                     # Fallback for Python < 3.14
-                    shutil.copy2(file, file_dest_path)
+                    try:
+                        shutil.copy2(file, file_dest_path)
+                    except (OSError, shutil.Error):
+                        print(f"    Error: Failed to copy {file}")
+                except OSError:
+                    print(f"    Error: Failed to copy {file}")
 
         # Print completion message after processing all files
         if file_count > 0:
@@ -1363,7 +1374,12 @@ def copy_files_restore(
                 )
             except AttributeError:
                 # Fallback for Python < 3.14
-                shutil.copy2(src_file, dest_path)
+                try:
+                    shutil.copy2(src_file, dest_path)
+                except (OSError, shutil.Error):
+                    print(f"    Error: Failed to copy {src_file}")
+            except OSError:
+                print(f"    Error: Failed to copy {src_file}")
 
 
 def main() -> None:

@@ -56,6 +56,12 @@ from typing import Final
 # (e.g., ext4: 1ns, FAT32: 2s, NTFS: 100ns)
 FILE_MTIME_TOLERANCE_SECONDS: Final[float] = 1.0
 
+# Date and timestamp format constants for consistent formatting across operations
+DATE_FORMAT: Final[str] = "%Y-%m-%d"  # YYYY-MM-DD format for date subdirectories
+ARCHIVE_TIMESTAMP_FORMAT: Final[str] = (
+    "%Y-%m-%d_%H-%M-%S"  # ISO 8601 compatible timestamp for archives
+)
+
 
 # =============================================================================
 # Utility Functions for Backup Operations
@@ -341,10 +347,17 @@ class FileOperations:
         # Fall back to shutil.copy2 for older Python versions
         try:
             src_path.copy(dest_path, follow_symlinks=True, preserve_metadata=True)
+            return True
         except AttributeError:
             # Fallback for Python < 3.14
-            shutil.copy2(src_path, dest_path)
-        return True
+            try:
+                shutil.copy2(src_path, dest_path)
+                return True
+            except (OSError, shutil.Error):
+                return False
+        except OSError:
+            # Copy operation failed
+            return False
 
     def copy_directory(
         self, src_path: Path, dest_base: Path, skip_identical: bool = False
@@ -482,7 +495,7 @@ class FileOperations:
         if hostname_subdir:
             dest_parts.append(Path(self.hostname))
         if date_subdir:
-            dest_parts.append(Path(time.strftime("%Y-%m-%d")))
+            dest_parts.append(Path(time.strftime(DATE_FORMAT)))
         dest_parts.extend([Path(prefix), src_relative])
 
         # Combine all path components efficiently
@@ -519,7 +532,7 @@ class FileOperations:
 
         # Generate timestamped archive filename
         archive_name = (
-            f"dotfiles-{datetime.now(UTC).strftime('%Y-%m-%d_%H-%M-%S')}.tar.gz"
+            f"dotfiles-{datetime.now(UTC).strftime(ARCHIVE_TIMESTAMP_FORMAT)}.tar.gz"
         )
         archive_path = archive_base / archive_name
 
@@ -528,7 +541,11 @@ class FileOperations:
             with tarfile.open(archive_path, "w:gz") as tar:
                 for path, exists, _is_dir in dotfiles_to_archive:
                     if exists:
-                        tar.add(path)
+                        try:
+                            tar.add(path)
+                        except (OSError, ValueError, tarfile.TarError):
+                            # Skip files that can't be added (symlink loops, permission issues, invalid paths)
+                            continue
 
             return archive_path
 

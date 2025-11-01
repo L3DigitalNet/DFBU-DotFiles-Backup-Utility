@@ -5,7 +5,7 @@
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
 **GitHub:** <https://github.com/L3DigitalNet>
-**Version:** 0.3.2
+**Version:** 0.5.5
 **Date Created:** 10-18-2025
 **Date Changed:** 11-01-2025
 

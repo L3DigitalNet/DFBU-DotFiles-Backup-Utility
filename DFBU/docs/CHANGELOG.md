@@ -18,10 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Project Structure**: Moved `common_types.py` and `validation.py` to new `core/` subdirectory for better organization
-- **Imports**: Updated all import statements to use `from core.common_types` and `from core.validation` patterns
-- **Core Package**: Created `core/__init__.py` to expose shared utilities (`DotFileDict`, `OptionsDict`, `ConfigValidator`)
-
 ### Deprecated
 
 ### Removed
@@ -29,6 +25,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+## [0.5.5] - 2025-11-01
+
+### Changed
+
+- **Documentation Enhancement**: Comprehensive inline comment additions to backup_orchestrator.py
+  - Added descriptive comments for each significant code block following repository standards
+  - Enhanced code readability with context explanations for complex logic
+  - Improved AI autocompletion context with clear block-level documentation
+  - Added shebang line to module header per repository standards
+- **Header Updates**: Updated backup_orchestrator.py header to reflect current implementation
+
+## [0.5.4] - 2025-11-01
+
+### Fixed
+
+- **BackupOrchestrator Progress Tracking**: Fixed progress calculation logic to accurately reflect completed items vs total items
+  - Added `completed_items` counter separate from `processed_count` (which tracks files)
+  - Progress now correctly updates based on completed dotfile entries, not individual file counts
+  - Prevents progress bar jumping or freezing with large directories
+- **FileOperations Error Handling**: Improved `copy_file()` method to properly handle and report copy failures
+  - Added exception handling for both `Path.copy()` (Python 3.14) and `shutil.copy2()` fallback
+  - Method now returns `False` on failure instead of always returning `True`
+  - Catches `OSError` and `shutil.Error` exceptions to prevent silent failures
+- **Archive Creation Robustness**: Enhanced `create_archive()` exception handling
+  - Added individual file-level exception handling within archive creation loop
+  - Catches `OSError`, `ValueError`, and `tarfile.TarError` per file to prevent partial archive failure
+  - Archives now complete even if some files can't be added (symlink loops, permission issues, etc.)
+- **CLI Copy Operations**: Added error handling to all `Path.copy()` operations in `dfbu.py`
+  - Improved fallback exception handling for Python < 3.14 compatibility
+  - Added error messages for failed copy operations in both backup and restore modes
+  - Consistent error handling across file and directory processing
+
+### Changed
+
+- **Type Hints Enhancement**: Replaced generic `callable` type hints with precise `Callable[[...], ...]` from `collections.abc`
+  - Updated all callback parameters in `BackupOrchestrator` class
+  - Improved type safety and IDE autocomplete support
+  - Specific signatures: `Callable[[int], None]` for progress, `Callable[[str, str], None]` for item callbacks
+- **Date Format Constants**: Extracted hardcoded date formats into module-level constants
+  - Added `DATE_FORMAT` constant: `"%Y-%m-%d"` for date subdirectories
+  - Added `ARCHIVE_TIMESTAMP_FORMAT` constant: `"%Y-%m-%d_%H-%M-%S"` for archive filenames
+  - Centralized format definitions in `file_operations.py` for consistency and maintainability
+- **Import Organization**: Moved `import time` to top-level in `backup_orchestrator.py` (PEP 8 compliance)
+- **Code Cleanup**: Removed unused loop variable `i` from `execute_mirror_backup()` enumerate call
+
+### Added
+
+- **Project Structure**: Moved `common_types.py` and `validation.py` to new `core/` subdirectory for better organization
+- **Imports**: Updated all import statements to use `from core.common_types` and `from core.validation` patterns
+- **Core Package**: Created `core/__init__.py` to expose shared utilities (`DotFileDict`, `OptionsDict`, `ConfigValidator`)
 
 ## [0.4.0] - 2025-11-01
 
