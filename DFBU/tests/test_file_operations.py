@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Test File Operations Module
 
@@ -18,10 +16,10 @@ import sys
 from pathlib import Path
 from socket import gethostname
 
+
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import pytest
 from dfbu import FileSystemHelper, PathAssembler
 
 
@@ -132,7 +130,9 @@ class TestFileSystemHelper:
     def test_format_action_verb_copy_dry_run_present_tense(self) -> None:
         """Test action verb formatting in dry-run mode, present tense."""
         # Act
-        result = FileSystemHelper.format_action_verb("copy", dry_run=True, past_tense=False)
+        result = FileSystemHelper.format_action_verb(
+            "copy", dry_run=True, past_tense=False
+        )
 
         # Assert
         assert result == "Would copy"
@@ -140,7 +140,9 @@ class TestFileSystemHelper:
     def test_format_action_verb_copy_normal_present_tense(self) -> None:
         """Test action verb formatting in normal mode, present tense."""
         # Act
-        result = FileSystemHelper.format_action_verb("copy", dry_run=False, past_tense=False)
+        result = FileSystemHelper.format_action_verb(
+            "copy", dry_run=False, past_tense=False
+        )
 
         # Assert
         assert result == "Copying"
@@ -148,7 +150,9 @@ class TestFileSystemHelper:
     def test_format_action_verb_copy_normal_past_tense(self) -> None:
         """Test action verb formatting in normal mode, past tense."""
         # Act
-        result = FileSystemHelper.format_action_verb("copy", dry_run=False, past_tense=True)
+        result = FileSystemHelper.format_action_verb(
+            "copy", dry_run=False, past_tense=True
+        )
 
         # Assert - Implementation just adds "d" to capitalized verb
         assert result == "Copyd"
@@ -156,7 +160,9 @@ class TestFileSystemHelper:
     def test_format_action_verb_delete_dry_run_past_tense(self) -> None:
         """Test action verb formatting for delete in dry-run mode."""
         # Act
-        result = FileSystemHelper.format_action_verb("delete", dry_run=True, past_tense=True)
+        result = FileSystemHelper.format_action_verb(
+            "delete", dry_run=True, past_tense=True
+        )
 
         # Assert
         assert result == "Would delete"
@@ -235,7 +241,10 @@ class TestPathAssembler:
         )
 
         # Assert
-        assert result == base_path / hostname / expected_date / "home" / "config" / "app.conf"
+        assert (
+            result
+            == base_path / hostname / expected_date / "home" / "config" / "app.conf"
+        )
 
     def test_assemble_dest_path_root_no_subdirs(self, tmp_path: Path) -> None:
         """Test destination path assembly for root directory without subdirs."""
@@ -270,11 +279,15 @@ class TestPathAssembler:
         # Assert
         assert result == base_path / hostname / "root" / "etc" / "hosts"
 
-    def test_assemble_dest_path_preserves_nested_structure(self, tmp_path: Path) -> None:
+    def test_assemble_dest_path_preserves_nested_structure(
+        self, tmp_path: Path
+    ) -> None:
         """Test destination path preserves nested directory structure."""
         # Arrange
         base_path = tmp_path / "backup"
-        src_path = Path.home() / "deeply" / "nested" / "directory" / "structure" / "file.txt"
+        src_path = (
+            Path.home() / "deeply" / "nested" / "directory" / "structure" / "file.txt"
+        )
         hostname_subdir = False
         date_subdir = False
 
@@ -284,7 +297,15 @@ class TestPathAssembler:
         )
 
         # Assert
-        expected = base_path / "home" / "deeply" / "nested" / "directory" / "structure" / "file.txt"
+        expected = (
+            base_path
+            / "home"
+            / "deeply"
+            / "nested"
+            / "directory"
+            / "structure"
+            / "file.txt"
+        )
         assert result == expected
         # Verify all components are preserved
         assert "deeply" in result.parts

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Test Configuration Validation Module
 
@@ -17,11 +15,11 @@ License: MIT
 import sys
 from pathlib import Path
 
+
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-import pytest
-from dfbu import ConfigValidator, OptionsDict, DotFileDict
+from dfbu import ConfigValidator
 
 
 class TestConfigValidator:

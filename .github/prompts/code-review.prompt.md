@@ -19,7 +19,7 @@ Perform a complete code review of ${file} or project following repository guidel
 - **Type hints MANDATORY**: ALL functions, methods, variables, constants, data structures, collections
 - **Standard library FIRST**: Use Python stdlib before ANY external dependencies - justify external deps with comments
 - **PEP 8 compliance**: Strict formatting and style requirements
-- **File headers**: Full docstring format with shebang, encoding, and complete metadata
+- **File headers**: Full docstring format with shebang and complete metadata (UTF-8 encoding NOT required in Python 3)
 - **Streamlined docstrings**: Brief descriptions, 80-char limit, leverage type hints
 - **DRY principle**: Eliminate ALL duplication, centralize shared utilities within the project
 

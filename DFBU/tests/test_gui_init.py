@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU GUI Package Tests
 
@@ -25,11 +23,12 @@ Requirements:
 import sys
 from pathlib import Path
 
+
 # Add DFBU directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import gui package
-from gui import __version__, __author__, __email__, __all__
+from gui import __all__, __author__, __email__, __version__
 
 
 class TestGUIPackageMetadata:

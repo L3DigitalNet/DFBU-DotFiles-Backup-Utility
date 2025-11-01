@@ -82,3 +82,4 @@ Even for critical bugs:
 ## Full Policy
 
 See: `.github/BRANCH_PROTECTION_POLICY.md` for complete details.
+/home/chris/GitHub/DFBU-DotFiles-Backup-Utility/.github/instructions

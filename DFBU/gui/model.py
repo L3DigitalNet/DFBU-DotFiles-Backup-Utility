@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 DFBU Model - Data and Business Logic Layer
 
@@ -49,7 +47,7 @@ import tarfile
 import time
 import tomllib
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from socket import gethostname
 from typing import Any, Final, TypedDict
@@ -110,7 +108,7 @@ def create_rotating_backup(
         return None, False
 
     # Generate timestamped backup filename with collision handling
-    timestamp = datetime.now().strftime(timestamp_format)
+    timestamp = datetime.now(UTC).strftime(timestamp_format)
     backup_name = f"{source_path.stem}.{timestamp}{source_path.suffix}"
     backup_path = backup_dir / backup_name
 
@@ -213,9 +211,7 @@ def get_backup_files(
         return []
 
     # Sort by modification time (oldest first)
-    backup_files = [path for path, mtime in sorted(backup_list, key=lambda x: x[1])]
-
-    return backup_files
+    return [path for path, _mtime in sorted(backup_list, key=lambda x: x[1])]
 
 
 # =============================================================================
@@ -382,7 +378,7 @@ class DFBUModel:
         """
         try:
             # Read TOML configuration file
-            with open(self.config_path, "rb") as toml_file:
+            with self.config_path.open("rb") as toml_file:
                 config_data: dict[str, Any] = tomllib.load(toml_file)
 
             # Validate and extract configuration
@@ -424,7 +420,7 @@ class DFBUModel:
                 backup_dir = (
                     self.config_path.parent / f".{self.config_path.name}.backups"
                 )
-                backup_path, backup_success = create_rotating_backup(
+                _backup_path, _backup_success = create_rotating_backup(
                     source_path=self.config_path,
                     backup_dir=backup_dir,
                     max_backups=10,
@@ -465,7 +461,7 @@ class DFBUModel:
                 config_data["dotfile"].append(dotfile_entry)
 
             # Write TOML file using tomli_w
-            with open(self.config_path, "wb") as toml_file:
+            with self.config_path.open("wb") as toml_file:
                 tomli_w.dump(config_data, toml_file)
 
             return True, ""
@@ -761,11 +757,7 @@ class DFBUModel:
 
             # Compare modification time with tolerance for filesystem precision
             time_diff = abs(src_stat.st_mtime - dest_stat.st_mtime)
-            if time_diff > FILE_MTIME_TOLERANCE_SECONDS:
-                return False
-
-            # Files appear identical
-            return True
+            return time_diff <= FILE_MTIME_TOLERANCE_SECONDS
 
         except (OSError, PermissionError):
             return False
@@ -803,9 +795,12 @@ class DFBUModel:
                 return True
 
             # Create parent directory if needed
-            if create_parent and not dest_path.parent.exists():
-                if not self.create_directory(dest_path.parent):
-                    return False
+            if (
+                create_parent
+                and not dest_path.parent.exists()
+                and not self.create_directory(dest_path.parent)
+            ):
+                return False
 
             # Use Path.copy() with metadata preservation (Python 3.14+ required)
             # Fall back to shutil.copy2 for older Python versions
@@ -902,7 +897,9 @@ class DFBUModel:
             return None, False
 
         # Generate timestamped archive filename
-        archive_name = f"dotfiles-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.tar.gz"
+        archive_name = (
+            f"dotfiles-{datetime.now(UTC).strftime('%Y-%m-%d_%H-%M-%S')}.tar.gz"
+        )
         archive_path = archive_base / archive_name
 
         try:

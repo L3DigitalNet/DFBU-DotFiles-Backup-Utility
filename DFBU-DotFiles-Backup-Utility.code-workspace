@@ -66,6 +66,10 @@
 			"**/.mypy_cache": true,
 			"**/venv": true,
 			"**/.venv": true
+		},
+		// Markdownlint configuration
+		"markdownlint.config": {
+			"MD024": false
 		}
 	}
 }
