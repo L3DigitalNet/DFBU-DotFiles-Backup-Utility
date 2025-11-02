@@ -927,12 +927,24 @@ class DFBUViewModel(QObject):
 
         # Build message using list and join for better performance
         message_parts = [
-            "Operation completed!\n",
-            f"Items processed: {stats.processed_items}",
-            f"Items skipped: {stats.skipped_items}",
-            f"Items failed: {stats.failed_items}",
-            f"Total time: {stats.total_time:.2f} seconds",
+            "Backup Operation Completed!\n",
         ]
+
+        # Provide context about what "processed" and "skipped" mean
+        if stats.processed_items > 0:
+            message_parts.append(f"✓ Files copied: {stats.processed_items}")
+        else:
+            message_parts.append("✓ Files copied: 0 (all files up to date)")
+
+        if stats.skipped_items > 0:
+            message_parts.append(
+                f"⊘ Files skipped: {stats.skipped_items} (unchanged since last backup)"
+            )
+
+        if stats.failed_items > 0:
+            message_parts.append(f"✗ Files failed: {stats.failed_items}")
+
+        message_parts.append(f"\nTotal time: {stats.total_time:.2f} seconds")
 
         # Add detailed timing statistics if available
         if stats.processing_times:
