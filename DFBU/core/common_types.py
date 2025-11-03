@@ -39,7 +39,6 @@ class DotFileDict(TypedDict):
     """
 
     category: str
-    subcategory: str
     application: str
     description: str
     paths: list[str]

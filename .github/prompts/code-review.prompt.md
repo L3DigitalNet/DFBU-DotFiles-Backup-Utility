@@ -23,25 +23,28 @@ Perform a complete code review of the project following MVVM architecture, SOLID
 
 ## MVVM Architecture Review (CRITICAL)
 
-### Model Layer (`src/models/`)
-- **VERIFY**: No Qt imports (no PySide6, no QObject)
-- **VERIFY**: Pure Python business logic only
-- **VERIFY**: No UI concerns or dependencies
-- **VERIFY**: Uses `@dataclass` for simple data containers
-- **VERIFY**: Domain-specific validation and exceptions
-- **CHECK**: Proper separation of concerns
-- **CHECK**: DRY principle applied
+### Model Layer (`DFBU/gui/` or `DFBU/core/`)
+- **NO Qt imports** (no PySide6, no QObject)
+- Pure Python business logic only
+- Data validation and domain rules
+- No UI concerns whatsoever
 
-### ViewModel Layer (`src/viewmodels/`)
-- **VERIFY**: Inherits from `QObject` for signals/slots
-- **VERIFY**: Defines signals for state changes
-- **VERIFY**: Accepts dependencies through constructor (dependency injection)
-- **VERIFY**: No direct widget manipulation
-- **VERIFY**: No business logic (delegates to Model/Service)
-- **CHECK**: Testable without UI instantiation
-- **CHECK**: Proper signal naming and usage
+**Check:**
+- [ ] No `from PySide6` imports
+- [ ] No direct UI interaction
 
-### View Layer (`src/views/`)
+### ViewModel Layer (`DFBU/gui/`)
+- Inherits from `QObject` for signals/slots
+- Presentation logic and state management
+- Accepts dependencies via constructor
+- Emits signals for state changes
+
+**Check:**
+- [ ] Inherits from `QObject`
+- [ ] Uses signals for state updates
+- [ ] No direct widget manipulation
+
+### View Layer (`DFBU/gui/`)
 - **VERIFY**: Inherits from appropriate Qt widget class
 - **VERIFY**: Accepts ViewModel in constructor
 - **VERIFY**: Connects signals/slots in `__init__` or `setup_connections()`

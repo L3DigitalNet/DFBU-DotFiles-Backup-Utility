@@ -11,7 +11,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-18-2025
-Date Changed: 11-01-2025
+Date Changed: 11-03-2025
 License: MIT
 
 Features:
@@ -67,6 +67,7 @@ from typing import Final
 sys.path.insert(0, str(Path(__file__).parent / "gui"))
 
 # Import local modules after path is set
+from gui.logging_config import get_logger, setup_default_logging
 from gui.model import DFBUModel
 from gui.view import MainWindow
 from gui.viewmodel import DFBUViewModel
@@ -80,11 +81,18 @@ except ImportError:
     print("Install it with: pip install PySide6")
     sys.exit(1)
 
+# Setup logging
+setup_default_logging()
+logger = get_logger(__name__)
+
 # Application version
-__version__: Final[str] = "0.5.7"
+__version__: Final[str] = "0.5.8"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
-DEFAULT_CONFIG_PATH: Final[Path] = Path(__file__).parent / "data" / "dfbu-config.toml"
+# Use relative path for portability - resolve to absolute at runtime
+DEFAULT_CONFIG_PATH: Final[Path] = (
+    Path(__file__).parent / "data" / "dfbu-config.toml"
+).resolve()
 
 
 class Application:
@@ -107,6 +115,8 @@ class Application:
 
     def __init__(self) -> None:
         """Initialize the Application with MVVM architecture."""
+        logger.info(f"Initializing {PROJECT_NAME} v{__version__}")
+
         self.app = QApplication(sys.argv)
         self.app.setApplicationName(PROJECT_NAME)
         self.app.setApplicationVersion(__version__)
@@ -114,13 +124,24 @@ class Application:
 
         self._initialize_config_directory()
 
-        # Create MVVM components: Model -> ViewModel -> View
-        self.model = DFBUModel(DEFAULT_CONFIG_PATH)
-        self.viewmodel = DFBUViewModel(self.model)
-        self.view = MainWindow(self.viewmodel, __version__)
+        try:
+            # Create MVVM components: Model -> ViewModel -> View
+            logger.debug("Creating Model with config path: %s", DEFAULT_CONFIG_PATH)
+            self.model = DFBUModel(DEFAULT_CONFIG_PATH)
 
-        # Auto-load configuration if available from previous session
-        self._auto_load_config()
+            logger.debug("Creating ViewModel")
+            self.viewmodel = DFBUViewModel(self.model)
+
+            logger.debug("Creating Main Window")
+            self.view = MainWindow(self.viewmodel, __version__)
+
+            # Auto-load configuration if available from previous session
+            self._auto_load_config()
+
+            logger.info("Application initialized successfully")
+        except Exception as e:
+            logger.error("Failed to initialize application: %s", e, exc_info=True)
+            raise
 
     def _initialize_config_directory(self) -> None:
         """Create configuration directory if needed."""

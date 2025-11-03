@@ -123,25 +123,43 @@ def process_data(items: list[str], validate: bool = True) -> dict[str, int]:
 - [ ] Examples are working and clear
 - [ ] Sphinx/pdoc compatible format (if applicable)
 
-- **README.md**: Create or update comprehensive README.md with project directory structure, installation, usage, etc.
-- **CHANGELOG.md**: Maintain CHANGELOG.md with version history, changes, and Linux-specific notes.
+## DFBU Project Documentation
 
-### Project Documentation (Big Picture) -> Star-Trek-Retro-Remake/docs/*.md
+### Core Documentation Files
+- **README.md**: Create or update comprehensive README.md with project directory structure, installation, usage, and architecture overview.
+- **CHANGELOG.md**: Maintain CHANGELOG.md in `DFBU/docs/` with version history, changes, and Linux-specific notes.
 
-Create or update the following documentation files in the `docs/` directory:
+### Project Documentation -> DFBU/docs/*.md
 
-- **ARCHITECTURE.md**: Detailed architecture document covering system design, patterns used, and module interactions.
-- **CALL_CHAIN_FLOW.md**: Contains visual flow charts showing how the game's components interact, where to implement specific features, and the execution flow from startup to gameplay.
-- **DOCUMENTATION_STANDARDS.md**: This document defines the documentation standards for the Star Trek Retro Remake project, establishing clear rules for where documentation should be located and what it should contain.
-- **ARCHITECTURE.md**: Detailed architecture document covering system design, patterns used, and module interactions.
-- **PYTHON_FILE_REFERENCE.md**: This document provides a clear reference for the purpose of each Python file in the Star Trek Retro Remake project and indicates where to add specific types of code.
-- **VERSIONING_GUIDELINES.md**: This document outlines the simplified versioning approach for the Python repository. The new system uses a clean MAJOR.MINOR.PATCH format without development stage extensions and integrates with the `/version-update` prompt command for automated version management.
-- **QTDESIGNER_WORKFLOW.md**: The Star Trek Retro Remake project uses Qt Designer for UI design and PySide6 for runtime UI management. This document describes the workflow for designing, compiling, and using UI files.
+Create or update the following documentation files in the `DFBU/docs/` directory:
 
-### Component Documentation (File-Level) -> Star-Trek-Retro-Remake/STRR/
+- **ARCHITECTURE.md**: Detailed architecture document covering MVVM design, SOLID principles, module interactions, and component responsibilities.
+- **QUICKSTART.md**: Quick start guide for CLI usage, configuration, and basic operations.
+- **QUICKSTART_UI_UV.md**: Quick start guide for GUI usage with UV package manager setup.
+- **UI_DESIGN_GUIDE.md**: Guide for Qt Designer workflow, UI file management, and PySide6 integration.
+- **README.md**: Test suite documentation explaining testing approach, fixtures, and coverage goals.
 
-- Create or update `_doc.md` files for each *.py file in the STRR/ directory (recursively).
-- Each `_doc.md` file should provide comprehensive documentation for its corresponding Python module, including purpose, architecture, usage examples, and integration points.
+### Component Documentation (File-Level) -> DFBU/
+
+For Python modules in `DFBU/gui/` and `DFBU/core/`:
+- Maintain comprehensive docstrings for all public classes and methods
+- Include inline comments for complex logic and MVVM-specific patterns
+- Document signal/slot connections and threading considerations
+- Explain Qt Designer .ui file integration where applicable
+
+### Testing Documentation -> DFBU/tests/
+
+- **README.md**: Comprehensive testing documentation explaining test organization, fixtures, markers, and coverage requirements
+- Test files should have clear docstrings explaining test purpose and setup
+- No separate `_doc.md` files needed for test modules
+
+### Configuration Documentation
+
+- Document TOML configuration structure and validation rules
+- Explain backup modes (mirror vs archive) and directory organization
+- Include examples of common configuration scenarios
+
+
 
 ### Testing Documentation
 

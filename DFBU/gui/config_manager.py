@@ -53,6 +53,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.common_types import DotFileDict, OptionsDict
 from core.validation import ConfigValidator
 
+from gui.input_validation import InputValidator
+
 
 # =============================================================================
 # Utility Functions (needed by ConfigManager)
@@ -184,6 +186,9 @@ class ConfigManager:
         """
         Load and validate TOML configuration file.
 
+        Automatically detects and corrects corrupted config entries where paths
+        are not in tilde notation or have incorrect structure.
+
         Returns:
             Tuple of (success, error_message). error_message is empty on success.
         """
@@ -204,6 +209,23 @@ class ConfigManager:
                     self.dotfiles[0].get("archive_dir", "~/DFBU_Archives")
                 )
 
+            # Check for and fix any corrupted or non-portable path entries
+            corruptions_fixed = self._validate_and_fix_paths()
+
+            # If corruptions were found and fixed, auto-save the corrected config
+            if corruptions_fixed > 0:
+                save_success, save_error = self.save_config()
+                if save_success:
+                    return (
+                        True,
+                        f"Config loaded (auto-corrected {corruptions_fixed} path entries)",
+                    )
+                # If save fails, still return success for loading but mention the issue
+                return (
+                    True,
+                    f"Config loaded (found {corruptions_fixed} issues but auto-save failed: {save_error})",
+                )
+
             return True, ""
 
         except FileNotFoundError:
@@ -214,6 +236,50 @@ class ConfigManager:
             return False, f"Missing required configuration key: {e!s}"
         except Exception as e:
             return False, f"Unexpected error loading config: {e!s}"
+
+    def _validate_and_fix_paths(self) -> int:
+        """
+        Validate and fix path entries in dotfiles configuration.
+
+        Checks for and corrects:
+        1. Absolute paths that should use tilde notation (~/...)
+        2. Paths not using portable format
+
+        Returns:
+            Number of path entries that were corrected
+        """
+        corrections_made = 0
+
+        for dotfile in self.dotfiles:
+            paths_list = dotfile.get("paths", [])
+            corrected_paths: list[str] = []
+            paths_changed = False
+
+            for path_str in paths_list:
+                # Skip empty paths
+                if not path_str:
+                    corrected_paths.append(path_str)
+                    continue
+
+                # Expand the path to check if it's under home directory
+                expanded_path = self.expand_path(path_str)
+
+                # Convert to portable tilde notation if under home directory
+                portable_path = self._path_to_tilde_notation(expanded_path)
+
+                # Check if conversion changed the path
+                if portable_path != path_str:
+                    corrected_paths.append(portable_path)
+                    paths_changed = True
+                    corrections_made += 1
+                else:
+                    corrected_paths.append(path_str)
+
+            # Update the dotfile's paths if any changes were made
+            if paths_changed:
+                dotfile["paths"] = corrected_paths
+
+        return corrections_made
 
     def save_config(self) -> tuple[bool, str]:
         """
@@ -255,19 +321,24 @@ class ConfigManager:
             for dotfile in self.dotfiles:
                 dotfile_entry: dict[str, Any] = {
                     "category": dotfile["category"],
-                    "subcategory": dotfile["subcategory"],
                     "application": dotfile["application"],
                     "description": dotfile["description"],
                     "enabled": dotfile["enabled"],
                 }
 
+                # Convert paths to tilde notation for portability
                 # Save as single 'path' for backward compatibility if only one path
                 # Otherwise save as 'paths' list
                 paths_list = dotfile["paths"]
-                if len(paths_list) == 1:
-                    dotfile_entry["path"] = paths_list[0]
+                portable_paths = [
+                    self._path_to_tilde_notation(self.expand_path(path))
+                    for path in paths_list
+                ]
+
+                if len(portable_paths) == 1:
+                    dotfile_entry["path"] = portable_paths[0]
                 else:
-                    dotfile_entry["paths"] = paths_list
+                    dotfile_entry["paths"] = portable_paths
 
                 config_data["dotfile"].append(dotfile_entry)
 
@@ -285,7 +356,6 @@ class ConfigManager:
     def add_dotfile(
         self,
         category: str,
-        subcategory: str,
         application: str,
         description: str,
         paths: list[str],
@@ -296,7 +366,6 @@ class ConfigManager:
 
         Args:
             category: Category for the dotfile
-            subcategory: Subcategory for the dotfile
             application: Application name
             description: Description of the dotfile
             paths: List of file or directory paths
@@ -308,7 +377,6 @@ class ConfigManager:
         # Create new dotfile entry with paths from existing configuration
         new_dotfile: DotFileDict = {
             "category": category,
-            "subcategory": subcategory,
             "application": application,
             "description": description,
             "paths": paths,
@@ -325,7 +393,6 @@ class ConfigManager:
         self,
         index: int,
         category: str,
-        subcategory: str,
         application: str,
         description: str,
         paths: list[str],
@@ -337,7 +404,6 @@ class ConfigManager:
         Args:
             index: Index of dotfile to update
             category: Updated category
-            subcategory: Updated subcategory
             application: Updated application name
             description: Updated description
             paths: Updated list of file or directory paths
@@ -349,7 +415,6 @@ class ConfigManager:
         if 0 <= index < len(self.dotfiles):
             # Update the dotfile entry while preserving mirror_dir and archive_dir
             self.dotfiles[index]["category"] = category
-            self.dotfiles[index]["subcategory"] = subcategory
             self.dotfiles[index]["application"] = application
             self.dotfiles[index]["description"] = description
             self.dotfiles[index]["paths"] = paths
@@ -383,8 +448,9 @@ class ConfigManager:
             New enabled status if successful, current status otherwise
         """
         if 0 <= index < len(self.dotfiles):
-            self.dotfiles[index]["enabled"] = not self.dotfiles[index]["enabled"]
-            return self.dotfiles[index]["enabled"]
+            current_enabled: bool = bool(self.dotfiles[index]["enabled"])
+            self.dotfiles[index]["enabled"] = not current_enabled
+            return bool(self.dotfiles[index]["enabled"])
         return False
 
     def update_option(self, key: str, value: bool | int | str) -> bool:
@@ -424,7 +490,7 @@ class ConfigManager:
 
     def update_path(self, path_type: str, value: str) -> bool:
         """
-        Update mirror_dir or archive_dir path.
+        Update mirror_dir or archive_dir path with validation.
 
         Args:
             path_type: Either "mirror_dir" or "archive_dir"
@@ -433,6 +499,11 @@ class ConfigManager:
         Returns:
             True if path was updated successfully
         """
+        # Validate path before applying
+        validation_result = InputValidator.validate_path(value, must_exist=False)
+        if not validation_result.success:
+            return False
+
         expanded_path = self.expand_path(value)
 
         if path_type == "mirror_dir":

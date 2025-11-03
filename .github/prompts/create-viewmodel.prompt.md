@@ -5,7 +5,7 @@ description: "Create a new ViewModel class following MVVM architecture and SOLID
 
 # Create New ViewModel
 
-Create a new ViewModel class in the `src/viewmodels/` directory following MVVM architecture, SOLID principles, and repository guidelines.
+Create a new ViewModel class in the `DFBU/gui/` directory following MVVM architecture, SOLID principles, and repository guidelines.
 
 ## Overview
 
@@ -23,7 +23,7 @@ ViewModels mediate between Views and Models, handling presentation logic and sta
 - **DOCSTRINGS** on all public APIs
 
 ### Location
-Place new viewmodel in: `src/viewmodels/[viewmodel_name].py`
+Place new viewmodel in: `DFBU/gui/[viewmodel_name].py`
 
 ### Naming Convention
 - **File**: `snake_case_viewmodel.py` (e.g., `user_profile_viewmodel.py`)
@@ -326,7 +326,7 @@ class MyView(QWidget):
 
 ## Checklist
 
-- [ ] Created file in `src/viewmodels/`
+- [ ] Created file in `DFBU/gui/`
 - [ ] Inherits from `QObject`
 - [ ] Signals defined at class level
 - [ ] Dependencies injected through constructor

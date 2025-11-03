@@ -12,39 +12,40 @@ This directory contains specialized prompts for developing PySide6 desktop appli
 **Creates**: Model, Service, ViewModel, View, and tests
 **Use When**: Starting a new feature from scratch
 **Output**: Complete feature with proper layer separation
+**DFBU Structure**: Components go in `DFBU/gui/` and `DFBU/core/`
 
 #### `create-model.prompt.md`
 
 **Purpose**: Create a new Model class
-**Creates**: Model class in `src/models/` with tests
+**Creates**: Model class in `DFBU/gui/` with tests
 **Use When**: Need business logic or domain entity
 **Key Points**: No Qt imports, pure Python, validation logic
 
 #### `create-viewmodel.prompt.md`
 
 **Purpose**: Create a new ViewModel class
-**Creates**: ViewModel in `src/viewmodels/` with tests
+**Creates**: ViewModel in `DFBU/gui/` with tests
 **Use When**: Need presentation logic and state management
 **Key Points**: Inherits QObject, defines signals, uses dependency injection
 
 #### `create-view.prompt.md`
 
 **Purpose**: Create a new View class
-**Creates**: View in `src/views/`
+**Creates**: View in `DFBU/gui/`
 **Use When**: Need UI component
-**Key Points**: Accepts ViewModel, minimal logic, signal/slot connections
+**Key Points**: Accepts ViewModel, minimal logic, signal/slot connections, uses Qt Designer .ui files
 
 #### `create-service.prompt.md`
 
 **Purpose**: Create a new Service class
-**Creates**: Service in `src/services/` with protocol and tests
+**Creates**: Service in `DFBU/gui/` with protocol and tests
 **Use When**: Need external integration (files, APIs, database)
 **Key Points**: Protocol-based, proper error handling
 
 #### `create-ui.prompt.md`
 
 **Purpose**: Generate Qt Designer .ui file from Python code
-**Creates**: .ui XML file in `src/views/`
+**Creates**: .ui XML file in `DFBU/gui/designer/`
 **Use When**: Want to design UI visually in Qt Designer
 **Key Points**: Maps Python widgets to Qt Designer XML
 

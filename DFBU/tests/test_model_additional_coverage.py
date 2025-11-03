@@ -427,7 +427,7 @@ class TestModelValidation:
         test_file = tmp_path / "test.txt"
         test_file.write_text("content")
 
-        model.add_dotfile("Test", "Test", "Test", "Test", [str(test_file)], True)
+        model.add_dotfile("Test", "Test", "Test", [str(test_file)], True)
 
         # Act
         results = model.validate_dotfile_paths()
@@ -443,7 +443,7 @@ class TestModelValidation:
         config_path = tmp_path / "config.toml"
         model = DFBUModel(config_path)
 
-        model.add_dotfile("Test", "Test", "Test", "Test", ["/nonexistent/path"], True)
+        model.add_dotfile("Test", "Test", "Test", ["/nonexistent/path"], True)
 
         # Act
         results = model.validate_dotfile_paths()
@@ -464,9 +464,9 @@ class TestModelValidation:
         test_file2 = tmp_path / "test2.txt"
         test_file2.write_text("content2")
 
-        model.add_dotfile("Test1", "Test", "Test", "Test", [str(test_file1)], True)
+        model.add_dotfile("Test1", "Test", "Test", [str(test_file1)], True)
 
-        model.add_dotfile("Test2", "Test", "Test", "Test", [str(test_file2)], True)
+        model.add_dotfile("Test2", "Test", "Test", [str(test_file2)], True)
 
         # Act
         results = model.validate_dotfile_paths()
@@ -487,7 +487,7 @@ class TestModelDotfileSizes:
         test_file = tmp_path / "test.txt"
         test_file.write_text("test content")
 
-        model.add_dotfile("Test", "Test", "Test", "Test", [str(test_file)], True)
+        model.add_dotfile("Test", "Test", "Test", [str(test_file)], True)
 
         # Act
         sizes = model.get_dotfile_sizes()
@@ -507,7 +507,7 @@ class TestModelDotfileSizes:
         (test_dir / "file1.txt").write_text("content1")
         (test_dir / "file2.txt").write_text("content2")
 
-        model.add_dotfile("Test", "Test", "Test", "Test", [str(test_dir)], True)
+        model.add_dotfile("Test", "Test", "Test", [str(test_dir)], True)
 
         # Act
         sizes = model.get_dotfile_sizes()
@@ -522,7 +522,7 @@ class TestModelDotfileSizes:
         config_path = tmp_path / "config.toml"
         model = DFBUModel(config_path)
 
-        model.add_dotfile("Test", "Test", "Test", "Test", ["/nonexistent/path"], True)
+        model.add_dotfile("Test", "Test", "Test", ["/nonexistent/path"], True)
 
         # Act
         sizes = model.get_dotfile_sizes()

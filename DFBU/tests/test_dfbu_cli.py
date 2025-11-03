@@ -161,7 +161,6 @@ class TestBackupWorkflowIntegration:
             "dotfile": [
                 {
                     "category": "shell",
-                    "subcategory": "bash",
                     "application": "bash",
                     "description": "Bash config",
                     "paths": ["~/.bashrc"],
@@ -256,7 +255,6 @@ class TestComponentIntegration:
             "dotfile": [
                 {
                     "category": "shell",
-                    "subcategory": "bash",
                     "application": "bash",
                     "description": "Bash configuration",
                     "paths": ["~/.bashrc"],
@@ -428,7 +426,6 @@ class TestWorkflowValidation:
             "dotfile": [
                 {
                     "category": "shell",
-                    "subcategory": "bash",
                     "application": "bash",
                     "description": "Test config",
                     "paths": [str(tmp_path / "source" / ".testrc")],
@@ -466,7 +463,6 @@ class TestWorkflowValidation:
             "dotfile": [
                 {
                     "category": "shell",
-                    "subcategory": "bash",
                     "application": "bash",
                     "description": "Bash config",
                     "paths": ["~/.bashrc"],
@@ -506,7 +502,6 @@ class TestWorkflowValidation:
             "dotfile": [
                 {
                     "category": "test",
-                    "subcategory": "test",
                     "application": "test",
                     "description": "Test file",
                     "paths": [str(source_file)],

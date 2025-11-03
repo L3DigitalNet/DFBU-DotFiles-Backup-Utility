@@ -46,7 +46,7 @@ Before creating files, plan the feature:
 
 ### Step 1: Create Model (if needed)
 
-**File**: `src/models/[feature]_model.py`
+**File**: `DFBU/gui/[feature]_model.py`
 
 ```python
 """Model for [feature] business logic."""
@@ -115,7 +115,7 @@ class TestFeatureModel:
 
 ### Step 2: Create Service (if needed)
 
-**File**: `src/services/[feature]_service.py`
+**File**: `DFBU/gui/[feature]_service.py`
 
 ```python
 """Service for [feature] data operations."""
@@ -221,7 +221,7 @@ class TestFeatureService:
 
 ### Step 3: Create ViewModel
 
-**File**: `src/viewmodels/[feature]_viewmodel.py`
+**File**: `DFBU/gui/[feature]_viewmodel.py`
 
 ```python
 """ViewModel for [feature]."""
@@ -358,7 +358,7 @@ class TestFeatureViewModel:
 
 ### Step 4: Create View
 
-**File**: `src/views/[feature]_view.py`
+**File**: `DFBU/gui/[feature]_view.py`
 
 ```python
 """View for [feature]."""

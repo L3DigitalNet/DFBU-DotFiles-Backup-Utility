@@ -196,7 +196,6 @@ date_subdir = false
 
 [[dotfile]]
 category = "Test"
-subcategory = "Test"
 application = "TestApp"
 description = "Test dotfile"
 path = "~/test.txt"
@@ -235,7 +234,6 @@ max_archives = 5
 
 [[dotfile]]
 category = "Shell"
-subcategory = "Bash"
 application = "Bash"
 description = "Bash configuration"
 path = "~/.bashrc"
@@ -243,7 +241,6 @@ enabled = true
 
 [[dotfile]]
 category = "Editor"
-subcategory = "Vim"
 application = "Vim"
 description = "Vim configuration"
 path = "~/.vimrc"
@@ -251,7 +248,6 @@ enabled = false
 
 [[dotfile]]
 category = "Terminal"
-subcategory = "Alacritty"
 application = "Alacritty"
 description = "Alacritty config directory"
 path = "~/.config/alacritty"

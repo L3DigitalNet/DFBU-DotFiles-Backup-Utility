@@ -98,7 +98,6 @@ archive = false
 
 [[dotfile]]
 category = "Test"
-subcategory = "Test"
 application = "TestApp"
 description = "Test file"
 path = "~/test.txt"
@@ -123,7 +122,6 @@ enabled = true
         model = DFBUModel(config_path)
         model.add_dotfile(
             category="Shell",
-            subcategory="Bash",
             application="Bash",
             description="Bash config",
             paths=["~/.bashrc"],
@@ -153,7 +151,6 @@ class TestDFBUModelDotfileManagement:
         # Act
         success = model.add_dotfile(
             category="Editor",
-            subcategory="Vim",
             application="Vim",
             description="Vim configuration",
             paths=["~/.vimrc"],
@@ -173,9 +170,9 @@ class TestDFBUModelDotfileManagement:
         model = DFBUModel(tmp_path / "config.toml")
 
         # Act
-        model.add_dotfile("Cat1", "Sub1", "App1", "Desc1", ["~/file1"], True)
-        model.add_dotfile("Cat2", "Sub2", "App2", "Desc2", ["~/file2"], False)
-        model.add_dotfile("Cat3", "Sub3", "App3", "Desc3", ["~/file3"], True)
+        model.add_dotfile("Cat1", "App1", "Desc1", ["~/file1"], True)
+        model.add_dotfile("Cat2", "App2", "Desc2", ["~/file2"], False)
+        model.add_dotfile("Cat3", "App3", "Desc3", ["~/file3"], True)
 
         # Assert
         assert len(model.dotfiles) == 3
@@ -187,15 +184,14 @@ class TestDFBUModelDotfileManagement:
         """Test updating existing dotfile entry."""
         # Arrange
         model = DFBUModel(tmp_path / "config.toml")
-        model.add_dotfile("Old", "Old", "OldApp", "Old desc", ["~/old"], True)
+        model.add_dotfile("Old", "OldApp", "Old desc", ["~/old"], True)
 
         # Act
         success = model.update_dotfile(
-            index=0,
+            0,
             category="New",
-            subcategory="New",
             application="NewApp",
-            description="New desc",
+            description="New description",
             paths=["~/new"],
             enabled=False,
         )
@@ -211,10 +207,10 @@ class TestDFBUModelDotfileManagement:
         """Test updating with invalid index returns False."""
         # Arrange
         model = DFBUModel(tmp_path / "config.toml")
-        model.add_dotfile("Cat", "Sub", "App", "Desc", ["~/file"], True)
+        model.add_dotfile("Cat", "App", "Desc", ["~/file"], True)
 
         # Act
-        success = model.update_dotfile(99, "New", "New", "New", "New", "~/new", True)
+        success = model.update_dotfile(99, "New", "New", "New", ["~/new"], True)
 
         # Assert
         assert success is False
@@ -225,9 +221,9 @@ class TestDFBUModelDotfileManagement:
         """Test removing dotfile entry by valid index."""
         # Arrange
         model = DFBUModel(tmp_path / "config.toml")
-        model.add_dotfile("Cat1", "Sub1", "App1", "Desc1", ["~/file1"], True)
-        model.add_dotfile("Cat2", "Sub2", "App2", "Desc2", ["~/file2"], True)
-        model.add_dotfile("Cat3", "Sub3", "App3", "Desc3", ["~/file3"], True)
+        model.add_dotfile("Cat1", "App1", "Desc1", ["~/file1"], True)
+        model.add_dotfile("Cat2", "App2", "Desc2", ["~/file2"], True)
+        model.add_dotfile("Cat3", "App3", "Desc3", ["~/file3"], True)
 
         # Act
         success = model.remove_dotfile(1)  # Remove middle item
@@ -242,7 +238,7 @@ class TestDFBUModelDotfileManagement:
         """Test removing with invalid index returns False."""
         # Arrange
         model = DFBUModel(tmp_path / "config.toml")
-        model.add_dotfile("Cat", "Sub", "App", "Desc", ["~/file"], True)
+        model.add_dotfile("Cat", "App", "Desc", ["~/file"], True)
 
         # Act
         success = model.remove_dotfile(99)
@@ -255,7 +251,7 @@ class TestDFBUModelDotfileManagement:
         """Test toggling dotfile enabled status."""
         # Arrange
         model = DFBUModel(tmp_path / "config.toml")
-        model.add_dotfile("Cat", "Sub", "App", "Desc", ["~/file"], True)
+        model.add_dotfile("Cat", "App", "Desc", ["~/file"], True)
 
         # Act - Toggle from True to False
         result = model.toggle_dotfile_enabled(0)
@@ -275,7 +271,7 @@ class TestDFBUModelDotfileManagement:
         """Test retrieving dotfile by valid index."""
         # Arrange
         model = DFBUModel(tmp_path / "config.toml")
-        model.add_dotfile("Cat", "Sub", "TestApp", "Desc", ["~/file"], True)
+        model.add_dotfile("Cat", "TestApp", "Desc", ["~/file"], True)
 
         # Act
         dotfile = model.get_dotfile_by_index(0)
@@ -304,8 +300,8 @@ class TestDFBUModelDotfileManagement:
         assert model.get_dotfile_count() == 0
 
         # Add dotfiles
-        model.add_dotfile("Cat1", "Sub1", "App1", "Desc1", ["~/file1"], True)
-        model.add_dotfile("Cat2", "Sub2", "App2", "Desc2", ["~/file2"], True)
+        model.add_dotfile("Cat1", "App1", "Desc1", ["~/file1"], True)
+        model.add_dotfile("Cat2", "App2", "Desc2", ["~/file2"], True)
 
         # Act & Assert - After adding
         assert model.get_dotfile_count() == 2

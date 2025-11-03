@@ -2,7 +2,7 @@
 Test ViewModel Multiple Paths Feature
 
 Description:
-    Tests for ViewModel layer including category/subcategory methods,
+    Tests for ViewModel layer including category methods,
     command methods, and backup processing with multiple paths.
 
 Author: Chris Purcell
@@ -46,9 +46,7 @@ class TestViewModelCategories:
         viewmodel = DFBUViewModel(model)
 
         # Add dotfile
-        viewmodel.command_add_dotfile(
-            "TestCat", "TestSub", "TestApp", "Test", ["~/.test"], True
-        )
+        viewmodel.command_add_dotfile("TestCat", "TestApp", "Test", ["~/.test"], True)
 
         categories = viewmodel.get_unique_categories()
 
@@ -63,15 +61,9 @@ class TestViewModelCategories:
         viewmodel = DFBUViewModel(model)
 
         # Add dotfiles with different categories
-        viewmodel.command_add_dotfile(
-            "Category C", "Sub", "App1", "Test", ["~/.test1"], True
-        )
-        viewmodel.command_add_dotfile(
-            "Category A", "Sub", "App2", "Test", ["~/.test2"], True
-        )
-        viewmodel.command_add_dotfile(
-            "Category B", "Sub", "App3", "Test", ["~/.test3"], True
-        )
+        viewmodel.command_add_dotfile("Category C", "App1", "Test", ["~/.test1"], True)
+        viewmodel.command_add_dotfile("Category A", "App2", "Test", ["~/.test2"], True)
+        viewmodel.command_add_dotfile("Category B", "App3", "Test", ["~/.test3"], True)
 
         categories = viewmodel.get_unique_categories()
 
@@ -85,53 +77,14 @@ class TestViewModelCategories:
         viewmodel = DFBUViewModel(model)
 
         # Add dotfiles with duplicate categories
-        viewmodel.command_add_dotfile(
-            "SameCat", "Sub1", "App1", "Test", ["~/.test1"], True
-        )
-        viewmodel.command_add_dotfile(
-            "SameCat", "Sub2", "App2", "Test", ["~/.test2"], True
-        )
-        viewmodel.command_add_dotfile(
-            "DiffCat", "Sub3", "App3", "Test", ["~/.test3"], True
-        )
+        viewmodel.command_add_dotfile("SameCat", "App1", "Test", ["~/.test1"], True)
+        viewmodel.command_add_dotfile("SameCat", "App2", "Test", ["~/.test2"], True)
+        viewmodel.command_add_dotfile("DiffCat", "App3", "Test", ["~/.test3"], True)
 
         categories = viewmodel.get_unique_categories()
 
         # Should have unique sorted list
         assert categories == ["DiffCat", "SameCat"]
-
-    def test_get_unique_subcategories_empty(self, tmp_path):
-        """Test get_unique_subcategories with no dotfiles."""
-        config_path = tmp_path / "test_config.toml"
-        model = DFBUModel(config_path)
-        viewmodel = DFBUViewModel(model)
-
-        subcategories = viewmodel.get_unique_subcategories()
-
-        assert isinstance(subcategories, list)
-        assert len(subcategories) == 0
-
-    def test_get_unique_subcategories_multiple_unique(self, tmp_path):
-        """Test get_unique_subcategories with multiple unique subcategories."""
-        config_path = tmp_path / "test_config.toml"
-        model = DFBUModel(config_path)
-        viewmodel = DFBUViewModel(model)
-
-        # Add dotfiles with different subcategories
-        viewmodel.command_add_dotfile(
-            "Cat", "Subcat Z", "App1", "Test", ["~/.test1"], True
-        )
-        viewmodel.command_add_dotfile(
-            "Cat", "Subcat A", "App2", "Test", ["~/.test2"], True
-        )
-        viewmodel.command_add_dotfile(
-            "Cat", "Subcat M", "App3", "Test", ["~/.test3"], True
-        )
-
-        subcategories = viewmodel.get_unique_subcategories()
-
-        # Should be sorted
-        assert subcategories == ["Subcat A", "Subcat M", "Subcat Z"]
 
 
 class TestViewModelCommands:
@@ -144,7 +97,7 @@ class TestViewModelCommands:
         viewmodel = DFBUViewModel(model)
 
         success = viewmodel.command_add_dotfile(
-            "Cat", "Sub", "App", "Desc", ["~/.testrc"], True
+            "Cat", "App", "Desc", ["~/.testrc"], True
         )
 
         assert success is True
@@ -159,9 +112,7 @@ class TestViewModelCommands:
         viewmodel = DFBUViewModel(model)
 
         paths = ["~/.testrc", "~/.config/test.conf", "/etc/test.conf"]
-        success = viewmodel.command_add_dotfile(
-            "Cat", "Sub", "App", "Desc", paths, True
-        )
+        success = viewmodel.command_add_dotfile("Cat", "App", "Desc", paths, True)
 
         assert success is True
         dotfiles = viewmodel.get_dotfile_list()
@@ -175,12 +126,12 @@ class TestViewModelCommands:
         viewmodel = DFBUViewModel(model)
 
         # Add initial dotfile with single path
-        viewmodel.command_add_dotfile("Cat", "Sub", "App", "Desc", ["~/.testrc"], True)
+        viewmodel.command_add_dotfile("Cat", "App", "Desc", ["~/.testrc"], True)
 
         # Update to multiple paths
         new_paths = ["~/.testrc", "~/.config/test.conf"]
         success = viewmodel.command_update_dotfile(
-            0, "Cat", "Sub", "App Updated", "Desc Updated", new_paths, True
+            0, "Cat", "App Updated", "Desc Updated", new_paths, True
         )
 
         assert success is True
@@ -196,12 +147,12 @@ class TestViewModelCommands:
 
         # Add initial dotfile with multiple paths
         viewmodel.command_add_dotfile(
-            "Cat", "Sub", "App", "Desc", ["~/.test1", "~/.test2", "~/.test3"], True
+            "Cat", "App", "Desc", ["~/.test1", "~/.test2", "~/.test3"], True
         )
 
         # Update to single path
         success = viewmodel.command_update_dotfile(
-            0, "Cat", "Sub", "App", "Desc", ["~/.test1"], True
+            0, "Cat", "App", "Desc", ["~/.test1"], True
         )
 
         assert success is True
@@ -231,7 +182,6 @@ class TestViewModelBackupProcessing:
 
         # Add dotfile with multiple paths
         viewmodel.command_add_dotfile(
-            "Test",
             "Test",
             "TestApp",
             "Test dotfile",
@@ -275,7 +225,6 @@ class TestViewModelBackupProcessing:
         # Add dotfile with multiple paths
         viewmodel.command_add_dotfile(
             "Test",
-            "Test",
             "TestApp",
             "Test dotfile",
             [str(test_file1), str(test_file2)],
@@ -315,7 +264,7 @@ class TestViewModelBackupProcessing:
 
         # Add disabled dotfile
         viewmodel.command_add_dotfile(
-            "Test", "Test", "TestApp", "Test", [str(test_file)], False
+            "Test", "TestApp", "Test", [str(test_file)], False
         )
 
         # Enable mirror backup option

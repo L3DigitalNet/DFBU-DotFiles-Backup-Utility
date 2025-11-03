@@ -44,7 +44,6 @@ class TestDotFileInitialization:
 
         raw_dotfile = {
             "category": "shell",
-            "subcategory": "bash",
             "application": "bash",
             "description": "Bash configuration file",
             "paths": [str(source_file)],  # Updated to use paths list
@@ -72,7 +71,6 @@ class TestDotFileInitialization:
 
         # Assert - verify properties
         assert dotfile.category == "shell"
-        assert dotfile.subcategory == "bash"
         assert dotfile.application == "bash"
         assert dotfile.description == "Bash configuration file"
         assert dotfile.name == ".bashrc"
@@ -89,7 +87,6 @@ class TestDotFileInitialization:
 
         raw_dotfile = {
             "category": "config",
-            "subcategory": "application",
             "application": "various",
             "description": "Configuration directory",
             "paths": [str(source_dir)],  # Updated to use paths list
@@ -129,7 +126,6 @@ class TestDotFileInitialization:
 
         raw_dotfile = {
             "category": "editor",
-            "subcategory": "vim",
             "application": "vim",
             "description": "Vim configuration",
             "paths": [str(source_file)],  # Updated to use paths list
@@ -165,7 +161,6 @@ class TestDotFileInitialization:
         # Arrange - use tilde notation
         raw_dotfile = {
             "category": "shell",
-            "subcategory": "bash",
             "application": "bash",
             "description": "Bash configuration",
             "paths": ["~/.bashrc"],  # Updated to use paths list
@@ -208,7 +203,6 @@ class TestDotFileDestinationPaths:
 
         raw_dotfile = {
             "category": "shell",
-            "subcategory": "bash",
             "application": "bash",
             "description": "Bash config",
             "paths": [str(source_file)],
@@ -248,7 +242,6 @@ class TestDotFileDestinationPaths:
 
         raw_dotfile = {
             "category": "shell",
-            "subcategory": "bash",
             "application": "bash",
             "description": "Bash config",
             "paths": [str(source_file)],
@@ -287,7 +280,6 @@ class TestDotFileRelativePaths:
         # Arrange - path in home directory
         raw_dotfile = {
             "category": "shell",
-            "subcategory": "bash",
             "application": "bash",
             "description": "Bash config",
             "paths": [str(Path.home() / ".bashrc")],
@@ -321,7 +313,6 @@ class TestDotFileRelativePaths:
         # Arrange - path in root directory
         raw_dotfile = {
             "category": "system",
-            "subcategory": "config",
             "application": "system",
             "description": "System config",
             "paths": ["/etc/fstab"],
@@ -363,7 +354,6 @@ class TestDotFileStringRepresentation:
 
         raw_dotfile = {
             "category": "shell",
-            "subcategory": "bash",
             "application": "bash",
             "description": "Bash configuration file",
             "paths": [str(source_file)],
@@ -405,7 +395,6 @@ class TestDotFileStringRepresentation:
 
         raw_dotfile = {
             "category": "config",
-            "subcategory": "app",
             "application": "various",
             "description": "Config directory",
             "paths": [str(source_dir)],

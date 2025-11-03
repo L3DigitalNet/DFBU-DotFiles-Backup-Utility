@@ -11,7 +11,7 @@ This prompt generates a complete, valid Qt Designer `.ui` file by analyzing the 
 
 ### Key Principles
 
-1. **View Layer Focus**: Only analyze `src/views/` Python files
+1. **View Layer Focus**: Only analyze `DFBU/gui/` Python files
 2. **Complete Coverage**: Every widget referenced in code gets a UI element
 3. **MVVM Compliant**: UI file reflects View layer, not ViewModel or Model
 4. **Code-Driven**: Python View code is the single source of truth
@@ -19,7 +19,7 @@ This prompt generates a complete, valid Qt Designer `.ui` file by analyzing the 
 
 ### What This Prompt Does
 
-1. Scans View files (`src/views/*.py`) for widget definitions
+1. Scans View files (`DFBU/gui/*.py`) for widget definitions
 2. Discovers all PySide6 widget types used
 3. Extracts properties, layouts, and hierarchies from code
 4. Generates complete, valid Qt Designer 4.0 XML
@@ -28,7 +28,7 @@ This prompt generates a complete, valid Qt Designer `.ui` file by analyzing the 
 
 ### Output Location
 
-`src/views/[view_name].ui`
+`DFBU/gui/designer/[view_name].ui`
 
 ---
 
@@ -40,14 +40,14 @@ Generate a complete Qt Designer `.ui` file (XML format) that accurately represen
 
 ### 1. Analyze View File
 
-Identify the target View class in `src/views/`:
+Identify the target View class in `DFBU/gui/`:
 
 ```bash
 # List all View files
-ls src/views/*.py
+ls DFBU/gui/*.py
 
 # Examine specific View file
-cat src/views/main_window.py
+cat DFBU/gui/view.py
 ```
 
 ### 2. Extract Widget Hierarchy
@@ -257,7 +257,7 @@ class MainWindow(QMainWindow):
     def _load_ui(self) -> None:
         """Load UI from .ui file."""
         loader = QUiLoader()
-        ui_file = QFile("src/views/main_window.ui")
+        ui_file = QFile("DFBU/gui/designer/main_window.ui")
         ui_file.open(QFile.ReadOnly)
         self._ui = loader.load(ui_file, self)
         ui_file.close()
