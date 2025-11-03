@@ -329,6 +329,7 @@ class MainWindow(QMainWindow):
         backup_btn: Button to start backup
         mirror_checkbox: Checkbox for mirror backup mode
         archive_checkbox: Checkbox for archive backup mode
+        force_full_backup_checkbox: Checkbox to force copying all files
         restore_source_edit: Line edit for restore source directory
         browse_restore_btn: Button to browse for restore source
         restore_btn: Button to start restore operation
@@ -481,6 +482,9 @@ class MainWindow(QMainWindow):
         )  # type: ignore[assignment]
         self.archive_checkbox: QCheckBox = ui_widget.findChild(
             QCheckBox, "archive_checkbox"
+        )  # type: ignore[assignment]
+        self.force_full_backup_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "force_full_backup_checkbox"
         )  # type: ignore[assignment]
         self.backup_btn: QPushButton = ui_widget.findChild(QPushButton, "backup_btn")  # type: ignore[assignment]
         self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "operation_log")  # type: ignore[assignment]
@@ -716,8 +720,21 @@ class MainWindow(QMainWindow):
             self.progress_bar.setVisible(True)
             self.progress_bar.setValue(0)
 
-            # Start backup
-            success = self.viewmodel.command_start_backup()
+            # Get force full backup setting from checkbox
+            force_full = self.force_full_backup_checkbox.isChecked()
+
+            # Add info to log about backup mode
+            if force_full:
+                self.operation_log.append(
+                    "INFO: Force Full Backup - All files will be copied\n"
+                )
+            else:
+                self.operation_log.append(
+                    "INFO: Smart Backup - Only changed files will be copied\n"
+                )
+
+            # Start backup with force full setting
+            success = self.viewmodel.command_start_backup(force_full_backup=force_full)
 
             if not success:
                 # Re-enable buttons if backup failed to start

@@ -64,11 +64,13 @@ class BackupWorker(QThread):
         model: Reference to DFBUModel for data access
         mirror_mode: Whether to perform mirror backup
         archive_mode: Whether to create archive
+        force_full_backup: Whether to disable skip_identical optimization
 
     Public methods:
         run: Main thread execution method
         set_model: Set the model reference
         set_modes: Set backup operation modes
+        set_force_full_backup: Set force full backup mode
 
     Private methods:
         _process_mirror_backup: Process mirror backup for all dotfiles
@@ -90,6 +92,7 @@ class BackupWorker(QThread):
         self.model: DFBUModel | None = None
         self.mirror_mode: bool = True
         self.archive_mode: bool = False
+        self.force_full_backup: bool = False
 
     def set_model(self, model: DFBUModel) -> None:
         """
@@ -110,6 +113,15 @@ class BackupWorker(QThread):
         """
         self.mirror_mode = mirror
         self.archive_mode = archive
+
+    def set_force_full_backup(self, force_full: bool) -> None:
+        """
+        Set force full backup mode.
+
+        Args:
+            force_full: If True, disable skip_identical optimization
+        """
+        self.force_full_backup = force_full
 
     def _process_file(
         self, src_path: Path, dest_path: Path, skip_identical: bool = False
@@ -265,16 +277,21 @@ class BackupWorker(QThread):
                 )
 
                 # Process based on type with skip_identical optimization
-                # skip_identical=True avoids copying unchanged files (metadata comparison)
+                # skip_identical can be disabled by force_full_backup setting
+                # When force_full_backup=True, all files are copied regardless of changes
+                skip_identical = not self.force_full_backup
+
                 if is_dir:
                     # Process directory recursively - returns count of successfully copied files
                     file_count = self._process_directory(
-                        src_path, dest_path, skip_identical=True
+                        src_path, dest_path, skip_identical=skip_identical
                     )
                     # Only increment processed_count if at least one file was copied
                     if file_count > 0:
                         processed_count += 1
-                elif self._process_file(src_path, dest_path, skip_identical=True):
+                elif self._process_file(
+                    src_path, dest_path, skip_identical=skip_identical
+                ):
                     # Process single file - increment on success
                     processed_count += 1
 
@@ -649,9 +666,12 @@ class DFBUViewModel(QObject):
         """
         return self.model.update_path(path_type, value)
 
-    def command_start_backup(self) -> bool:
+    def command_start_backup(self, force_full_backup: bool = False) -> bool:
         """
         Command to start backup operation.
+
+        Args:
+            force_full_backup: If True, disable skip_identical optimization to copy all files
 
         Returns:
             True if backup started successfully
@@ -667,6 +687,7 @@ class DFBUViewModel(QObject):
         self.backup_worker.set_modes(
             self.model.options["mirror"], self.model.options["archive"]
         )
+        self.backup_worker.set_force_full_backup(force_full_backup)
 
         # Connect worker signals
         self.backup_worker.progress_updated.connect(self._on_worker_progress)
@@ -921,39 +942,62 @@ class DFBUViewModel(QObject):
         Get formatted statistics summary.
 
         Returns:
-            Formatted statistics string
+            Formatted statistics string with enhanced clarity
         """
         stats = self.model.statistics
 
         # Build message using list and join for better performance
         message_parts = [
             "Backup Operation Completed!\n",
+            "=" * 50,
         ]
 
-        # Provide context about what "processed" and "skipped" mean
-        if stats.processed_items > 0:
-            message_parts.append(f"✓ Files copied: {stats.processed_items}")
-        else:
-            message_parts.append("✓ Files copied: 0 (all files up to date)")
+        # Calculate total items
+        total_items = stats.processed_items + stats.skipped_items + stats.failed_items
 
+        # Summary line with totals
+        message_parts.append(
+            f"\n📊 Summary: {stats.processed_items} copied, "
+            f"{stats.skipped_items} skipped, "
+            f"{stats.failed_items} failed (Total: {total_items})"
+        )
+
+        # Detailed breakdown with clear explanations
+        message_parts.append("\n📋 Details:")
+
+        # Files copied
+        if stats.processed_items > 0:
+            message_parts.append(
+                f"  ✓ Files copied: {stats.processed_items} "
+                f"(new or modified files backed up)"
+            )
+        else:
+            message_parts.append("  ✓ Files copied: 0 (all files already up to date)")
+
+        # Files skipped
         if stats.skipped_items > 0:
             message_parts.append(
-                f"⊘ Files skipped: {stats.skipped_items} (unchanged since last backup)"
+                f"  ⊘ Files skipped: {stats.skipped_items} "
+                f"(unchanged since last backup)"
             )
 
+        # Files failed
         if stats.failed_items > 0:
-            message_parts.append(f"✗ Files failed: {stats.failed_items}")
+            message_parts.append(
+                f"  ✗ Files failed: {stats.failed_items} (check log for details)"
+            )
 
-        message_parts.append(f"\nTotal time: {stats.total_time:.2f} seconds")
+        # Timing information
+        message_parts.append(f"\n⏱️  Total time: {stats.total_time:.2f} seconds")
 
         # Add detailed timing statistics if available
-        if stats.processing_times:
+        if stats.processing_times and stats.processed_items > 0:
             message_parts.extend(
                 [
-                    "\nProcessing Statistics:",
-                    f"  Average: {stats.average_time:.4f} seconds",
-                    f"  Minimum: {stats.min_time:.4f} seconds",
-                    f"  Maximum: {stats.max_time:.4f} seconds",
+                    "\n📈 Performance:",
+                    f"  Average: {stats.average_time:.4f} seconds per file",
+                    f"  Fastest: {stats.min_time:.4f} seconds",
+                    f"  Slowest: {stats.max_time:.4f} seconds",
                 ]
             )
 

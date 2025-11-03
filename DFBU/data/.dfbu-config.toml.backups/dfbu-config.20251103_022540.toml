@@ -20,56 +20,56 @@ category = "Custom"
 subcategory = "Custom"
 application = "Scripts"
 description = "Custom user-specific Python scripts"
-enabled = true
 path = "~/.config/bin/"
+enabled = true
 
 [[dotfile]]
 category = "Shell configs"
 subcategory = "Shell"
 application = "Bash"
 description = "Bash shell configuration and startup script"
-enabled = true
 path = "~/.bashrc"
+enabled = true
 
 [[dotfile]]
 category = "Shell configs"
 subcategory = "Shell"
 application = "Zsh"
 description = "Zsh shell configuration and startup script"
-enabled = true
 path = "~/.zshrc"
+enabled = true
 
 [[dotfile]]
 category = "Shell configs"
 subcategory = "Shell"
 application = "Fish"
 description = "Fish shell main configuration file"
-enabled = true
 path = "~/.config/fish/config.fish"
+enabled = true
 
 [[dotfile]]
 category = "Shell configs"
 subcategory = "Shell"
 application = "Fish variables"
 description = "Fish shell environment variables and settings"
-enabled = true
 path = "~/.config/fish/fish_variables"
+enabled = true
 
 [[dotfile]]
 category = "Shell configs"
 subcategory = "Shell"
 application = "Fish profile"
 description = "Fish shell profile configuration for login sessions"
-enabled = true
 path = "~/.fish_profile"
+enabled = true
 
 [[dotfile]]
 category = "Shell configs"
 subcategory = "Shell"
 application = "Starship"
 description = "Starship cross-shell prompt configuration"
-enabled = true
 path = "~/.config/starship.toml"
+enabled = true
 
 [[dotfile]]
 category = "Shell configs"
@@ -111,48 +111,48 @@ category = "Development"
 subcategory = "Version Control"
 application = "Git"
 description = "Git version control system global configuration"
-enabled = true
 path = "~/.gitconfig"
+enabled = true
 
 [[dotfile]]
 category = "Development"
 subcategory = "GitHub"
 application = "GitHub Desktop"
 description = "GitHub Desktop application preferences and settings"
-enabled = true
 path = "~/.config/GitHub Desktop/Preferences"
+enabled = true
 
 [[dotfile]]
 category = "Development"
 subcategory = "IDE"
 application = "Kate"
 description = "KDE Kate text editor and IDE configuration"
-enabled = true
 path = "~/.config/katerc"
+enabled = true
 
 [[dotfile]]
 category = "Development"
 subcategory = "IDE"
 application = "Visual Studio Code"
 description = "Visual Studio Code editor settings and configuration"
-enabled = true
 path = "~/.config/Code/User/settings.json"
+enabled = true
 
 [[dotfile]]
 category = "Development"
 subcategory = "Text Editor"
 application = "KWrite"
 description = "KDE KWrite simple text editor configuration"
-enabled = true
 path = "~/.config/kwriterc"
+enabled = true
 
 [[dotfile]]
 category = "Development"
 subcategory = "Text Editor"
 application = "Featherpad"
 description = "Featherpad lightweight text editor configuration"
-enabled = true
 path = "~/.config/featherpad/fp.conf"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
@@ -171,72 +171,72 @@ category = "Terminal"
 subcategory = "Terminal"
 application = "Yakuake"
 description = "KDE Yakuake drop-down terminal configuration"
-enabled = true
 path = "~/.config/yakuakerc"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Network"
 application = "SSH"
 description = "SSH client configuration and settings"
-enabled = true
 path = "~/.ssh/"
+enabled = true
 
 [[dotfile]]
 category = "System"
 subcategory = "Package Manager"
 application = "DNF"
 description = "DNF package manager configuration"
-enabled = true
 path = "/etc/dnf/dnf.conf"
+enabled = true
 
 [[dotfile]]
 category = "System"
 subcategory = "Package Manager"
 application = "RPM Fusion"
 description = "RPM Fusion repository configuration"
-enabled = true
 path = "/etc/yum.repos.d/rpmfusion*.repo"
+enabled = true
 
 [[dotfile]]
 category = "System"
 subcategory = "Package Manager"
 application = "Fedora Repositories"
 description = "Fedora system repositories configuration"
-enabled = true
 path = "/etc/yum.repos.d/fedora*.repo"
+enabled = true
 
 [[dotfile]]
 category = "System"
 subcategory = "Package Manager"
 application = "Third Party Repositories"
 description = "YUM/DNF repository list file"
-enabled = true
 path = "/etc/yum.repos.d/*.repo"
+enabled = true
 
 [[dotfile]]
 category = "System"
 subcategory = "Package Manager"
 application = "Octopi"
 description = "Octopi package manager GUI configuration"
-enabled = true
 path = "~/.config/octopi/octopi.conf"
+enabled = true
 
 [[dotfile]]
 category = "System"
 subcategory = "Archive Manager"
 application = "Ark"
 description = "KDE Ark archive manager settings and preferences"
-enabled = true
 path = "~/.config/arkrc"
+enabled = true
 
 [[dotfile]]
 category = "System"
 subcategory = "File Explorer"
 application = "Dolphin"
 description = "KDE Dolphin file manager configuration and preferences"
-enabled = true
 path = "~/.config/dolphinrc"
+enabled = true
 
 [[dotfile]]
 category = "System"
@@ -259,8 +259,8 @@ category = "System"
 subcategory = "File Explorer"
 application = "Nautilus"
 description = "GNOME Nautilus file manager preferences (stored in dconf)"
-enabled = true
 path = "~/.config/dconf/user"
+enabled = true
 
 [[dotfile]]
 category = "System"
@@ -279,8 +279,8 @@ category = "System"
 subcategory = "App Launcher"
 application = "AppImageLauncher"
 description = "AppImageLauncher configuration for managing AppImage applications"
-enabled = true
 path = "~/.config/appimagelauncher.cfg"
+enabled = true
 
 [[dotfile]]
 category = "System"
@@ -298,8 +298,8 @@ category = "System"
 subcategory = "System Service"
 application = "Cron User"
 description = "User crontab file"
-enabled = true
 path = "~/.crontab"
+enabled = true
 
 [[dotfile]]
 category = "System"
@@ -330,8 +330,8 @@ category = "System"
 subcategory = "Hardware"
 application = "ALSA"
 description = "Advanced Linux Sound Architecture user configuration"
-enabled = true
 path = "~/.asoundrc"
+enabled = true
 
 [[dotfile]]
 category = "System"
@@ -349,16 +349,16 @@ category = "System"
 subcategory = "Network"
 application = "Hosts File"
 description = "System hosts file for name resolution"
-enabled = true
 path = "/etc/hosts"
+enabled = true
 
 [[dotfile]]
 category = "System"
 subcategory = "Boot"
 application = "GRUB"
 description = "GRUB bootloader configuration"
-enabled = true
 path = "/etc/default/grub"
+enabled = true
 
 [[dotfile]]
 category = "System"
@@ -376,16 +376,16 @@ category = "System"
 subcategory = "Locale"
 application = "System Locale"
 description = "System locale configuration"
-enabled = true
 path = "/etc/locale.conf"
+enabled = true
 
 [[dotfile]]
 category = "System"
 subcategory = "Time"
 application = "Timezone"
 description = "System timezone configuration"
-enabled = true
 path = "/etc/localtime"
+enabled = true
 
 [[dotfile]]
 category = "System"
@@ -416,8 +416,8 @@ category = "System"
 subcategory = "Security"
 application = "SELinux"
 description = "SELinux security policy configuration"
-enabled = true
 path = "/etc/selinux/config"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -436,16 +436,16 @@ category = "Applications"
 subcategory = "Office Suite"
 application = "ONLYOFFICE Desktop Editors"
 description = "ONLYOFFICE Desktop Editors native/repo/AppImage configuration"
-enabled = true
 path = "~/.config/onlyoffice/DesktopEditors.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Office Suite"
 application = "ONLYOFFICE Desktop Editors (Flatpak)"
 description = "ONLYOFFICE Desktop Editors Flatpak configuration"
-enabled = true
 path = "~/.var/app/org.onlyoffice.desktopeditors/config/onlyoffice/DesktopEditors.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -463,16 +463,16 @@ category = "Applications"
 subcategory = "Image Viewer"
 application = "qView"
 description = "qView minimal image viewer configuration"
-enabled = true
 path = "~/.config/qView/qView.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Image Viewer"
 application = "Gwenview"
 description = "KDE Gwenview image viewer preferences and UI settings"
-enabled = true
 path = "~/.config/gwenviewrc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -494,16 +494,16 @@ category = "Applications"
 subcategory = "Image Viewer"
 application = "Eye of GNOME (eog)"
 description = "GNOME Eye of GNOME image viewer preferences (stored in dconf binary DB)"
-enabled = true
 path = "~/.config/dconf/user"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Image Viewer"
 application = "Ristretto"
 description = "Xfce Ristretto image viewer options via xfconf settings system"
-enabled = true
 path = "~/.config/xfce4/xfconf/xfce-perchannel-xml/ristretto.xml"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -549,8 +549,8 @@ category = "Applications"
 subcategory = "Video Player"
 application = "VLC"
 description = "VLC media player master configuration file"
-enabled = true
 path = "~/.config/vlc/vlcrc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -568,32 +568,32 @@ category = "Applications"
 subcategory = "Audio Player"
 application = "Amarok"
 description = "KDE Amarok music player configuration"
-enabled = true
 path = "~/.config/amarokrc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Audio Player"
 application = "Clementine"
 description = "Clementine music player configuration"
-enabled = true
 path = "~/.config/Clementine/Clementine.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Audio Player"
 application = "Strawberry"
 description = "Strawberry music player configuration"
-enabled = true
 path = "~/.config/strawberry/strawberry.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Audio Player"
 application = "Audacious"
 description = "Audacious audio player configuration"
-enabled = true
 path = "~/.config/audacious/config"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -611,16 +611,16 @@ category = "Applications"
 subcategory = "Audio Player"
 application = "Spotify"
 description = "Spotify music streaming service preferences"
-enabled = true
 path = "~/.config/spotify/prefs"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Audio Player"
 application = "Spotify (Flatpak)"
 description = "Spotify music streaming service Flatpak configuration"
-enabled = true
 path = "~/.var/app/com.spotify.Client/config/spotify/prefs"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -638,8 +638,8 @@ category = "Applications"
 subcategory = "Audio Player"
 application = "MPD"
 description = "Music Player Daemon configuration"
-enabled = true
 path = "~/.config/mpd/mpd.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -657,8 +657,8 @@ category = "Applications"
 subcategory = "Productivity"
 application = "FBReader"
 description = "FBReader ebook reader configuration"
-enabled = true
 path = "~/.FBReader/config.xml"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -687,40 +687,40 @@ category = "Applications"
 subcategory = "Productivity"
 application = "QOwnNotes"
 description = "QOwnNotes note-taking application configuration"
-enabled = true
 path = "~/.config/PBE/QOwnNotes.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Productivity"
 application = "Xmind"
 description = "Xmind mind mapping software configuration"
-enabled = true
 path = "~/.config/XMind/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "FTP Client"
 application = "FileZilla"
 description = "FileZilla FTP client configuration"
-enabled = true
 path = "~/.config/filezilla/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Download Manager"
 application = "uGet"
 description = "uGet download manager configuration"
-enabled = true
 path = "~/.config/uget/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Remote Desktop"
 application = "Remmina"
 description = "Remmina remote desktop client configuration"
-enabled = true
 path = "~/.local/share/remmina/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -738,136 +738,136 @@ category = "Applications"
 subcategory = "VPN"
 application = "WireGuard"
 description = "WireGuard VPN configuration files"
-enabled = true
 path = "/etc/wireguard/*.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Compatibility"
 application = "Wine"
 description = "Wine Windows compatibility layer configuration"
-enabled = true
 path = "~/.wine/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Compatibility"
 application = "PlayOnLinux"
 description = "PlayOnLinux Wine frontend configuration"
-enabled = true
 path = "~/.PlayOnLinux/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Compatibility"
 application = "Bottles"
 description = "Bottles Wine prefix manager configuration"
-enabled = true
 path = "~/.var/app/com.usebottles.bottles/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Gaming"
 application = "Heroic Games Launcher"
 description = "Heroic Epic Games and GOG launcher configuration"
-enabled = true
 path = "~/.config/heroic/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Gaming"
 application = "itch.io"
 description = "itch.io game client configuration"
-enabled = true
 path = "~/.config/itch/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "System Monitor"
 application = "Conky"
 description = "Conky system monitor configuration"
-enabled = true
 path = "~/.conkyrc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "System Monitor"
 application = "Glances"
 description = "Glances system monitoring tool configuration"
-enabled = true
 path = "~/.config/glances/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "System Info"
 application = "Neofetch"
 description = "Neofetch system information tool configuration"
-enabled = true
 path = "~/.config/neofetch/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "System Info"
 application = "Fastfetch"
 description = "Fastfetch system information tool configuration"
-enabled = true
 path = "~/.config/fastfetch/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Disk Usage"
 application = "Baobab"
 description = "GNOME Disk Usage Analyzer preferences"
-enabled = true
 path = "~/.config/dconf/user"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Disk Usage"
 application = "Filelight"
 description = "KDE Filelight disk usage analyzer configuration"
-enabled = true
 path = "~/.config/filelightrc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Process Manager"
 application = "KSysGuard"
 description = "KDE System Guard configuration"
-enabled = true
 path = "~/.config/ksysguardrc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Mathematics"
 application = "Octave"
 description = "GNU Octave mathematical software configuration"
-enabled = true
 path = "~/.octaverc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Mathematics"
 application = "GeoGebra"
 description = "GeoGebra mathematics software configuration"
-enabled = true
 path = "~/.geogebra/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Science"
 application = "Stellarium"
 description = "Stellarium planetarium software configuration"
-enabled = true
 path = "~/.stellarium/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Chemistry"
 application = "Avogadro"
 description = "Avogadro molecular editor configuration"
-enabled = true
 path = "~/.avogadro/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -979,72 +979,72 @@ category = "Applications"
 subcategory = "Communication"
 application = "Discord"
 description = "Discord chat application settings"
-enabled = true
 path = "~/.config/discord/settings.json"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Communication"
 application = "Discord (Flatpak)"
 description = "Discord chat application Flatpak settings"
-enabled = true
 path = "~/.var/app/com.discordapp.Discord/config/discord/settings.json"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Communication"
 application = "Telegram Desktop"
 description = "Telegram Desktop messaging application settings"
-enabled = true
 path = "~/.local/share/TelegramDesktop/tdata/settings*"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Communication"
 application = "Signal Desktop"
 description = "Signal Desktop secure messaging application config"
-enabled = true
 path = "~/.config/Signal/config.json"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Communication"
 application = "Slack"
 description = "Slack team communication application configuration"
-enabled = true
 path = "~/.config/Slack/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Communication"
 application = "Teams for Linux"
 description = "Microsoft Teams for Linux configuration"
-enabled = true
 path = "~/.config/teams-for-linux/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Communication"
 application = "Zoom"
 description = "Zoom video conferencing application configuration"
-enabled = true
 path = "~/.config/zoomus.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Communication"
 application = "Skype"
 description = "Skype communication application configuration"
-enabled = true
 path = "~/.config/skypeforlinux/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Communication"
 application = "Hexchat"
 description = "HexChat IRC client configuration"
-enabled = true
 path = "~/.config/hexchat/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -1073,8 +1073,8 @@ category = "Applications"
 subcategory = "Gaming"
 application = "Steam (Flatpak)"
 description = "Steam gaming platform Flatpak configuration"
-enabled = true
 path = "~/.var/app/com.valvesoftware.Steam/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -1092,112 +1092,112 @@ category = "Applications"
 subcategory = "Gaming"
 application = "RetroArch"
 description = "RetroArch emulation frontend configuration"
-enabled = true
 path = "~/.config/retroarch/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Gaming"
 application = "PCSX2"
 description = "PCSX2 PlayStation 2 emulator configuration"
-enabled = true
 path = "~/.config/PCSX2/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Gaming"
 application = "Dolphin Emulator"
 description = "Dolphin GameCube/Wii emulator configuration"
-enabled = true
 path = "~/.config/dolphin-emu/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Gaming"
 application = "MAME"
 description = "MAME arcade emulator configuration"
-enabled = true
 path = "~/.mame/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Audio Production"
 application = "Audacity"
 description = "Audacity audio editor configuration"
-enabled = true
 path = "~/.audacity-data/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Audio Production"
 application = "Ardour"
 description = "Ardour digital audio workstation configuration"
-enabled = true
 path = "~/.config/ardour8/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Video Production"
 application = "OBS Studio"
 description = "OBS Studio broadcasting and recording software configuration"
-enabled = true
 path = "~/.config/obs-studio/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Video Production"
 application = "Kdenlive"
 description = "Kdenlive video editor configuration"
-enabled = true
 path = "~/.config/kdenliverc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Video Production"
 application = "Blender"
 description = "Blender 3D creation suite configuration and preferences"
-enabled = true
 path = "~/.config/blender/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Graphics"
 application = "GIMP"
 description = "GNU Image Manipulation Program configuration"
-enabled = true
 path = "~/.config/GIMP/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Graphics"
 application = "Inkscape"
 description = "Inkscape vector graphics editor configuration"
-enabled = true
 path = "~/.config/inkscape/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Graphics"
 application = "Krita"
 description = "Krita digital painting application configuration"
-enabled = true
 path = "~/.config/kritarc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Graphics"
 application = "Darktable"
 description = "Darktable photo workflow application configuration"
-enabled = true
 path = "~/.config/darktable/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Cloud Storage"
 application = "Syncthing"
 description = "Syncthing peer-to-peer file synchronization configuration"
-enabled = true
 path = "~/.config/syncthing/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
@@ -1215,168 +1215,168 @@ category = "Applications"
 subcategory = "Launcher"
 application = "Albert"
 description = "Albert desktop agnostic launcher configuration"
-enabled = true
 path = "~/.config/albert/albert.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Launcher"
 application = "Rofi"
 description = "Rofi window switcher and application launcher config"
-enabled = true
 path = "~/.config/rofi/config.rasi"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "System Monitor"
 application = "htop"
 description = "htop interactive process viewer configuration"
-enabled = true
 path = "~/.config/htop/htoprc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "System Monitor"
 application = "btop"
 description = "btop resource monitor configuration"
-enabled = true
 path = "~/.config/btop/btop.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Package Manager"
 application = "Flatpak"
 description = "Flatpak application sandboxing configuration"
-enabled = true
 path = "~/.local/share/flatpak/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Fonts"
 application = "User Fonts"
 description = "User-installed fonts directory"
-enabled = true
 path = "~/.local/share/fonts/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Fonts"
 application = "Font Config"
 description = "Fontconfig user configuration"
-enabled = true
 path = "~/.config/fontconfig/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Themes"
 application = "User Themes"
 description = "User-installed GTK and icon themes"
-enabled = true
 path = "~/.themes/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Themes"
 application = "User Icons"
 description = "User-installed icon themes"
-enabled = true
 path = "~/.icons/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Notes"
 application = "Joplin"
 description = "Joplin note-taking application settings and configuration"
-enabled = true
 path = "~/.config/joplin-desktop/settings.json"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "KDE Connect"
 application = "KDE Connect"
 description = "KDE Connect pairing, plugins, and device configuration"
-enabled = true
 path = "~/.config/kdeconnect/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Torrent"
 application = "qBittorrent"
 description = "qBittorrent torrent client configuration and settings"
-enabled = true
 path = "~/.config/qBittorrent/qBittorrent.conf"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Password Manager"
 application = "KeePassXC"
 description = "KeePassXC password manager configuration"
-enabled = true
 path = "~/.config/keepassxc/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Password Manager"
 application = "Bitwarden"
 description = "Bitwarden password manager configuration"
-enabled = true
 path = "~/.config/Bitwarden/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Calculator"
 application = "KCalc"
 description = "KDE Calculator configuration"
-enabled = true
 path = "~/.config/kcalcrc"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Calculator"
 application = "Qalculate!"
 description = "Qalculate! calculator configuration"
-enabled = true
 path = "~/.config/qalculate/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Virtual Machine"
 application = "VirtualBox"
 description = "Oracle VirtualBox configuration"
-enabled = true
 path = "~/.config/VirtualBox/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Virtual Machine"
 application = "VMware Workstation"
 description = "VMware Workstation Pro configuration"
-enabled = true
 path = "~/.vmware/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Container"
 application = "Docker"
 description = "Docker container platform user configuration"
-enabled = true
 path = "~/.docker/"
+enabled = true
 
 [[dotfile]]
 category = "Applications"
 subcategory = "Container"
 application = "Podman"
 description = "Podman container engine configuration"
-enabled = true
 path = "~/.config/containers/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Core"
 application = "KDE Plasma"
 description = "KDE global configuration settings and theme preferences"
-enabled = true
 path = "~/.config/kdeglobals"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
@@ -1395,112 +1395,112 @@ category = "Desktop Environment"
 subcategory = "KDE Core"
 application = "Plasma Shell"
 description = "Plasma locale and format settings (per-user locale independent of system)"
-enabled = true
 path = "~/.config/plasma-localerc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Core"
 application = "Plasma Notifications"
 description = "Per-app and system notification preferences"
-enabled = true
 path = "~/.config/plasmanotifyrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Window Manager"
 application = "KWin"
 description = "KDE KWin window manager configuration and effects"
-enabled = true
 path = "~/.config/kwinrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Window Manager"
 application = "KWin Rules"
 description = "KWin window rules for per-window behavior and placement"
-enabled = true
 path = "~/.config/kwinrulesrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Window Manager"
 application = "KWin Output"
 description = "KWin display output configuration for Wayland (monitor layout)"
-enabled = true
 path = "~/.config/kwinoutputconfig"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Display"
 application = "KScreen"
 description = "KScreen display configuration for current hardware"
-enabled = true
 path = "~/.local/share/kscreen/*/outputs/*"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Display"
 application = "KGamma"
 description = "Gamma and color correction settings"
-enabled = true
 path = "~/.config/kgammarc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Input"
 application = "Input Devices"
 description = "Mouse and touchpad settings for Wayland and cursor themes"
-enabled = true
 path = "~/.config/kcminputrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Input"
 application = "Touchpad X11"
 description = "Touchpad settings for X11 using libinput driver"
-enabled = true
 path = "~/.config/touchpadxlibinputrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Input"
 application = "Keyboard Layout"
 description = "Keyboard layouts, variants, and input method options"
-enabled = true
 path = "~/.config/kxkbrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Input"
 application = "KGlobalShortcuts"
 description = "KDE global keyboard shortcuts and key bindings"
-enabled = true
 path = "~/.config/kglobalshortcutsrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Launcher"
 application = "KRunner"
 description = "KDE KRunner application launcher configuration"
-enabled = true
 path = "~/.config/krunnerrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Launcher"
 application = "Application Menu"
 description = "Custom Application Menu structure saved by KMenuEdit"
-enabled = true
 path = "~/.config/menus/applications-kmenuedit.menu"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Search"
 application = "Baloo"
 description = "KDE Baloo file indexing and search service configuration"
-enabled = true
 path = "~/.config/baloofilerc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
@@ -1520,16 +1520,16 @@ category = "Desktop Environment"
 subcategory = "KDE Session"
 application = "Session Manager"
 description = "Session restore behavior and saved client applications"
-enabled = true
 path = "~/.config/ksmserverrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Session"
 application = "KScreenLocker"
 description = "KDE screen locker settings and lock screen configuration"
-enabled = true
 path = "~/.config/kscreenlockerrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
@@ -1547,8 +1547,8 @@ category = "Desktop Environment"
 subcategory = "KDE Hardware"
 application = "BlueDevil"
 description = "Bluetooth daemon state and auto-enable preferences"
-enabled = true
 path = "~/.config/bluedevilglobalrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
@@ -1569,301 +1569,301 @@ category = "Desktop Environment"
 subcategory = "KDE Theming"
 application = "xsettingsd"
 description = "X11 settings daemon configuration for desktop theme settings"
-enabled = true
 path = "~/.config/xsettingsd/xsettingsd.conf"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE User Directories"
 application = "User Directories"
 description = "User-visible folder paths used by Plasma (Documents, Downloads, etc.)"
-enabled = true
 path = "~/.config/user-dirs.dirs"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE User Directories"
 application = "Places"
 description = "Dolphin sidebar Places bookmarks and custom locations"
-enabled = true
 path = "~/.local/share/user-places.xbel"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Applications"
 application = "Spectacle"
 description = "KDE Spectacle screenshot tool configuration"
-enabled = true
 path = "~/.config/spectaclerc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Applications"
 application = "KTorrent"
 description = "KDE KTorrent BitTorrent client configuration"
-enabled = true
 path = "~/.config/ktorrentrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Applications"
 application = "Ktorrent Data"
 description = "KDE KTorrent application data and torrents"
-enabled = true
 path = "~/.local/share/ktorrent/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Applications"
 application = "KMail"
 description = "KDE KMail email client configuration"
-enabled = true
 path = "~/.config/kmailrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Applications"
 application = "Kontact"
 description = "KDE Kontact personal information manager configuration"
-enabled = true
 path = "~/.config/kontactrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Applications"
 application = "Akregator"
 description = "KDE Akregator RSS feed reader configuration"
-enabled = true
 path = "~/.config/akregatorrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Applications"
 application = "KOrganizer"
 description = "KDE KOrganizer calendar application configuration"
-enabled = true
 path = "~/.config/korganizerrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Applications"
 application = "KAddressBook"
 description = "KDE KAddressBook contact manager configuration"
-enabled = true
 path = "~/.config/kaddressbookrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Applications"
 application = "KNotes"
 description = "KDE KNotes sticky notes application configuration"
-enabled = true
 path = "~/.config/knotesrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Wallet"
 application = "KWallet"
 description = "KDE Wallet password storage system configuration"
-enabled = true
 path = "~/.config/kwalletrc"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE Wallet"
 application = "KWallet Data"
 description = "KDE Wallet password storage data"
-enabled = true
 path = "~/.local/share/kwalletd/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "GNOME Core"
 application = "GNOME Settings"
 description = "GNOME desktop environment settings (stored in dconf binary DB)"
-enabled = true
 path = "~/.config/dconf/user"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "GNOME Core"
 application = "GNOME Shell Extensions"
 description = "GNOME Shell extensions configuration"
-enabled = true
 path = "~/.local/share/gnome-shell/extensions/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "GNOME Applications"
 application = "GNOME Terminal"
 description = "GNOME Terminal emulator settings (stored in dconf)"
-enabled = true
 path = "~/.config/dconf/user"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "GNOME Applications"
 application = "Evolution"
 description = "GNOME Evolution email and calendar client configuration"
-enabled = true
 path = "~/.config/evolution/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "Window Manager"
 application = "i3"
 description = "i3 tiling window manager configuration"
-enabled = true
 path = "~/.config/i3/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "Window Manager"
 application = "i3status"
 description = "i3status bar configuration"
-enabled = true
 path = "~/.config/i3status/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "Window Manager"
 application = "Sway"
 description = "Sway Wayland compositor configuration"
-enabled = true
 path = "~/.config/sway/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "Window Manager"
 application = "Hyprland"
 description = "Hyprland dynamic tiling Wayland compositor configuration"
-enabled = true
 path = "~/.config/hypr/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "Window Manager"
 application = "bspwm"
 description = "bspwm binary space partitioning window manager configuration"
-enabled = true
 path = "~/.config/bspwm/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "Window Manager"
 application = "sxhkd"
 description = "sxhkd hotkey daemon configuration for bspwm"
-enabled = true
 path = "~/.config/sxhkd/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "Status Bar"
 application = "Polybar"
 description = "Polybar status bar configuration"
-enabled = true
 path = "~/.config/polybar/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "Status Bar"
 application = "Waybar"
 description = "Waybar status bar for Wayland compositors"
-enabled = true
 path = "~/.config/waybar/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "Compositor"
 application = "Picom"
 description = "Picom X11 compositor configuration"
-enabled = true
 path = "~/.config/picom/"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Multiplexer"
 application = "tmux"
 description = "tmux terminal multiplexer configuration"
-enabled = true
 path = "~/.tmux.conf"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Multiplexer"
 application = "screen"
 description = "GNU Screen terminal multiplexer configuration"
-enabled = true
 path = "~/.screenrc"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Multiplexer"
 application = "byobu"
 description = "Byobu terminal multiplexer configuration"
-enabled = true
 path = "~/.byobu/"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Terminal"
 application = "Alacritty"
 description = "Alacritty GPU-accelerated terminal emulator configuration"
-enabled = true
 path = "~/.config/alacritty/"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Terminal"
 application = "Kitty"
 description = "Kitty terminal emulator configuration"
-enabled = true
 path = "~/.config/kitty/"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Terminal"
 application = "WezTerm"
 description = "WezTerm terminal emulator configuration"
-enabled = true
 path = "~/.config/wezterm/"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Terminal"
 application = "Tilix"
 description = "Tilix tiling terminal emulator configuration"
-enabled = true
 path = "~/.config/tilix/"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Terminal"
 application = "Terminator"
 description = "Terminator terminal emulator configuration"
-enabled = true
 path = "~/.config/terminator/"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Terminal"
 application = "URxvt"
 description = "rxvt-unicode terminal emulator configuration"
-enabled = true
 path = "~/.Xresources"
+enabled = true
 
 [[dotfile]]
 category = "Terminal"
 subcategory = "Terminal"
 application = "st"
 description = "Simple Terminal (st) configuration"
-enabled = true
 path = "~/.config/st/"
+enabled = true
 
 [[dotfile]]
 category = "Desktop Environment"
 subcategory = "KDE System Monitor"
 application = "System Monitor"
 description = "Plasma System Monitor custom page configurations"
-enabled = true
 path = "~/.local/share/plasma-systemmonitor/"
+enabled = true
