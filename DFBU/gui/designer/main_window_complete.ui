@@ -104,17 +104,7 @@
              </column>
              <column>
               <property name="text">
-               <string>Subcategory</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
                <string>Application</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Type</string>
               </property>
              </column>
              <column>

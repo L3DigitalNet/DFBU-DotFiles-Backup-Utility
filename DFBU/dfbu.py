@@ -539,7 +539,6 @@ class DotFile:
 
     Attributes:
         category: high-level grouping of dotfile
-        subcategory: more specific grouping within category
         application: specific application name
         description: human-readable description of dotfile
         src_path: source path of dotfile (expanded from ~)
@@ -582,7 +581,6 @@ class DotFile:
 
         # Extract metadata fields from configuration
         self.category: str = raw_dotfile["category"]
-        self.subcategory: str = raw_dotfile["subcategory"]
         self.application: str = raw_dotfile["application"]
         self.description: str = raw_dotfile["description"]
 
@@ -624,7 +622,6 @@ class DotFile:
         return (
             f"[{self.type}] {BLUE.bold}{self.name}{RESET}: "
             f"{MAGENTA}{self.category}{RESET} {DEFAULT.bold}|{RESET} "
-            f"{MAGENTA}{self.subcategory}{RESET} {DEFAULT.bold}|{RESET} "
             f"{MAGENTA}{self.application}{RESET}\n"
             f"  Description: {self.description}\n"
             f"  Source path: {DEFAULT.underline}{self.src_path}{RESET}\n"
@@ -1257,7 +1254,7 @@ def sort_dotfiles(dotfiles: list[DotFile]) -> list[DotFile]:
         sorted list of DotFile objects
     """
     dotfiles.sort(key=lambda df: df.application)
-    dotfiles.sort(key=lambda df: df.subcategory)
+    dotfiles.sort(key=lambda df: df.category)
     dotfiles.sort(key=lambda df: df.category)
 
     return dotfiles

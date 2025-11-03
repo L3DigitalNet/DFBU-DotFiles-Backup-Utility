@@ -128,7 +128,6 @@ class TestConfigValidator:
         # Arrange
         raw_dotfile = {
             "category": "Shell",
-            "subcategory": "Bash",
             "application": "Bash",
             "description": "Bash configuration",
             "paths": ["~/.bashrc"],  # Updated to use paths list
@@ -141,7 +140,6 @@ class TestConfigValidator:
 
         # Assert
         assert result["category"] == "Shell"
-        assert result["subcategory"] == "Bash"
         assert result["application"] == "Bash"
         assert result["description"] == "Bash configuration"
         assert result["paths"] == ["~/.bashrc"]  # Updated to check paths list
@@ -158,7 +156,6 @@ class TestConfigValidator:
 
         # Assert
         assert result["category"] == "Unknown"
-        assert result["subcategory"] == "Unknown"
         assert result["application"] == "Unknown"
         assert result["description"] == "None"
         # Empty paths list when no path provided
@@ -181,7 +178,6 @@ class TestConfigValidator:
         assert result["category"] == "Shell"
         assert result["paths"] == ["~/.bashrc"]  # Updated to check paths list
         # Missing fields use defaults
-        assert result["subcategory"] == "Unknown"
         assert result["application"] == "Unknown"
         assert result["description"] == "None"
 
@@ -204,14 +200,12 @@ class TestConfigValidator:
             "dotfile": [
                 {
                     "category": "Shell",
-                    "subcategory": "Bash",
                     "application": "Bash",
                     "description": "Bash config",
                     "paths": ["~/.bashrc"],  # Updated to use paths list
                 },
                 {
                     "category": "Editor",
-                    "subcategory": "Vim",
                     "application": "Vim",
                     "description": "Vim config",
                     "paths": ["~/.vimrc"],  # Updated to use paths list

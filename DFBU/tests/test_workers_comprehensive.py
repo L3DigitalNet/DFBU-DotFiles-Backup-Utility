@@ -52,7 +52,6 @@ class TestBackupWorkerSignals:
 
         model.add_dotfile(
             category="Test",
-            subcategory="Test",
             application="Test",
             description="Test",
             paths=[str(test_file)],
@@ -93,7 +92,6 @@ class TestBackupWorkerSignals:
 
         model.add_dotfile(
             category="Test",
-            subcategory="Test",
             application="Test",
             description="Test",
             paths=[str(test_file)],
@@ -161,7 +159,6 @@ class TestBackupWorkerSignals:
 
         model.add_dotfile(
             category="Test",
-            subcategory="Test",
             application="Test",
             description="Test dotfile",
             paths=[str(test_file)],
@@ -223,7 +220,6 @@ class TestBackupWorkerModes:
 
         model.add_dotfile(
             category="Test",
-            subcategory="Test",
             application="Test",
             description="Test",
             paths=[str(test_file)],
@@ -265,7 +261,6 @@ class TestBackupWorkerDirectoryProcessing:
 
         model.add_dotfile(
             category="Test",
-            subcategory="Test",
             application="Test",
             description="Test",
             paths=[str(test_dir)],
@@ -494,7 +489,6 @@ class TestWorkerErrorHandling:
 
         model.add_dotfile(
             category="Test",
-            subcategory="Test",
             application="Test",
             description="Test",
             paths=[str(test_file)],
@@ -540,7 +534,6 @@ class TestWorkerErrorHandling:
         # Add disabled dotfile
         model.add_dotfile(
             category="Test",
-            subcategory="Test",
             application="Test",
             description="Test",
             paths=[str(test_file)],

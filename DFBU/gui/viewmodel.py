@@ -44,7 +44,7 @@ from pathlib import Path
 from typing import Any, Final
 
 # Local imports
-from core.common_types import DotFileDict
+from core.common_types import DotFileDict, OptionsDict
 from model import DFBUModel
 
 # PySide6 imports for signals and threading
@@ -698,13 +698,13 @@ class DFBUViewModel(QObject):
 
         return success
 
-    def command_update_option(self, key: str, value: Any) -> bool:
+    def command_update_option(self, key: str, value: bool | int | str) -> bool:
         """
         Command to update a configuration option with type safety.
 
         Args:
             key: Option key to update
-            value: New value for the option
+            value: New value for the option (bool, int, or str only)
 
         Returns:
             True if option updated successfully
@@ -729,11 +729,8 @@ class DFBUViewModel(QObject):
         if not isinstance(value, valid_options[key]):
             return False
 
-        # Type narrowing - value is now known to be bool | int | str
-        if isinstance(value, (bool, int, str)):
-            return self.model.update_option(key, value)
-
-        return False
+        # Type is already narrowed by function signature (bool | int | str)
+        return self.model.update_option(key, value)
 
     def command_update_path(self, path_type: str, value: str) -> bool:
         """
@@ -827,7 +824,6 @@ class DFBUViewModel(QObject):
     def command_add_dotfile(
         self,
         category: str,
-        subcategory: str,
         application: str,
         description: str,
         paths: list[str],
@@ -838,7 +834,6 @@ class DFBUViewModel(QObject):
 
         Args:
             category: Category for the dotfile
-            subcategory: Subcategory for the dotfile
             application: Application name
             description: Description of the dotfile
             paths: List of file or directory paths
@@ -848,7 +843,7 @@ class DFBUViewModel(QObject):
             True if dotfile was added successfully
         """
         success = self.model.add_dotfile(
-            category, subcategory, application, description, paths, enabled
+            category, application, description, paths, enabled
         )
 
         if success:
@@ -862,7 +857,6 @@ class DFBUViewModel(QObject):
         self,
         index: int,
         category: str,
-        subcategory: str,
         application: str,
         description: str,
         paths: list[str],
@@ -874,7 +868,6 @@ class DFBUViewModel(QObject):
         Args:
             index: Index of dotfile to update
             category: Updated category
-            subcategory: Updated subcategory
             application: Updated application name
             description: Updated description
             paths: List of file or directory paths
@@ -884,7 +877,7 @@ class DFBUViewModel(QObject):
             True if dotfile was updated successfully
         """
         success = self.model.update_dotfile(
-            index, category, subcategory, application, description, paths, enabled
+            index, category, application, description, paths, enabled
         )
 
         if success:
@@ -976,19 +969,6 @@ class DFBUViewModel(QObject):
             if dotfile.get("category"):
                 categories.add(dotfile["category"])
         return sorted(categories)
-
-    def get_unique_subcategories(self) -> list[str]:
-        """
-        Get sorted list of unique subcategories from all dotfiles.
-
-        Returns:
-            Sorted list of unique subcategory names
-        """
-        subcategories: set[str] = set()
-        for dotfile in self.model.dotfiles:
-            if dotfile.get("subcategory"):
-                subcategories.add(dotfile["subcategory"])
-        return sorted(subcategories)
 
     @staticmethod
     def format_size(size_bytes: int) -> str:
@@ -1085,14 +1065,15 @@ class DFBUViewModel(QObject):
 
         return "\n".join(message_parts)
 
-    def get_options(self) -> dict[str, Any]:
+    def get_options(self) -> OptionsDict:
         """
         Get backup operation options.
 
         Returns:
-            Options dictionary
+            Options dictionary with proper typing
         """
-        return dict(self.model.options)
+        # Return copy to prevent external modification (TypedDict is dict-like, not a class)
+        return dict(self.model.options)  # type: ignore[return-value]
 
     def set_mirror_mode(self, enabled: bool) -> None:
         """
@@ -1201,29 +1182,35 @@ class DFBUViewModel(QObject):
         self.item_skipped.emit(path, reason)
 
     def _on_backup_finished(self) -> None:
-        """Handle backup completion."""
+        """Handle backup completion and cleanup worker."""
         summary = self.get_statistics_summary()
         self.operation_finished.emit(summary)
 
-        # Disconnect signals to prevent memory leaks
+        # Disconnect signals and cleanup worker to prevent memory leaks
         if self.backup_worker:
             self.backup_worker.progress_updated.disconnect(self._on_worker_progress)
             self.backup_worker.item_processed.disconnect(self._on_item_processed)
             self.backup_worker.item_skipped.disconnect(self._on_item_skipped)
             self.backup_worker.backup_finished.disconnect(self._on_backup_finished)
             self.backup_worker.error_occurred.disconnect(self._on_worker_error)
+            # Properly cleanup Qt object to free resources
+            self.backup_worker.deleteLater()
+            self.backup_worker = None
 
     def _on_restore_finished(self) -> None:
-        """Handle restore completion."""
+        """Handle restore completion and cleanup worker."""
         summary = self.get_statistics_summary()
         self.operation_finished.emit(summary)
 
-        # Disconnect signals to prevent memory leaks
+        # Disconnect signals and cleanup worker to prevent memory leaks
         if self.restore_worker:
             self.restore_worker.progress_updated.disconnect(self._on_worker_progress)
             self.restore_worker.item_processed.disconnect(self._on_item_processed)
             self.restore_worker.restore_finished.disconnect(self._on_restore_finished)
             self.restore_worker.error_occurred.disconnect(self._on_worker_error)
+            # Properly cleanup Qt object to free resources
+            self.restore_worker.deleteLater()
+            self.restore_worker = None
 
     def _on_worker_error(self, context: str, error_message: str) -> None:
         """

@@ -76,6 +76,10 @@ from viewmodel import DFBUViewModel
 from gui.input_validation import InputValidator
 
 
+# Constants for view configuration
+SKIP_LOG_INTERVAL: Final[int] = 10  # Log every N skipped files to avoid log spam
+
+
 class NumericTableWidgetItem(QTableWidgetItem):
     """
     Custom QTableWidgetItem for proper numeric sorting.
@@ -114,7 +118,6 @@ class AddDotfileDialog(QDialog):
 
     Attributes:
         category_combo: Editable combo box for category (prepopulated)
-        subcategory_combo: Editable combo box for subcategory (prepopulated)
         application_edit: Line edit for application name
         description_edit: Line edit for description
         paths_list: List widget displaying all paths
@@ -131,7 +134,6 @@ class AddDotfileDialog(QDialog):
         parent: QWidget | None = None,
         dotfile_data: dict[str, Any] | None = None,
         categories: list[str] | None = None,
-        subcategories: list[str] | None = None,
     ) -> None:
         """
         Initialize the AddDotfileDialog.
@@ -140,7 +142,6 @@ class AddDotfileDialog(QDialog):
             parent: Parent widget
             dotfile_data: Optional existing dotfile data for update mode
             categories: List of existing categories for dropdown
-            subcategories: List of existing subcategories for dropdown
         """
         super().__init__(parent)
         self.is_update_mode = dotfile_data is not None
@@ -172,14 +173,6 @@ class AddDotfileDialog(QDialog):
         if categories:
             self.category_combo.addItems(categories)
         form_layout.addRow("Category:", self.category_combo)
-
-        # Subcategory combo box (editable)
-        self.subcategory_combo = QComboBox()
-        self.subcategory_combo.setEditable(True)
-        self.subcategory_combo.setPlaceholderText("e.g., Web Browser, Shell")
-        if subcategories:
-            self.subcategory_combo.addItems(subcategories)
-        form_layout.addRow("Subcategory:", self.subcategory_combo)
 
         # Application input
         self.application_edit = QLineEdit()
@@ -233,7 +226,6 @@ class AddDotfileDialog(QDialog):
         # Pre-populate fields if in update mode
         if self.is_update_mode and dotfile_data:
             self.category_combo.setCurrentText(dotfile_data.get("category", ""))
-            self.subcategory_combo.setCurrentText(dotfile_data.get("subcategory", ""))
             self.application_edit.setText(dotfile_data.get("application", ""))
             self.description_edit.setText(dotfile_data.get("description", ""))
             self.enabled_checkbox.setChecked(dotfile_data.get("enabled", True))
@@ -340,18 +332,6 @@ class AddDotfileDialog(QDialog):
                 self, "Validation Error", validation_result.error_message
             )
             self.category_combo.setFocus()
-            return
-
-        # Validate subcategory
-        subcategory = self.subcategory_combo.currentText().strip()
-        validation_result = InputValidator.validate_string(
-            subcategory, field_name="Subcategory", min_length=1, max_length=100
-        )
-        if not validation_result.success:
-            QMessageBox.warning(
-                self, "Validation Error", validation_result.error_message
-            )
-            self.subcategory_combo.setFocus()
             return
 
         # Validate application
@@ -505,32 +485,47 @@ class MainWindow(QMainWindow):
         loader = QUiLoader()
         loaded_window = loader.load(str(ui_file_path), None)
 
+        # Type safety: QUiLoader returns QWidget, but we know it's QMainWindow from .ui file
+        # We check dynamically and cast appropriately to satisfy type checker
+        ui_widget: QWidget | None = None
+
         # Extract components from loaded QMainWindow to avoid nesting
         # Qt doesn't allow QMainWindow within QMainWindow, so we extract and reparent
-        if hasattr(loaded_window, "centralWidget"):
-            ui_widget = loaded_window.centralWidget()
-            if ui_widget:
+        if hasattr(loaded_window, "centralWidget") and callable(
+            getattr(loaded_window, "centralWidget", None)
+        ):
+            central = loaded_window.centralWidget()
+            if isinstance(central, QWidget):
+                ui_widget = central
                 ui_widget.setParent(self)
                 self.setCentralWidget(ui_widget)
 
             # Extract and set menubar if present
-            if hasattr(loaded_window, "menuBar"):
-                menu_bar = loaded_window.menuBar()
-                if menu_bar:
+            if hasattr(loaded_window, "menuBar") and callable(
+                getattr(loaded_window, "menuBar", None)
+            ):
+                menu = loaded_window.menuBar()
+                if menu is not None:
                     # Set menubar without reparenting to avoid object lifecycle issues
-                    self.setMenuBar(menu_bar)
+                    self.setMenuBar(menu)
 
             # Extract and set statusbar if present
-            if hasattr(loaded_window, "statusBar"):
-                status_bar = loaded_window.statusBar()
-                if status_bar:
-                    status_bar.setParent(self)
-                    self.setStatusBar(status_bar)
-        else:
-            # Fallback for non-QMainWindow UI files
+            if hasattr(loaded_window, "statusBar") and callable(
+                getattr(loaded_window, "statusBar", None)
+            ):
+                status = loaded_window.statusBar()
+                if status is not None:
+                    status.setParent(self)
+                    self.setStatusBar(status)
+        # Fallback for non-QMainWindow UI files
+        elif isinstance(loaded_window, QWidget):
             ui_widget = loaded_window
             ui_widget.setParent(self)
             self.setCentralWidget(ui_widget)
+
+        # Ensure we have a valid ui_widget
+        if ui_widget is None:
+            raise RuntimeError("Failed to load UI from .ui file")
 
         # Set window title with version
         self.setWindowTitle(f"{self.PROJECT_NAME} v{self.version}")
@@ -558,8 +553,11 @@ class MainWindow(QMainWindow):
             loaded_window: Original loaded QMainWindow for finding menu actions
         """
         # Store reference to central widget
-        self.central_widget: QWidget = ui_widget  # type: ignore[assignment]
-        self.tab_widget: QTabWidget = ui_widget.findChild(QTabWidget, "tab_widget")  # type: ignore[assignment]
+        self.central_widget: QWidget = ui_widget
+        found_tab = ui_widget.findChild(QTabWidget, "tab_widget")
+        if not isinstance(found_tab, QTabWidget):
+            raise RuntimeError("Required widget 'tab_widget' not found in UI file")
+        self.tab_widget: QTabWidget = found_tab
 
         # Backup tab widgets
         self.config_path_edit: QLineEdit = ui_widget.findChild(
@@ -740,9 +738,7 @@ class MainWindow(QMainWindow):
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(6, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(7, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
 
     def _connect_viewmodel_signals(self) -> None:
         """Connect ViewModel signals to View slots."""
@@ -943,8 +939,8 @@ class MainWindow(QMainWindow):
         """
         self._skipped_count += 1
 
-        # Show progress every 10 skipped files to indicate activity
-        if self._skipped_count % 10 == 0:
+        # Show progress at intervals to indicate activity without overwhelming the log
+        if self._skipped_count % SKIP_LOG_INTERVAL == 0:
             new_skips = self._skipped_count - self._last_logged_skip_count
             self._last_logged_skip_count = self._skipped_count
 
@@ -1104,6 +1100,9 @@ class MainWindow(QMainWindow):
             validation: Validation results mapping index to (exists, is_dir, type_str)
             sizes: Size results mapping index to size in bytes
         """
+        # Save current expansion state (indexed by dotfile_idx, so it's sort-safe)
+        # We'll restore expanded state after populating the table
+
         # Disable sorting while populating table to prevent performance issues
         self.dotfile_table.setSortingEnabled(False)
 
@@ -1120,12 +1119,16 @@ class MainWindow(QMainWindow):
         for row_idx, (
             original_idx,
             dotfile,
-            (exists, _is_dir, type_str),
+            (exists, _is_dir, _type_str),
             size,
         ) in enumerate(dotfile_data):
-            # Enabled indicator
+            # Enabled indicator with directory expand icon
             enabled = dotfile.get("enabled", True)
-            enabled_item = QTableWidgetItem("✓" if enabled else "✗")
+
+            # Simple enabled indicator
+            indicator = "✓" if enabled else "✗"
+
+            enabled_item = QTableWidgetItem(indicator)
             enabled_item.setData(
                 Qt.ItemDataRole.UserRole, original_idx
             )  # Store original index
@@ -1148,18 +1151,10 @@ class MainWindow(QMainWindow):
                 row_idx, 2, QTableWidgetItem(dotfile["category"])
             )
 
-            # Subcategory
-            self.dotfile_table.setItem(
-                row_idx, 3, QTableWidgetItem(dotfile["subcategory"])
-            )
-
             # Application
             self.dotfile_table.setItem(
-                row_idx, 4, QTableWidgetItem(dotfile["application"])
+                row_idx, 3, QTableWidgetItem(dotfile["application"])
             )
-
-            # Type
-            self.dotfile_table.setItem(row_idx, 5, QTableWidgetItem(type_str))
 
             # Size - format to human readable with custom numeric sorting
             size_str = self.viewmodel.format_size(size)
@@ -1170,7 +1165,7 @@ class MainWindow(QMainWindow):
             size_item.setTextAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
             )
-            self.dotfile_table.setItem(row_idx, 6, size_item)
+            self.dotfile_table.setItem(row_idx, 4, size_item)
 
             # Path - show first path with count indicator if multiple
             paths = dotfile["paths"]
@@ -1183,7 +1178,7 @@ class MainWindow(QMainWindow):
             # Tooltip shows description and all paths
             tooltip_text = f"{dotfile['description']}\n\nPaths:\n{'\n'.join(paths)}"
             path_item.setToolTip(tooltip_text)
-            self.dotfile_table.setItem(row_idx, 7, path_item)
+            self.dotfile_table.setItem(row_idx, 5, path_item)
 
             # Accumulate total size for enabled items
             if enabled and exists:
@@ -1194,7 +1189,7 @@ class MainWindow(QMainWindow):
             f"Total Size (enabled): {self.viewmodel.format_size(total_enabled_size)}"
         )
 
-        # Re-enable sorting after populating table
+        # Re-enable sorting after everything is populated
         self.dotfile_table.setSortingEnabled(True)
 
     def _update_options_display(self) -> None:
@@ -1372,6 +1367,9 @@ class MainWindow(QMainWindow):
 
         Returns:
             Original index in the dotfiles list
+
+        Raises:
+            ValueError: If unable to determine original index (data corruption)
         """
         # Get the original index stored in the first column item
         item = self.dotfile_table.item(table_row, 0)
@@ -1379,8 +1377,12 @@ class MainWindow(QMainWindow):
             original_idx = item.data(Qt.ItemDataRole.UserRole)
             if isinstance(original_idx, int):
                 return original_idx
-        # Fallback to table row if no data stored (shouldn't happen)
-        return int(table_row)
+
+        # Data missing or corrupt - this indicates a programming error
+        raise ValueError(
+            f"Unable to determine original dotfile index for table row {table_row}. "
+            "Table data may be corrupt."
+        )
 
     def _on_dotfile_selection_changed(self) -> None:
         """Handle dotfile table selection change."""
@@ -1392,26 +1394,22 @@ class MainWindow(QMainWindow):
 
     def _on_add_dotfile(self) -> None:
         """Handle add dotfile button click."""
-        # Get unique categories and subcategories for dropdown
+        # Get unique categories for dropdown
         categories = self.viewmodel.get_unique_categories()
-        subcategories = self.viewmodel.get_unique_subcategories()
 
         # Create dialog for adding new dotfile
-        dialog = AddDotfileDialog(
-            self, categories=categories, subcategories=subcategories
-        )
+        dialog = AddDotfileDialog(self, categories=categories)
 
         if dialog.exec():
             # Get values from dialog
             category = dialog.category_combo.currentText()
-            subcategory = dialog.subcategory_combo.currentText()
             application = dialog.application_edit.text()
             description = dialog.description_edit.text()
             paths = dialog.get_paths()
             enabled = dialog.enabled_checkbox.isChecked()
 
             # Validate inputs
-            if not all([category, subcategory, application, description]) or not paths:
+            if not all([category, application, description]) or not paths:
                 QMessageBox.warning(
                     self,
                     "Missing Information",
@@ -1421,7 +1419,7 @@ class MainWindow(QMainWindow):
 
             # Add dotfile via ViewModel
             success = self.viewmodel.command_add_dotfile(
-                category, subcategory, application, description, paths, enabled
+                category, application, description, paths, enabled
             )
 
             if success:
@@ -1445,9 +1443,8 @@ class MainWindow(QMainWindow):
         # Get existing dotfile data
         dotfile = self.viewmodel.get_dotfile_list()[original_idx]
 
-        # Get unique categories and subcategories for dropdown
+        # Get unique categories for dropdown
         categories = self.viewmodel.get_unique_categories()
-        subcategories = self.viewmodel.get_unique_subcategories()
 
         # Create dialog for updating dotfile with pre-populated data
         # Cast TypedDict to plain dict for dialog compatibility
@@ -1455,20 +1452,18 @@ class MainWindow(QMainWindow):
             self,
             dotfile_data=dict(dotfile),
             categories=categories,
-            subcategories=subcategories,
         )
 
         if dialog.exec():
             # Get updated values from dialog
             category = dialog.category_combo.currentText()
-            subcategory = dialog.subcategory_combo.currentText()
             application = dialog.application_edit.text()
             description = dialog.description_edit.text()
             paths = dialog.get_paths()
             enabled = dialog.enabled_checkbox.isChecked()
 
             # Validate inputs
-            if not all([category, subcategory, application, description]) or not paths:
+            if not all([category, application, description]) or not paths:
                 QMessageBox.warning(
                     self,
                     "Missing Information",
@@ -1480,7 +1475,6 @@ class MainWindow(QMainWindow):
             success = self.viewmodel.command_update_dotfile(
                 original_idx,
                 category,
-                subcategory,
                 application,
                 description,
                 paths,

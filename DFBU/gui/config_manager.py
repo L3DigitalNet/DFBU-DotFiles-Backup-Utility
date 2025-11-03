@@ -321,7 +321,6 @@ class ConfigManager:
             for dotfile in self.dotfiles:
                 dotfile_entry: dict[str, Any] = {
                     "category": dotfile["category"],
-                    "subcategory": dotfile["subcategory"],
                     "application": dotfile["application"],
                     "description": dotfile["description"],
                     "enabled": dotfile["enabled"],
@@ -357,7 +356,6 @@ class ConfigManager:
     def add_dotfile(
         self,
         category: str,
-        subcategory: str,
         application: str,
         description: str,
         paths: list[str],
@@ -368,7 +366,6 @@ class ConfigManager:
 
         Args:
             category: Category for the dotfile
-            subcategory: Subcategory for the dotfile
             application: Application name
             description: Description of the dotfile
             paths: List of file or directory paths
@@ -380,7 +377,6 @@ class ConfigManager:
         # Create new dotfile entry with paths from existing configuration
         new_dotfile: DotFileDict = {
             "category": category,
-            "subcategory": subcategory,
             "application": application,
             "description": description,
             "paths": paths,
@@ -397,7 +393,6 @@ class ConfigManager:
         self,
         index: int,
         category: str,
-        subcategory: str,
         application: str,
         description: str,
         paths: list[str],
@@ -409,7 +404,6 @@ class ConfigManager:
         Args:
             index: Index of dotfile to update
             category: Updated category
-            subcategory: Updated subcategory
             application: Updated application name
             description: Updated description
             paths: Updated list of file or directory paths
@@ -421,7 +415,6 @@ class ConfigManager:
         if 0 <= index < len(self.dotfiles):
             # Update the dotfile entry while preserving mirror_dir and archive_dir
             self.dotfiles[index]["category"] = category
-            self.dotfiles[index]["subcategory"] = subcategory
             self.dotfiles[index]["application"] = application
             self.dotfiles[index]["description"] = description
             self.dotfiles[index]["paths"] = paths
@@ -455,8 +448,9 @@ class ConfigManager:
             New enabled status if successful, current status otherwise
         """
         if 0 <= index < len(self.dotfiles):
-            self.dotfiles[index]["enabled"] = not self.dotfiles[index]["enabled"]
-            return self.dotfiles[index]["enabled"]
+            current_enabled: bool = bool(self.dotfiles[index]["enabled"])
+            self.dotfiles[index]["enabled"] = not current_enabled
+            return bool(self.dotfiles[index]["enabled"])
         return False
 
     def update_option(self, key: str, value: bool | int | str) -> bool:

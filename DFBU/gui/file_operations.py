@@ -38,6 +38,7 @@ Functions:
     - get_backup_files: Find all backup files for a source file
 """
 
+import logging
 import os
 import shutil
 import tarfile
@@ -45,6 +46,10 @@ import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Final
+
+
+# Setup logger for this module
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -163,8 +168,9 @@ def rotate_old_backups(
             try:
                 backup_files[i].unlink()
                 deleted_backups.append(backup_files[i])
-            except OSError:
-                # Skip files that can't be deleted
+            except OSError as e:
+                # Skip files that can't be deleted (permission or in-use)
+                logger.warning("Cannot delete backup file %s: %s", backup_files[i], e)
                 continue
 
     return deleted_backups
@@ -196,8 +202,9 @@ def get_backup_files(source_path: Path, backup_dir: Path) -> list[Path]:
         try:
             mtime = backup_file.stat().st_mtime
             backup_list.append((backup_file, mtime))
-        except OSError:
-            # Skip files that can't be stat'd
+        except OSError as e:
+            # Skip files that can't be stat'd (deleted or permission error)
+            logger.warning("Cannot access backup file %s: %s", backup_file, e)
             continue
 
     # Sort by modification time (oldest first)
@@ -581,15 +588,17 @@ class FileOperations:
                 try:
                     mtime = archive_path.stat().st_mtime
                     archive_list.append((archive_path, mtime))
-                except OSError:
+                except OSError as e:
                     # Skip files that can't be stat'd (deleted or permission error)
+                    logger.warning("Cannot access archive file %s: %s", archive_path, e)
                     continue
 
             # Sort by modification time
             archives = [
                 path for path, _mtime in sorted(archive_list, key=lambda x: x[1])
             ]
-        except OSError:
+        except OSError as e:
+            logger.error("Error accessing archive directory %s: %s", archive_base, e)
             return deleted_archives
 
         # Calculate number to delete
@@ -601,7 +610,8 @@ class FileOperations:
                 try:
                     archives[i].unlink()
                     deleted_archives.append(archives[i])
-                except OSError:
+                except OSError as e:
+                    logger.warning("Cannot delete archive %s: %s", archives[i], e)
                     continue
 
         return deleted_archives

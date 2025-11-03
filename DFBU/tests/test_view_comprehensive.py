@@ -133,7 +133,6 @@ class TestAddDotfileDialog:
         _viewmodel = DFBUViewModel(_model)
         dotfile_data = {
             "category": "TestCat",
-            "subcategory": "TestSub",
             "application": "TestApp",
             "description": "Test description",
             "paths": ["~/.testrc", "~/.config/test"],
@@ -147,7 +146,6 @@ class TestAddDotfileDialog:
         assert dialog.is_update_mode is True
         assert dialog.windowTitle() == "Update Dotfile Entry"
         assert dialog.category_combo.currentText() == "TestCat"
-        assert dialog.subcategory_combo.currentText() == "TestSub"
         assert dialog.application_edit.text() == "TestApp"
         assert dialog.description_edit.text() == "Test description"
         assert dialog.paths_list.count() == 2
@@ -160,7 +158,6 @@ class TestAddDotfileDialog:
         _viewmodel = DFBUViewModel(_model)
         dotfile_data = {
             "category": "TestCat",
-            "subcategory": "TestSub",
             "application": "TestApp",
             "description": "Test",
             "path": "~/.testrc",  # Legacy format
@@ -533,7 +530,6 @@ class TestMainWindowDotfileDisplay:
 
         viewmodel.command_add_dotfile(
             "TestCat",
-            "TestSub",
             "TestApp",
             "Test description",
             [str(test_file)],
@@ -559,7 +555,7 @@ class TestMainWindowDotfileDisplay:
         test_file.write_text("test content")
 
         viewmodel.command_add_dotfile(
-            "TestCat", "TestSub", "TestApp", "Test", [str(test_file)], True
+            "TestCat", "TestApp", "Test", [str(test_file)], True
         )
 
         window = MainWindow(viewmodel, "1.0.0")

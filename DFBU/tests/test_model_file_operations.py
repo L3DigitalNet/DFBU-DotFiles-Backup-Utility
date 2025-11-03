@@ -237,7 +237,6 @@ class TestModelPathSizeCalculation:
         # Add dotfile with multiple paths
         model.add_dotfile(
             "Test",
-            "Test",
             "TestApp",
             "Test",
             [str(file1), str(file2)],

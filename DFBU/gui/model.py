@@ -219,7 +219,6 @@ class DFBUModel:
     def add_dotfile(
         self,
         category: str,
-        subcategory: str,
         application: str,
         description: str,
         paths: list[str],
@@ -230,7 +229,6 @@ class DFBUModel:
 
         Args:
             category: Category for the dotfile
-            subcategory: Subcategory for the dotfile
             application: Application name
             description: Description of the dotfile
             paths: List of file or directory paths
@@ -240,14 +238,13 @@ class DFBUModel:
             True if dotfile was added successfully
         """
         return self._config_manager.add_dotfile(
-            category, subcategory, application, description, paths, enabled
+            category, application, description, paths, enabled
         )
 
     def update_dotfile(
         self,
         index: int,
         category: str,
-        subcategory: str,
         application: str,
         description: str,
         paths: list[str],
@@ -259,7 +256,6 @@ class DFBUModel:
         Args:
             index: Index of dotfile to update
             category: Updated category
-            subcategory: Updated subcategory
             application: Updated application name
             description: Updated description
             paths: Updated list of file or directory paths
@@ -269,7 +265,7 @@ class DFBUModel:
             True if dotfile was updated successfully
         """
         return self._config_manager.update_dotfile(
-            index, category, subcategory, application, description, paths, enabled
+            index, category, application, description, paths, enabled
         )
 
     def remove_dotfile(self, index: int) -> bool:
