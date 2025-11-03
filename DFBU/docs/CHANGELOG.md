@@ -26,6 +26,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.5.7] - 2025-11-02
+
+### Added
+
+- **Comprehensive Testing Infrastructure**: Complete test suite with 217 tests achieving 76% overall code coverage
+  - Added `tests/test_backup_orchestrator.py` with 25 test cases covering initialization, validation, mirror/archive backups, and restore operations
+  - Added `tests/test_config_validation.py` with 16 test cases for ConfigValidator options and dotfile validation
+  - Added `tests/test_dfbu_cli.py` with 18 integration tests for CLI workflow and component integration
+  - Added `tests/test_dotfile_class.py` with 9 test cases for DotFile initialization and path operations
+  - Added `tests/test_model.py` with 27 comprehensive model tests covering config, dotfile, path, file operations, and statistics
+  - Added `tests/test_model_additional_coverage.py` with 27 additional model tests for backup utilities, archives, and restore
+  - Added `tests/test_model_file_operations.py` with 18 file operation tests including identity checks and confident code paths
+  - Added `tests/test_view_comprehensive.py` with 25 view tests for dialogs, main window, and UI components
+  - Added `tests/test_viewmodel_multiple_paths.py` with 12 ViewModel tests for categories and backup processing
+  - Added `tests/test_viewmodel_template.py` with 10 example ViewModel tests demonstrating test patterns
+  - Added `tests/test_workers_comprehensive.py` with 17 worker tests for BackupWorker and RestoreWorker threading
+  - Configured pytest with `pyproject.toml` including testpaths, Qt plugin, and coverage settings
+  - Added pytest fixtures in `conftest.py` for QApplication and temp config directory
+- **Branch Protection System**: Comprehensive branch protection implementation
+  - Added `.agents/branch_protection.py` - Python checker for AI agents to validate branch before file modifications
+  - Added `BRANCH_PROTECTION.md` - Complete branch protection documentation with workflows and scenarios
+  - Added `BRANCH_PROTECTION_QUICK.md` - Quick reference guide for developers and AI agents
+  - Added `PROTECTION_STATUS.md` - Documentation of current protection implementation status
+- **Development Documentation**: Enhanced contributing guidelines
+  - Added `CONTRIBUTING.md` - Comprehensive development workflow, testing requirements, and style guidelines
+  - Updated `.github/copilot-instructions.md` with mandatory strict type hint enforcement
+  - Updated `AGENTS.md` with branch protection workflow integration
+
+### Changed
+
+- **Type Safety Enhancement**: Enforced mandatory type hints throughout entire codebase
+  - All function parameters now have explicit type annotations
+  - All function return values explicitly typed (including `-> None`)
+  - All class attributes defined in `__init__` have type hints
+  - Module-level variables and constants use `Final` type annotations
+  - Updated to use modern Python 3.10+ syntax: `list[str]` instead of `List[str]`, `str | None` instead of `Optional[str]`
+  - Used `collections.abc.Callable` for precise callback type hints
+- **Test Infrastructure**: Improved pytest fixtures and configuration
+  - Updated `conftest.py` to use `scope="session"` for QApplication fixture
+  - Added proper cleanup handling in fixtures
+  - Configured pytest-qt plugin for Qt-specific testing
+  - Added `pytest-mock` for improved mocking capabilities
+- **Coverage Reporting**: Configured comprehensive coverage tracking
+  - Set up HTML coverage reports in `htmlcov/` directory
+  - Configured terminal coverage output with missing line numbers
+  - Coverage tracking for `gui/` and `core/` packages
+  - Generated detailed coverage reports showing 76% overall coverage (gui/model.py: 100%, gui/viewmodel.py: 63%, gui/view.py: 69%)
+
+### Fixed
+
+- **Test Reliability**: Fixed pytest fixtures to prevent QApplication-related test failures
+  - Properly scoped QApplication fixture to session level
+  - Added fallback for existing QApplication instance
+  - Ensured proper cleanup between test runs
+
+## [0.5.6] - 2025-11-01
+
+### Fixed
+
+- **GUI Blank Window Issue**: Resolved issue where main window displayed blank on startup
+  - Fixed `MainWindow` initialization to properly load UI components
+  - Corrected signal-slot connections for proper event handling
+  - Updated window state restoration logic
+
+### Changed
+
+- **Code Refactoring**: Improved code organization and maintainability
+  - Cleaned up unused imports and variables
+  - Enhanced inline documentation
+  - Updated file headers to current date
+
 ## [0.5.5] - 2025-11-01
 
 ### Changed

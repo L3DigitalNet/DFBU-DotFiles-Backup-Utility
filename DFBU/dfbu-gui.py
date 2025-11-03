@@ -81,7 +81,7 @@ except ImportError:
     sys.exit(1)
 
 # Application version
-__version__: Final[str] = "0.5.6"
+__version__: Final[str] = "0.5.7"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
 DEFAULT_CONFIG_PATH: Final[Path] = Path(__file__).parent / "data" / "dfbu-config.toml"

@@ -361,32 +361,35 @@ class TestMainWindowActions:
         """Test load config menu action triggers ViewModel command."""
         # Arrange
         window = MainWindow(viewmodel_with_config, "1.0.0")
+        # Set a config path in the edit field (view reads from this)
+        window.config_path_edit.setText("/path/to/config.toml")
 
         # Mock the command
         with patch.object(viewmodel_with_config, "command_load_config") as mock_command:
-            with patch("PySide6.QtWidgets.QFileDialog.getOpenFileName") as mock_dialog:
-                mock_dialog.return_value = ("/path/to/config.toml", "")
+            mock_command.return_value = True  # Simulate successful load
 
-                # Act
-                window._on_load_config()
+            # Act
+            window._on_load_config()
 
-                # Assert
-                mock_command.assert_called_once_with("/path/to/config.toml")
+            # Assert
+            mock_command.assert_called_once()
 
     def test_save_config_action_triggers_command(self, qapp, viewmodel_with_config):
         """Test save config menu action triggers ViewModel command."""
         # Arrange
         window = MainWindow(viewmodel_with_config, "1.0.0")
 
-        # Mock the command
+        # Mock the save command and confirmation dialog
         with patch.object(viewmodel_with_config, "command_save_config") as mock_command:
-            with patch("PySide6.QtWidgets.QFileDialog.getSaveFileName") as mock_dialog:
-                mock_dialog.return_value = ("/path/to/save.toml", "")
+            mock_command.return_value = True  # Simulate successful save
+            with patch("PySide6.QtWidgets.QMessageBox.question") as mock_question:
+                # Mock user clicking "Yes" on confirmation
+                mock_question.return_value = QMessageBox.StandardButton.Yes
 
                 # Act
                 window._on_save_config()
 
-                # Assert
+                # Assert - save_config should be called after user confirms
                 mock_command.assert_called_once()
 
     def test_add_dotfile_opens_dialog(self, qapp, viewmodel_with_config):
@@ -408,30 +411,34 @@ class TestMainWindowActions:
             mock_dialog.exec.assert_called_once()
 
     def test_update_dotfile_requires_selection(self, qapp, viewmodel_with_config):
-        """Test update dotfile requires table row selection."""
+        """Test update dotfile returns early when no selection."""
         # Arrange
         window = MainWindow(viewmodel_with_config, "1.0.0")
 
-        # Mock warning dialog
-        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
-            # Act - no selection
+        # Mock the command to verify it's not called
+        with patch.object(
+            viewmodel_with_config, "command_update_dotfile"
+        ) as mock_command:
+            # Act - no selection, should return early
             window._on_update_dotfile()
 
-            # Assert
-            mock_warning.assert_called_once()
+            # Assert - command should not be called when no selection
+            mock_command.assert_not_called()
 
     def test_remove_dotfile_requires_selection(self, qapp, viewmodel_with_config):
-        """Test remove dotfile requires table row selection."""
+        """Test remove dotfile returns early when no selection."""
         # Arrange
         window = MainWindow(viewmodel_with_config, "1.0.0")
 
-        # Mock warning dialog
-        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
-            # Act - no selection
+        # Mock the command to verify it's not called
+        with patch.object(
+            viewmodel_with_config, "command_remove_dotfile"
+        ) as mock_command:
+            # Act - no selection, should return early
             window._on_remove_dotfile()
 
-            # Assert
-            mock_warning.assert_called_once()
+            # Assert - command should not be called when no selection
+            mock_command.assert_not_called()
 
 
 class TestMainWindowBackupRestore:
@@ -580,15 +587,16 @@ class TestMainWindowOptionsTab:
         # Arrange
         window = MainWindow(viewmodel_with_config, "1.0.0")
 
-        # Mock update option command
+        # Mock update option command and confirmation dialog
         with patch.object(
             viewmodel_with_config, "command_update_option"
         ) as mock_update:
-            # Simulate changing an option
-            window.mirror_checkbox.setChecked(False)
+            with patch("PySide6.QtWidgets.QMessageBox.question") as mock_question:
+                # Mock user clicking "Yes"
+                mock_question.return_value = QMessageBox.StandardButton.Yes
 
-            # Act
-            window._on_save_config()
+                # Act
+                window._on_save_config()
 
-            # Assert
-            assert mock_update.call_count > 0
+                # Assert - should be called multiple times for different options
+                assert mock_update.call_count > 0

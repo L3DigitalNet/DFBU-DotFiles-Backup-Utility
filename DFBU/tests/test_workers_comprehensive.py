@@ -56,7 +56,7 @@ class TestBackupWorkerSignals:
             application="Test",
             description="Test",
             paths=[str(test_file)],
-            enabled=True
+            enabled=True,
         )
 
         mirror_dir = tmp_path / "mirror"
@@ -97,7 +97,7 @@ class TestBackupWorkerSignals:
             application="Test",
             description="Test",
             paths=[str(test_file)],
-            enabled=True
+            enabled=True,
         )
 
         mirror_dir = tmp_path / "mirror"
@@ -150,23 +150,34 @@ class TestBackupWorkerSignals:
         assert len(finished_called) == 1
 
     def test_worker_emits_item_skipped_signal(self, qapp, tmp_path):
-        """Test BackupWorker emits skipped item signals."""
+        """Test BackupWorker emits skipped signal for unchanged files."""
         # Arrange
         config_path = tmp_path / "config.toml"
         model = DFBUModel(config_path)
 
-        # Add dotfile with non-existent path
+        # Create a file and mirror it first time
+        test_file = tmp_path / "test.txt"
+        test_file.write_text("content")
+
         model.add_dotfile(
             category="Test",
             subcategory="Test",
             application="Test",
-            description="Test",
-            paths=["/nonexistent/path"],
-            enabled=True
+            description="Test dotfile",
+            paths=[str(test_file)],
+            enabled=True,
         )
 
         model.mirror_base_dir = tmp_path / "mirror"
 
+        # First backup - should succeed
+        worker1 = BackupWorker()
+        worker1.set_model(model)
+        worker1.set_modes(mirror=True, archive=False)
+        worker1.run()
+        worker1.wait()
+
+        # Second backup with skip_identical - should skip unchanged file
         worker = BackupWorker()
         worker.set_model(model)
         worker.set_modes(mirror=True, archive=False)
@@ -179,12 +190,14 @@ class TestBackupWorkerSignals:
 
         worker.item_skipped.connect(capture_skipped)
 
-        # Act
+        # Act - run backup again (file unchanged, should be skipped)
         worker.run()
+        worker.wait()
         qapp.processEvents()
 
-        # Assert - nonexistent path should be skipped
+        # Assert - unchanged file should be skipped
         assert len(skipped_items) > 0
+        assert "unchanged" in skipped_items[0][1].lower()
 
     def test_worker_handles_no_model_gracefully(self, qapp):
         """Test BackupWorker handles missing model."""
@@ -214,7 +227,7 @@ class TestBackupWorkerModes:
             application="Test",
             description="Test",
             paths=[str(test_file)],
-            enabled=True
+            enabled=True,
         )
 
         mirror_dir = tmp_path / "mirror"
@@ -231,7 +244,6 @@ class TestBackupWorkerModes:
 
         # Assert - mirror should have files
         assert any(mirror_dir.rglob("*"))
-
 
 
 class TestBackupWorkerDirectoryProcessing:
@@ -257,7 +269,7 @@ class TestBackupWorkerDirectoryProcessing:
             application="Test",
             description="Test",
             paths=[str(test_dir)],
-            enabled=True
+            enabled=True,
         )
 
         mirror_dir = tmp_path / "mirror"
@@ -319,15 +331,29 @@ class TestRestoreWorkerSignals:
     def test_restore_worker_emits_finished_signal(self, qapp, tmp_path):
         """Test RestoreWorker emits finished signal."""
         # Arrange
+        import socket
+
         config_path = tmp_path / "config.toml"
         model = DFBUModel(config_path)
 
+        # Get the actual hostname used by the model
+        actual_hostname = socket.gethostname()
+
+        # Create proper backup structure: backup_dir/hostname/home/...
         backup_dir = tmp_path / "backup"
-        backup_dir.mkdir()
+        hostname_dir = backup_dir / actual_hostname
+        home_dir = hostname_dir / "home"
+        home_dir.mkdir(parents=True)
+
+        # Create a backed up file in proper structure
+        backup_file = home_dir / "testfile.txt"
+        backup_file.write_text("restored content")
 
         worker = RestoreWorker()
         worker.set_model(model)
-        worker.set_source_directory(backup_dir)
+        worker.set_source_directory(
+            hostname_dir
+        )  # Set to hostname dir for proper path reconstruction
 
         # Track signal
         finished_called = []
@@ -339,6 +365,7 @@ class TestRestoreWorkerSignals:
 
         # Act
         worker.run()
+        worker.wait()
         qapp.processEvents()
 
         # Assert
@@ -471,7 +498,7 @@ class TestWorkerErrorHandling:
             application="Test",
             description="Test",
             paths=[str(test_file)],
-            enabled=True
+            enabled=True,
         )
 
         mirror_dir = tmp_path / "mirror"
@@ -517,7 +544,7 @@ class TestWorkerErrorHandling:
             application="Test",
             description="Test",
             paths=[str(test_file)],
-            enabled=False
+            enabled=False,
         )
 
         mirror_dir = tmp_path / "mirror"
