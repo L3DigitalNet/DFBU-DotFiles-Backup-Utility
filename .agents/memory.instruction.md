@@ -1,47 +1,90 @@
----
+# ⚠️ CRITICAL: Branch Protection Rules (MANDATORY FOR ALL AI AGENTS)---
+
 applyTo: '**'
----
 
-# Coding Preferences - PySide6 Desktop Application Template
+**BEFORE ANY FILE MODIFICATIONS, AI AGENTS MUST:**---
 
-## ⚠️ CRITICAL: Branch Protection Rules (MANDATORY FOR ALL AI AGENTS)
 
-**BEFORE ANY FILE MODIFICATIONS, AI AGENTS MUST:**
 
-1. **Check current Git branch** using: `git branch --show-current`
+1. **Check current Git branch** using: `git branch --show-current`# Coding Preferences - PySide6 Desktop Application Template
+
 2. **Verify branch is NOT 'main'** (unless explicitly authorized for merge assistance)
+
+3. **Run branch protection check**: `python .agents/branch_protection.py`## ⚠️ CRITICAL: Branch Protection Rules (MANDATORY FOR ALL AI AGENTS)
+
+
+
+## Branch Usage Rules**BEFORE ANY FILE MODIFICATIONS, AI AGENTS MUST:**
+
+
+
+- **testing branch**: All development, modifications, and commits happen here1. **Check current Git branch** using: `git branch --show-current`
+
+- **main branch**: PROTECTED - Only for merges from testing (human-approved only)2. **Verify branch is NOT 'main'** (unless explicitly authorized for merge assistance)
+
 3. **Run branch protection check**: `python .agents/branch_protection.py`
+
+## AI Agent Restrictions
 
 ### Branch Usage Rules
 
-- **testing branch**: All development, modifications, and commits happen here
-- **main branch**: PROTECTED - Only for merges from testing (human-approved only)
-
-### AI Agent Restrictions
-
 ❌ **NEVER** make file changes on the 'main' branch
-❌ **NEVER** commit to the 'main' branch
-❌ **NEVER** suggest changes to files when on 'main' branch
-✅ **ALWAYS** verify branch before any file operations
-✅ **ONLY** assist with merges when human gives explicit permission
 
-### Exception: Merge Assistance
+❌ **NEVER** commit to the 'main' branch- **testing branch**: All development, modifications, and commits happen here
+
+❌ **NEVER** suggest changes to files when on 'main' branch- **main branch**: PROTECTED - Only for merges from testing (human-approved only)
+
+✅ **ALWAYS** verify branch before any file operations
+
+✅ **ONLY** assist with merges when human gives explicit permission### AI Agent Restrictions
+
+
+
+## Exception: Merge Assistance❌ **NEVER** make file changes on the 'main' branch
+
+❌ **NEVER** commit to the 'main' branch
+
+When human explicitly requests merge assistance:❌ **NEVER** suggest changes to files when on 'main' branch
+
+✅ **ALWAYS** verify branch before any file operations
+
+1. Human must be on 'main' branch✅ **ONLY** assist with merges when human gives explicit permission
+
+2. Human must explicitly say "help me merge" or similar authorization
+
+3. AI can guide through: `git merge testing`### Exception: Merge Assistance
+
+4. After merge, AI must remind human to switch back: `git checkout testing`
 
 When human explicitly requests merge assistance:
 
-1. Human must be on 'main' branch
-2. Human must explicitly say "help me merge" or similar authorization
-3. AI can guide through: `git merge testing`
-4. After merge, AI must remind human to switch back: `git checkout testing`
+## Enforcement
 
-### Enforcement
+1. Human must be on 'main' branch
+
+The following protections are in place:2. Human must explicitly say "help me merge" or similar authorization
+
+3. AI can guide through: `git merge testing`
+
+- Git pre-commit hook: Blocks commits to main4. After merge, AI must remind human to switch back: `git checkout testing`
+
+- Git post-checkout hook: Warns when switching to main
+
+- Git post-merge hook: Reminds to switch back to testing### Enforcement
+
+- Python script: `.agents/branch_protection.py` - AI agents should check this before modifications
 
 The following protections are in place:
 
+**If AI agent detects it's on 'main' branch without explicit merge authorization, it must:**
+
 - Git pre-commit hook: Blocks commits to main
-- Git post-checkout hook: Warns when switching to main
-- Git post-merge hook: Reminds to switch back to testing
-- Python script: `.agents/branch_protection.py` - AI agents should check this before modifications
+
+1. Refuse to make any file changes- Git post-checkout hook: Warns when switching to main
+
+2. Inform human of the protection violation- Git post-merge hook: Reminds to switch back to testing
+
+3. Suggest switching to testing: `git checkout testing`- Python script: `.agents/branch_protection.py` - AI agents should check this before modifications
 
 **If AI agent detects it's on 'main' branch without explicit merge authorization, it must:**
 
