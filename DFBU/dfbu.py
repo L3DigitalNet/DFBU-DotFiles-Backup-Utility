@@ -10,7 +10,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-18-2024
-Date Changed: 11-01-2025
+Date Changed: 11-03-2025
 License: MIT
 
 Features:
@@ -99,7 +99,7 @@ from core.validation import ConfigValidator
 
 
 # Version information
-__version__ = "0.5.4"
+__version__ = "0.5.8"
 
 
 # =============================================================================

@@ -5,7 +5,7 @@ description: "Create a new Model class following MVVM architecture and SOLID pri
 
 # Create New Model
 
-Create a new Model class in the `src/models/` directory following MVVM architecture, SOLID principles, and repository guidelines.
+Create a new Model class in the `DFBU/gui/` directory following MVVM architecture, SOLID principles, and repository guidelines.
 
 ## Overview
 
@@ -23,7 +23,7 @@ Models contain business logic and domain entities. They are pure Python with NO 
 - **DOCSTRINGS** on all public APIs
 
 ### Location
-Place new model in: `src/models/[model_name].py`
+Place new model in: `DFBU/gui/[model_name].py`
 
 ### Naming Convention
 - **File**: `snake_case.py` (e.g., `user_profile.py`)
@@ -157,12 +157,12 @@ class Price:
 
 ## Testing
 
-Create corresponding test file in `tests/unit/test_[model_name].py`:
+Create corresponding test file in `DFBU/tests/test_[model_name].py`:
 
 ```python
 """Tests for MyModel."""
 import pytest
-from src.models.my_model import MyModel
+from gui.my_model import MyModel
 
 
 class TestMyModel:
@@ -215,16 +215,16 @@ class MyViewModel(QObject):
 
 ## Checklist
 
-- [ ] Created file in `src/models/`
+- [ ] Created file in `DFBU/gui/`
 - [ ] No Qt imports in model file
 - [ ] Used appropriate structure (dataclass or class)
 - [ ] Added type hints to all methods and attributes
 - [ ] Included docstrings for public APIs
 - [ ] Implemented validation if needed
-- [ ] Created unit tests in `tests/unit/`
+- [ ] Created unit tests in `DFBU/tests/`
 - [ ] All tests pass
 - [ ] Model follows SRP (Single Responsibility Principle)
-- [ ] Updated `src/models/__init__.py` if needed
+- [ ] Updated `DFBU/gui/__init__.py` if needed
 
 ## Common Patterns
 

@@ -5,7 +5,7 @@ description: "Create a new Service class for external integrations and data acce
 
 # Create New Service
 
-Create a new Service class in the `src/services/` directory for handling external integrations, file I/O, APIs, or database access.
+Create a new Service class in the `DFBU/gui/` directory for handling external integrations, file I/O, APIs, or database access.
 
 ## Overview
 
@@ -23,7 +23,7 @@ Services encapsulate external interactions and data access logic. They are used 
 - **PROTOCOL** interface for dependency injection
 
 ### Location
-Place new service in: `src/services/[service_name].py`
+Place new service in: `DFBU/gui/[service_name].py`
 
 ### Naming Convention
 - **File**: `snake_case_service.py` (e.g., `data_service.py`)
@@ -527,17 +527,16 @@ class MyViewModel(QObject):
 
 ## Checklist
 
-- [ ] Created file in `src/services/`
-- [ ] Defined Protocol interface
-- [ ] Implemented concrete service class
-- [ ] Type hints on all methods
-- [ ] Docstrings for public APIs
+- [ ] Created file in `DFBU/gui/`
+- [ ] Created Protocol interface
+- [ ] Implemented service class
 - [ ] Proper error handling
-- [ ] Logging for operations
-- [ ] Created unit tests in `tests/unit/`
-- [ ] Tests use mocking for external resources
+- [ ] Type hints on all methods
+- [ ] Docstrings on public APIs
+- [ ] Created tests in `DFBU/tests/`
 - [ ] All tests pass
-- [ ] Updated `src/services/__init__.py`
+- [ ] Service has single responsibility
+- [ ] Updated `DFBU/gui/__init__.py` if needed
 
 ## Best Practices
 

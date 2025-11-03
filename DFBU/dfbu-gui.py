@@ -11,7 +11,7 @@ Author: Chris Purcell
 Email: chris@l3digital.net
 GitHub: https://github.com/L3DigitalNet
 Date Created: 10-18-2025
-Date Changed: 11-01-2025
+Date Changed: 11-03-2025
 License: MIT
 
 Features:
@@ -86,7 +86,7 @@ setup_default_logging()
 logger = get_logger(__name__)
 
 # Application version
-__version__: Final[str] = "0.5.7"
+__version__: Final[str] = "0.5.8"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
 # Use relative path for portability - resolve to absolute at runtime

@@ -5,7 +5,26 @@ description: "Create a new View class following MVVM architecture and PySide6 be
 
 # Create New View
 
-Create a new View class in the `src/views/` directory following MVVM architecture, PySide6 best practices, and repository guidelines.
+# Create New View
+
+Create a new View class in the `DFBU/gui/` directory following MVVM architecture, PySide6 best practices, and repository guidelines.
+
+## Overview
+
+Views are PySide6 UI components that present data from ViewModels and capture user input. They should contain minimal logic.
+
+## CRITICAL: UI Design with Qt Designer
+
+**MANDATORY**: All UI must be designed in Qt Designer and saved as `.ui` files.
+
+### UI File Location
+- **NEVER** hardcode UI in Python
+- **ALWAYS** design in Qt Designer
+- **SAVE** to `DFBU/gui/designer/[view_name].ui`
+- **LOAD** in Python using `QUiLoader`
+
+### Location
+Place new view in: `DFBU/gui/[view_name].py`
 
 ## Overview
 
@@ -21,9 +40,6 @@ Views are PySide6 UI components that display data and capture user input. They c
 - **NO** business logic or data validation
 - **TYPE HINTS** on all methods
 - **DOCSTRINGS** for public APIs
-
-### Location
-Place new view in: `src/views/[view_name].py`
 
 ### Naming Convention
 - **File**: `snake_case.py` (e.g., `user_profile_view.py`)
@@ -312,7 +328,7 @@ class MainWindow(QMainWindow):
     def _load_ui(self) -> None:
         """Load UI from .ui file."""
         loader = QUiLoader()
-        ui_file = QFile("src/views/main_window.ui")
+        ui_file = QFile("DFBU/gui/designer/main_window.ui")
         ui_file.open(QFile.ReadOnly)
         self._ui = loader.load(ui_file, self)
         ui_file.close()
@@ -411,10 +427,11 @@ def test_view_displays_data(qtbot, mocker):
 
 ## Checklist
 
-- [ ] Created file in `src/views/`
+- [ ] Created file in `DFBU/gui/`
+- [ ] Designed UI in Qt Designer (saved to `DFBU/gui/designer/`)
 - [ ] Inherits from appropriate Qt widget class
 - [ ] Accepts ViewModel in constructor
-- [ ] `_setup_ui()` method for UI creation
+- [ ] `_load_ui()` method loads .ui file with QUiLoader
 - [ ] `_connect_signals()` method for connections
 - [ ] Type hints on methods
 - [ ] Docstrings for public APIs
@@ -423,7 +440,7 @@ def test_view_displays_data(qtbot, mocker):
 - [ ] No data validation
 - [ ] Proper resource cleanup
 - [ ] Responsive layout
-- [ ] Updated `src/views/__init__.py` if needed
+- [ ] Updated `DFBU/gui/__init__.py` if needed
 
 ## Common Patterns
 

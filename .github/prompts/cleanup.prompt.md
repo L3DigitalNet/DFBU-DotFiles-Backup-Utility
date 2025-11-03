@@ -103,10 +103,10 @@ After cleanup, verify:
 Ensure files are in correct locations:
 
 ### Source Code
-- `src/models/` - Business logic and domain entities (no Qt imports)
-- `src/viewmodels/` - Presentation logic (QObject with signals)
-- `src/views/` - PySide6 UI components (widgets and .ui files)
-- `src/services/` - External integrations and APIs
+- `DFBU/gui/` - GUI components including models, viewmodels, views, and services
+- `DFBU/core/` - Core utilities and validation logic (no Qt imports)
+- `DFBU/gui/designer/` - Qt Designer .ui files for UI layouts
+- `DFBU/tests/` - Test suite with pytest
 - `src/utils/` - Helper functions and constants
 - `src/main.py` - Application entry point
 
@@ -146,7 +146,7 @@ Ensure files are in correct locations:
 
 Verify architectural integrity:
 
-- [ ] No Qt imports in `src/models/` files
+- [ ] No Qt imports in `DFBU/core/` files
 - [ ] ViewModels inherit from `QObject`
 - [ ] Views accept ViewModels in constructor
 - [ ] Dependencies injected, not created inside classes

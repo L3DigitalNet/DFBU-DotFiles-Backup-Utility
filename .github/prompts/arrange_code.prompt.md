@@ -17,28 +17,22 @@ Follow guidelines in ![repository instructions](../copilot-instructions.md) if n
 
 ## MVVM Layer-Specific Organization
 
-### Model Layer (`src/models/`)
-- Data classes and domain entities first
-- Business logic methods grouped by functionality
-- Validation methods after core logic
-- Helper/utility methods last
-- No Qt imports should be present
+### Model Layer (`DFBU/gui/` or `DFBU/core/`)
+- Imports
+- Constants
+- Dataclasses/Enums
+- Business Logic Classes
+- Validation Methods
 
-### ViewModel Layer (`src/viewmodels/`)
-1. Signal definitions at the top
-2. Constructor with dependency injection
-3. Public slots for View interactions
-4. Private helper methods
-5. Property getters/setters if needed
-- Inherits from QObject
+### ViewModel Layer (`DFBU/gui/`)
+- Imports
+- Signal Definitions
+- Initialization (__init__)
+- Public Slots (user actions)
+- Private Methods
+- Property Getters/Setters
 
-### View Layer (`src/views/`)
-1. Constructor accepting ViewModel
-2. `_setup_ui()` method for widget creation
-3. `_connect_signals()` method for signal/slot connections
-4. Public methods for external interactions
-5. Private event handlers (slots)
-6. Private UI update methods
+### View Layer (`DFBU/gui/`)
 
 ## Classes and Methods
 - Classes should be at the top
