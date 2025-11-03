@@ -4,19 +4,13 @@ applyTo: '**'
 
 **BEFORE ANY FILE MODIFICATIONS, AI AGENTS MUST:**---
 
-
-
 1. **Check current Git branch** using: `git branch --show-current`# Coding Preferences - PySide6 Desktop Application Template
 
 2. **Verify branch is NOT 'main'** (unless explicitly authorized for merge assistance)
 
 3. **Run branch protection check**: `python .agents/branch_protection.py`## ⚠️ CRITICAL: Branch Protection Rules (MANDATORY FOR ALL AI AGENTS)
 
-
-
 ## Branch Usage Rules**BEFORE ANY FILE MODIFICATIONS, AI AGENTS MUST:**
-
-
 
 - **testing branch**: All development, modifications, and commits happen here1. **Check current Git branch** using: `git branch --show-current`
 
@@ -37,8 +31,6 @@ applyTo: '**'
 ✅ **ALWAYS** verify branch before any file operations
 
 ✅ **ONLY** assist with merges when human gives explicit permission### AI Agent Restrictions
-
-
 
 ## Exception: Merge Assistance❌ **NEVER** make file changes on the 'main' branch
 
