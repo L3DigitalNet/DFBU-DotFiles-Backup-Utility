@@ -45,7 +45,7 @@ from typing import Any, Final
 from constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
 from core.common_types import DotFileDict
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QCloseEvent, QColor
+from PySide6.QtGui import QAction, QCloseEvent, QColor, QTextCursor
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -329,6 +329,7 @@ class MainWindow(QMainWindow):
         backup_btn: Button to start backup
         mirror_checkbox: Checkbox for mirror backup mode
         archive_checkbox: Checkbox for archive backup mode
+        force_full_backup_checkbox: Checkbox to force copying all files
         restore_source_edit: Line edit for restore source directory
         browse_restore_btn: Button to browse for restore source
         restore_btn: Button to start restore operation
@@ -379,6 +380,10 @@ class MainWindow(QMainWindow):
         self.viewmodel: DFBUViewModel = viewmodel
         self.version: str = version
 
+        # Track skipped items for periodic log updates
+        self._skipped_count: int = 0
+        self._last_logged_skip_count: int = 0
+
         self.setup_ui()
         self._connect_viewmodel_signals()
         self._load_settings()
@@ -402,7 +407,7 @@ class MainWindow(QMainWindow):
             if hasattr(loaded_window, "menuBar"):
                 menu_bar = loaded_window.menuBar()
                 if menu_bar:
-                    menu_bar.setParent(self)
+                    # Set menubar without reparenting to avoid object lifecycle issues
                     self.setMenuBar(menu_bar)
 
             # Extract and set statusbar if present
@@ -447,48 +452,120 @@ class MainWindow(QMainWindow):
         self.tab_widget: QTabWidget = ui_widget.findChild(QTabWidget, "tab_widget")  # type: ignore[assignment]
 
         # Backup tab widgets
-        self.config_path_edit: QLineEdit = ui_widget.findChild(QLineEdit, "config_path_edit")  # type: ignore[assignment]
-        self.load_config_btn: QPushButton = ui_widget.findChild(QPushButton, "load_config_btn")  # type: ignore[assignment]
-        self.dotfile_table: QTableWidget = ui_widget.findChild(QTableWidget, "dotfile_table")  # type: ignore[assignment]
+        self.config_path_edit: QLineEdit = ui_widget.findChild(
+            QLineEdit, "config_path_edit"
+        )  # type: ignore[assignment]
+        self.load_config_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "load_config_btn"
+        )  # type: ignore[assignment]
+        self.dotfile_table: QTableWidget = ui_widget.findChild(
+            QTableWidget, "dotfile_table"
+        )  # type: ignore[assignment]
         self.total_size_label: QLabel = ui_widget.findChild(QLabel, "total_size_label")  # type: ignore[assignment]
-        self.add_dotfile_btn: QPushButton = ui_widget.findChild(QPushButton, "add_dotfile_btn")  # type: ignore[assignment]
-        self.update_dotfile_btn: QPushButton = ui_widget.findChild(QPushButton, "update_dotfile_btn")  # type: ignore[assignment]
-        self.remove_dotfile_btn: QPushButton = ui_widget.findChild(QPushButton, "remove_dotfile_btn")  # type: ignore[assignment]
-        self.toggle_enabled_btn: QPushButton = ui_widget.findChild(QPushButton, "toggle_enabled_btn")  # type: ignore[assignment]
-        self.save_dotfiles_btn: QPushButton = ui_widget.findChild(QPushButton, "save_dotfiles_btn")  # type: ignore[assignment]
-        self.mirror_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "mirror_checkbox")  # type: ignore[assignment]
-        self.archive_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "archive_checkbox")  # type: ignore[assignment]
+        self.add_dotfile_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "add_dotfile_btn"
+        )  # type: ignore[assignment]
+        self.update_dotfile_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "update_dotfile_btn"
+        )  # type: ignore[assignment]
+        self.remove_dotfile_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "remove_dotfile_btn"
+        )  # type: ignore[assignment]
+        self.toggle_enabled_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "toggle_enabled_btn"
+        )  # type: ignore[assignment]
+        self.save_dotfiles_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "save_dotfiles_btn"
+        )  # type: ignore[assignment]
+        self.mirror_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "mirror_checkbox"
+        )  # type: ignore[assignment]
+        self.archive_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "archive_checkbox"
+        )  # type: ignore[assignment]
+        self.force_full_backup_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "force_full_backup_checkbox"
+        )  # type: ignore[assignment]
         self.backup_btn: QPushButton = ui_widget.findChild(QPushButton, "backup_btn")  # type: ignore[assignment]
         self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "operation_log")  # type: ignore[assignment]
 
+        # Validate critical widgets were found
+        if not self.operation_log:
+            raise RuntimeError("operation_log widget not found in UI file!")
+
         # Restore tab widgets
-        self.restore_source_edit: QLineEdit = ui_widget.findChild(QLineEdit, "restore_source_edit")  # type: ignore[assignment]
-        self.browse_restore_btn: QPushButton = ui_widget.findChild(QPushButton, "browse_restore_btn")  # type: ignore[assignment]
+        self.restore_source_edit: QLineEdit = ui_widget.findChild(
+            QLineEdit, "restore_source_edit"
+        )  # type: ignore[assignment]
+        self.browse_restore_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "browse_restore_btn"
+        )  # type: ignore[assignment]
         self.restore_btn: QPushButton = ui_widget.findChild(QPushButton, "restore_btn")  # type: ignore[assignment]
-        self.restore_operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "restore_operation_log")  # type: ignore[assignment]
+        self.restore_operation_log: QTextEdit = ui_widget.findChild(
+            QTextEdit, "restore_operation_log"
+        )  # type: ignore[assignment]
 
         # Configuration tab widgets
-        self.config_mirror_path_edit: QLineEdit = ui_widget.findChild(QLineEdit, "config_mirror_path_edit")  # type: ignore[assignment]
-        self.config_archive_path_edit: QLineEdit = ui_widget.findChild(QLineEdit, "config_archive_path_edit")  # type: ignore[assignment]
-        self.config_mirror_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_mirror_checkbox")  # type: ignore[assignment]
-        self.config_archive_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_archive_checkbox")  # type: ignore[assignment]
-        self.config_hostname_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_hostname_checkbox")  # type: ignore[assignment]
-        self.config_date_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_date_checkbox")  # type: ignore[assignment]
-        self.config_compression_spinbox: QSpinBox = ui_widget.findChild(QSpinBox, "config_compression_spinbox")  # type: ignore[assignment]
-        self.config_rotate_checkbox: QCheckBox = ui_widget.findChild(QCheckBox, "config_rotate_checkbox")  # type: ignore[assignment]
-        self.config_max_archives_spinbox: QSpinBox = ui_widget.findChild(QSpinBox, "config_max_archives_spinbox")  # type: ignore[assignment]
-        self.save_config_btn: QPushButton = ui_widget.findChild(QPushButton, "save_config_btn")  # type: ignore[assignment]
+        self.config_mirror_path_edit: QLineEdit = ui_widget.findChild(
+            QLineEdit, "config_mirror_path_edit"
+        )  # type: ignore[assignment]
+        self.config_archive_path_edit: QLineEdit = ui_widget.findChild(
+            QLineEdit, "config_archive_path_edit"
+        )  # type: ignore[assignment]
+        self.config_mirror_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "config_mirror_checkbox"
+        )  # type: ignore[assignment]
+        self.config_archive_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "config_archive_checkbox"
+        )  # type: ignore[assignment]
+        self.config_hostname_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "config_hostname_checkbox"
+        )  # type: ignore[assignment]
+        self.config_date_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "config_date_checkbox"
+        )  # type: ignore[assignment]
+        self.config_compression_spinbox: QSpinBox = ui_widget.findChild(
+            QSpinBox, "config_compression_spinbox"
+        )  # type: ignore[assignment]
+        self.config_rotate_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "config_rotate_checkbox"
+        )  # type: ignore[assignment]
+        self.config_max_archives_spinbox: QSpinBox = ui_widget.findChild(
+            QSpinBox, "config_max_archives_spinbox"
+        )  # type: ignore[assignment]
+        self.save_config_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "save_config_btn"
+        )  # type: ignore[assignment]
 
         # Status bar and progress bar
         self.status_bar = self.statusBar()
-        self.progress_bar: QProgressBar = ui_widget.findChild(QProgressBar, "progress_bar")  # type: ignore[assignment]
+        self.progress_bar: QProgressBar = self.status_bar.findChild(
+            QProgressBar, "progress_bar"
+        )  # type: ignore[assignment]
 
         # Menu actions from menubar (accessed from loaded_window before it goes out of scope)
-        self.action_load_config: QAction = loaded_window.findChild(QAction, "actionLoadConfig")  # type: ignore[assignment]
+        self.action_load_config: QAction = loaded_window.findChild(
+            QAction, "actionLoadConfig"
+        )  # type: ignore[assignment]
         self.action_exit: QAction = loaded_window.findChild(QAction, "actionExit")  # type: ignore[assignment]
-        self.action_start_backup: QAction = loaded_window.findChild(QAction, "actionStartBackup")  # type: ignore[assignment]
-        self.action_start_restore: QAction = loaded_window.findChild(QAction, "actionStartRestore")  # type: ignore[assignment]
+        self.action_start_backup: QAction = loaded_window.findChild(
+            QAction, "actionStartBackup"
+        )  # type: ignore[assignment]
+        self.action_start_restore: QAction = loaded_window.findChild(
+            QAction, "actionStartRestore"
+        )  # type: ignore[assignment]
         self.action_about: QAction = loaded_window.findChild(QAction, "actionAbout")  # type: ignore[assignment]
+
+        # Fix Qt object ownership: Reparent actions to prevent deletion
+        for action in [
+            self.action_load_config,
+            self.action_exit,
+            self.action_start_backup,
+            self.action_start_restore,
+            self.action_about,
+        ]:
+            if action:
+                action.setParent(self)
 
         # Dynamic progress labels (created programmatically, not from UI file)
         self.progress_label = QLabel("Ready")
@@ -497,7 +574,9 @@ class MainWindow(QMainWindow):
     def _connect_ui_signals(self) -> None:
         """Connect UI element signals to handler methods."""
         # Backup tab connections
-        browse_config_btn: QPushButton = self.central_widget.findChild(QPushButton, "browse_config_btn")  # type: ignore[assignment]
+        browse_config_btn: QPushButton = self.central_widget.findChild(
+            QPushButton, "browse_config_btn"
+        )  # type: ignore[assignment]
         browse_config_btn.clicked.connect(self._on_browse_config)
         self.load_config_btn.clicked.connect(self._on_load_config)
         self.add_dotfile_btn.clicked.connect(self._on_add_dotfile)
@@ -517,8 +596,12 @@ class MainWindow(QMainWindow):
         self.restore_btn.clicked.connect(self._on_start_restore)
 
         # Configuration tab connections
-        browse_mirror_btn: QPushButton = self.central_widget.findChild(QPushButton, "browse_mirror_btn")  # type: ignore[assignment]
-        browse_archive_btn: QPushButton = self.central_widget.findChild(QPushButton, "browse_archive_btn")  # type: ignore[assignment]
+        browse_mirror_btn: QPushButton = self.central_widget.findChild(
+            QPushButton, "browse_mirror_btn"
+        )  # type: ignore[assignment]
+        browse_archive_btn: QPushButton = self.central_widget.findChild(
+            QPushButton, "browse_archive_btn"
+        )  # type: ignore[assignment]
         browse_mirror_btn.clicked.connect(self._on_browse_mirror_dir)
         browse_archive_btn.clicked.connect(self._on_browse_archive_dir)
         self.config_mirror_path_edit.textChanged.connect(self._on_config_changed)
@@ -631,8 +714,13 @@ class MainWindow(QMainWindow):
         )
 
         if reply == QMessageBox.StandardButton.Yes:
+            # Reset skip tracking for new operation
+            self._skipped_count = 0
+            self._last_logged_skip_count = 0
+
             # Clear operation log
             self.operation_log.clear()
+            self.operation_log.append("=== Backup Operation Started ===\n")
             self.progress_label.setText("Starting backup...")
 
             # Disable buttons during operation
@@ -643,8 +731,28 @@ class MainWindow(QMainWindow):
             self.progress_bar.setVisible(True)
             self.progress_bar.setValue(0)
 
-            # Start backup
-            self.viewmodel.command_start_backup()
+            # Get force full backup setting from checkbox
+            force_full = self.force_full_backup_checkbox.isChecked()
+
+            # Add info to log about backup mode
+            if force_full:
+                self.operation_log.append(
+                    "INFO: Force Full Backup - All files will be copied\n"
+                )
+            else:
+                self.operation_log.append(
+                    "INFO: Smart Backup - Only changed files will be copied\n"
+                )
+
+            # Start backup with force full setting
+            success = self.viewmodel.command_start_backup(force_full_backup=force_full)
+
+            if not success:
+                # Re-enable buttons if backup failed to start
+                self.backup_btn.setEnabled(True)
+                self.load_config_btn.setEnabled(True)
+                self.progress_bar.setVisible(False)
+                self.operation_log.append("✗ Failed to start backup operation\n")
 
     def _on_browse_restore_source(self) -> None:
         """Handle browse restore source button click."""
@@ -712,20 +820,34 @@ class MainWindow(QMainWindow):
 
     def _on_item_processed(self, source: str, destination: str) -> None:
         """Handle item processed signal."""
-        # Determine which log to update based on current tab
-        current_tab = self.tab_widget.currentIndex()
+        log_message = f"✓ {Path(source).name} → {Path(destination).name}\n"
 
-        log_message = f"✓ {Path(source).name} → {destination}\n"
-
-        if current_tab == 0:  # Backup tab
-            self.operation_log.append(log_message)
-        elif current_tab == 1:  # Restore tab
-            self.restore_operation_log.append(log_message)
+        # Always update the backup operation log (regardless of tab)
+        # This ensures logs are captured even if user switches tabs
+        self.operation_log.moveCursor(QTextCursor.MoveOperation.End)
+        self.operation_log.insertPlainText(log_message)
+        self.operation_log.ensureCursorVisible()
 
     def _on_item_skipped(self, path: str, reason: str) -> None:
-        """Handle item skipped signal."""
-        log_message = f"⊘ Skipped: {Path(path).name} - {reason}\n"
-        self.operation_log.append(log_message)
+        """
+        Handle item skipped signal.
+
+        Shows periodic summary of skipped files to avoid overwhelming the log
+        with potentially hundreds of individual "unchanged" messages.
+        """
+        self._skipped_count += 1
+
+        # Show progress every 10 skipped files to indicate activity
+        if self._skipped_count % 10 == 0:
+            new_skips = self._skipped_count - self._last_logged_skip_count
+            self._last_logged_skip_count = self._skipped_count
+
+            log_message = f"⊘ Skipped {new_skips} unchanged files (total: {self._skipped_count})...\n"
+
+            # Always update operation log regardless of current tab
+            self.operation_log.moveCursor(QTextCursor.MoveOperation.End)
+            self.operation_log.insertPlainText(log_message)
+            self.operation_log.ensureCursorVisible()
 
     def _on_operation_finished(self, summary: str) -> None:
         """Handle operation finished signal."""
@@ -738,14 +860,29 @@ class MainWindow(QMainWindow):
         self.restore_btn.setEnabled(True)
         self.browse_restore_btn.setEnabled(True)
 
-        # Update status
+        # Update status and operation log
         current_tab = self.tab_widget.currentIndex()
         if current_tab == 0:  # Backup tab
-            self.progress_label.setText("Backup completed")
+            self.progress_label.setText("Backup completed successfully")
+            # Log any remaining skipped files
+            if self._skipped_count > self._last_logged_skip_count:
+                remaining = self._skipped_count - self._last_logged_skip_count
+                self.operation_log.append(
+                    f"⊘ Skipped {remaining} unchanged files (total: {self._skipped_count})...\n"
+                )
+            self.operation_log.append("\n=== Backup Operation Completed ===\n")
+            # Ensure log is scrolled to bottom
+            self.operation_log.verticalScrollBar().setValue(
+                self.operation_log.verticalScrollBar().maximum()
+            )
         elif current_tab == 1:  # Restore tab
-            self.restore_progress_label.setText("Restore completed")
+            self.restore_progress_label.setText("Restore completed successfully")
+            self.restore_operation_log.append("\n=== Restore Operation Completed ===\n")
+            self.restore_operation_log.verticalScrollBar().setValue(
+                self.restore_operation_log.verticalScrollBar().maximum()
+            )
 
-        # Show completion dialog
+        # Show completion dialog with statistics
         QMessageBox.information(self, "Operation Complete", summary)
 
     def _on_error_occurred(self, context: str, error_message: str) -> None:

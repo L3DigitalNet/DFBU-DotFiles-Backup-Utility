@@ -200,7 +200,10 @@
                 <bool>false</bool>
                </property>
                <property name="text">
-                <string>Save Configuration</string>
+                <string>Save Dotfile Configuration</string>
+               </property>
+               <property name="toolTip">
+                <string>Save enable/disable changes to the configuration file (not the backup itself)</string>
                </property>
               </widget>
              </item>
@@ -264,6 +267,35 @@
               </widget>
              </item>
              <item>
+              <spacer name="horizontalSpacer_force">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Policy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="force_full_backup_checkbox">
+               <property name="text">
+                <string>Force Full Backup</string>
+               </property>
+               <property name="toolTip">
+                <string>When checked, all files will be copied even if unchanged (slower but ensures complete backup)</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
               <spacer name="backup_mode_spacer">
                <property name="orientation">
                 <enum>Qt::Orientation::Horizontal</enum>
@@ -286,6 +318,9 @@
                </property>
                <property name="text">
                 <string>Start Backup</string>
+               </property>
+               <property name="toolTip">
+                <string>Start backup operation to copy enabled dotfiles to backup locations</string>
                </property>
               </widget>
              </item>
