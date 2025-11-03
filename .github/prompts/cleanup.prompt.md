@@ -1,13 +1,13 @@
 ---
 mode: "agent"
-description: "Clean up the repository by removing unnecessary files and ensuring proper file organization"
+description: "Clean up the repository by removing unnecessary files and ensuring proper file organization for PySide6 MVVM projects"
 ---
 
 # Repository Cleanup Prompt
 
 ## Objective
 
-Clean up the Star Trek Retro Remake repository by removing unnecessary files and ensuring all necessary files are in their proper directories according to project standards.
+Clean up the PySide6 desktop application repository by removing unnecessary files and ensuring all necessary files are in their proper directories according to MVVM architecture and project standards.
 
 ## Cleanup Categories
 
@@ -48,24 +48,24 @@ Clean up the Star Trek Retro Remake repository by removing unnecessary files and
 ### 4. Duplicate Documentation Files
 
 **Remove duplicates, keep canonical version:**
-- Status/summary markdown files in root (e.g., `IMPLEMENTATION_SUMMARY.md`, `GRID_INTEGRATION_COMPLETE.md`)
-- README files that duplicate information in `docs/`
+- Status/summary markdown files in root
+- Duplicate README files
 - Temporary documentation created during development
 
 **Keep:**
 - Main `README.md` in root
-- All files in `docs/` directory (canonical documentation location)
-- Module-specific `_doc.md` files alongside code
+- `AGENTS.md`, `CONTRIBUTING.md`, `QUICKSTART.md`
+- All core documentation files
 
-**Rationale:** Documentation should be centralized in `docs/` or co-located with code as `_doc.md` files.
+**Rationale:** Documentation should be centralized and not duplicated.
 
 ### 5. Orphaned/Unused Files
 
 **Check for and remove:**
-- `.json` files outside of `backup/` (if project uses TOML-only)
 - Unused test fixtures or data files
-- Old demo scripts that are no longer relevant
+- Old demo/example scripts not part of template
 - Commented-out code files or `.old` extensions
+- Unused `.ui` files from Qt Designer
 
 **Rationale:** Unused files add confusion and maintenance burden.
 
@@ -75,12 +75,12 @@ After cleanup, verify:
 
 1. **All tests pass:**
    ```bash
-   python -m pytest STRR/tests/ -v
+   pytest tests/ -v
    ```
 
 2. **No import errors:**
    ```bash
-   python -m STRR.main --help
+   python src/main.py
    ```
 
 3. **Git status is clean:**
@@ -92,62 +92,70 @@ After cleanup, verify:
    - `__pycache__/`
    - `*.egg-info/`
    - `.pytest_cache/`
-   - `.ruff_cache/`
    - `.mypy_cache/`
-   - `.venv/`
+   - `venv/` or `.venv/`
    - `*.pyc`
+   - `.coverage`
+   - `htmlcov/`
 
-## Proper Directory Structure
+## Proper MVVM Directory Structure
 
 Ensure files are in correct locations:
 
-### Configuration Files
-- `STRR/config/*.toml` - Game configuration files
-- `STRR/assets/data/sectors/*.toml` - Sector data files
-- `pyproject.toml` - Project/build configuration (root)
-
 ### Source Code
-- `STRR/src/` - All game source code
-- `STRR/src/game/` - Game logic (MVC model/controller)
-- `STRR/src/ui/` - UI components (MVC view)
-- `STRR/src/engine/` - Core engine utilities
-
-### Documentation
-- `docs/` - All project documentation
-- `STRR/src/**/*_doc.md` - Module-specific documentation co-located with code
-- `README.md` - Main project README (root)
+- `src/models/` - Business logic and domain entities (no Qt imports)
+- `src/viewmodels/` - Presentation logic (QObject with signals)
+- `src/views/` - PySide6 UI components (widgets and .ui files)
+- `src/services/` - External integrations and APIs
+- `src/utils/` - Helper functions and constants
+- `src/main.py` - Application entry point
 
 ### Tests
-- `STRR/tests/` - All test files
-- `STRR/tests/conftest.py` - pytest configuration
+- `tests/unit/` - Unit tests for models and viewmodels
+- `tests/integration/` - Integration tests
+- `tests/conftest.py` - Pytest configuration with QApplication fixture
 
-### Scripts
-- `scripts/` - Development/build scripts
-- Scripts should be actively used, not obsolete
+### Configuration
+- `pyproject.toml` - Project configuration and dependencies
+- `requirements.txt` - Python dependencies
+- `.github/copilot-instructions.md` - Development guidelines
 
-### Assets
-- `STRR/assets/data/` - Game data files
-- `STRR/assets/graphics/` - Image assets
-- `STRR/assets/audio/` - Sound assets (when added)
+### Documentation
+- `README.md` - Main project README
+- `AGENTS.md` - Quick reference for AI agents
+- `CONTRIBUTING.md` - Contribution guidelines
+- `QUICKSTART.md` - Getting started guide
+- `.agents/memory.instruction.md` - AI agent memory and preferences
 
 ## Execution Checklist
 
 - [ ] Remove all `__pycache__` directories
 - [ ] Remove all `.egg-info` directories
 - [ ] Remove `.pytest_cache/` directory
+- [ ] Remove `.mypy_cache/` directory
+- [ ] Remove `htmlcov/` directory (coverage reports)
+- [ ] Remove `.coverage` files
 - [ ] Remove any `backup/` directories if empty
-- [ ] Remove obsolete migration scripts
 - [ ] Remove duplicate/status markdown files from root
-- [ ] Verify all `.json` files removed (if TOML-only)
 - [ ] Check for orphaned/unused files
-- [ ] Verify proper directory structure
+- [ ] Verify proper MVVM directory structure
 - [ ] Run test suite to verify nothing broke
 - [ ] Confirm .gitignore is comprehensive
 
+## MVVM Layer Validation
+
+Verify architectural integrity:
+
+- [ ] No Qt imports in `src/models/` files
+- [ ] ViewModels inherit from `QObject`
+- [ ] Views accept ViewModels in constructor
+- [ ] Dependencies injected, not created inside classes
+- [ ] Signal/slot connections used for cross-layer communication
+
 ## Notes
 
-- Always preserve files in `docs/` directory
-- Always preserve `_doc.md` files alongside source code
-- Keep `pyproject.toml`, `Makefile`, `LICENSE`, `.gitignore`
-- Keep active demo files (e.g., `demo_isometric_grid.py`)
-- Version control (`.git/`) and virtual environment (`.venv/`) should already be ignored
+- Always preserve MVVM layer separation
+- Keep `pyproject.toml`, `requirements.txt`, `LICENSE`, `.gitignore`
+- Keep example files that demonstrate MVVM patterns
+- Version control (`.git/`) and virtual environment should already be ignored
+- Preserve `.github/` and `.agents/` directories

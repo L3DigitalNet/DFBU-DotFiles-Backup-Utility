@@ -1,31 +1,24 @@
 ---
 mode: "agent"
-description: "Version update and changelog management using MAJOR.MINOR.PATCH system"
+description: "Version update and changelog management for PySide6 MVVM applications"
 ---
 
 # Version Update Prompt
 
-Handle version updates and changelog maintenance using the simplified MAJOR.MINOR.PATCH versioning system.
+Handle version updates and changelog maintenance for PySide6 MVVM desktop applications.
 
-## Command Usage
-
-This prompt responds to `/version-update` commands in two formats:
-
-### Format 1: Specific Version
-
-## Version Format Requirements
+## Version Format
 
 ### Semantic Versioning - MANDATORY
-- **MUST** follow format: `MAJOR.MINOR.PATCH`
-- **NO** development stage extensions (.dev, .a, .b, .rc)
-- **NEW** projects start at version `0.0.1`
-- **VERSION** 1.0.0 indicates first full release
+- **FORMAT**: `MAJOR.MINOR.PATCH`
+- **TEMPLATE START**: Version `0.1.0` (initial template)
+- **NEW PROJECTS**: Start at `0.1.0` when customized
+- **VERSION 1.0.0**: First stable release
 
 ### Version Significance
-- **MAJOR:** Breaking changes or major feature milestones
-- **MINOR:** New functionality in backward-compatible manner
-- **PATCH:** Bug fixes and small improvements
-- **NOTE:** MINOR and PATCH meanings determined by developer discretion
+- **MAJOR**: Breaking changes, major architecture changes
+- **MINOR**: New features, backward-compatible additions
+- **PATCH**: Bug fixes, small improvements, documentation updates
 
 ## Version Update Process
 1. **UPDATE** `__version__` variable in specified Python file
@@ -81,10 +74,66 @@ All notable changes to this project will be documented in this file.
 5. **DOCUMENT** all user-visible changes
 
 ### Change Detection Focus
-- **NEW** functions, classes, and modules
-- **MODIFIED** existing functionality or behavior
-- **FIXED** bugs and error conditions
-- **REMOVED** deprecated features
+- **NEW** Models, ViewModels, Views, Services
+- **MODIFIED** existing MVVM components
+- **FIXED** bugs and architectural issues
+- **REMOVED** deprecated components or features
+
+## Version Update Process
+
+1. **UPDATE** `__version__` in appropriate file (e.g., `src/__init__.py`)
+2. **ANALYZE** changes since last version
+3. **GENERATE** changelog entry with categorized changes
+4. **UPDATE** CHANGELOG.md with new entry
+5. **COMMIT** version change with appropriate message
+
+## Version File Locations
+
+For this template:
+- Version string can be in `src/__init__.py` or `pyproject.toml`
+- Consider adding `__version__ = "0.1.0"` to `src/__init__.py`
+
+Example:
+```python
+# src/__init__.py
+"""PySide6 MVVM Desktop Application."""
+
+__version__ = "0.1.0"
+```
+
+## Changelog Format
+
+```markdown
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.2.0] - 2024-11-02
+
+### Added
+- New ViewModel for user settings management
+- Service layer for configuration persistence
+- Integration tests for Model-ViewModel interaction
+
+### Changed
+- Refactored MainViewModel to use dependency injection
+- Updated View signal connections to use type-safe slots
+
+### Fixed
+- Memory leak in View cleanup
+- Signal connection duplication issue
+
+## [0.1.0] - 2024-11-01
+
+### Added
+- Initial MVVM architecture setup
+- Example Model, ViewModel, and View
+- Basic test suite with pytest-qt
+- Project documentation and guidelines
+```
 - **IMPROVED** performance or code quality
 - **CHANGED** configuration or usage patterns
 

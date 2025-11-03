@@ -1,11 +1,11 @@
 ---
 mode: "agent"
-description: "Perform comprehensive testing using Pytest, focusing on unit tests, coverage analysis, and type validation"
+description: "Perform comprehensive testing for PySide6 MVVM applications using Pytest and pytest-qt"
 ---
 
-# Testing Management and Coverage
+# Testing Management for PySide6 MVVM Applications
 
-Handle comprehensive testing of project following repository guidelines and clean architecture principles using Pytest.
+Handle comprehensive testing of PySide6 MVVM desktop applications following architectural principles using Pytest and pytest-qt.
 
 ## Core Testing Requirements
 
@@ -47,21 +47,35 @@ def test_function_name_should_behavior_when_condition():
 - **Functional Tests**: Test complete workflows and user scenarios
 - **Performance Tests**: Test timing and resource usage for critical operations
 
-### Version-Aware Testing Strategy
+## MVVM Testing Strategy
 
-#### Pre-v1.0.0 Focus (Current Phase)
-- **FOCUS** on core functionality testing and business logic validation
-- **MINIMIZE** error handling and edge case testing (defer until v1.0.0)
-- **PRIORITIZE** happy path testing and expected behavior patterns
-- **TEST** clean architecture and confident design patterns
-- **VALIDATE** proper initialization sequences and program flow
+### Model Layer Testing
+- **TEST** business logic in isolation (no Qt dependencies)
+- **VALIDATE** data validation and transformation
+- **CHECK** domain entity behavior
+- **NO** UI dependencies or Qt imports
+- **USE** standard pytest fixtures
 
-#### Test Architecture Alignment
-- **REFLECT** confident design patterns in test structure
-- **AVOID** excessive defensive testing for scenarios that shouldn't occur
-- **FOCUS** on testing actual program behavior and constraints
-- **VALIDATE** type hints and documented interfaces
-- **TEST** clear, linear program flow expectations
+### ViewModel Layer Testing
+- **TEST** signal emissions using `pytest-qt`
+- **MOCK** Model and Service dependencies
+- **VALIDATE** state management
+- **CHECK** proper signal/slot behavior
+- **USE** `qtbot` fixture for Qt testing
+- **VERIFY** no direct widget manipulation
+
+### View Layer Testing (Optional)
+- **FOCUS** on ViewModel and Model testing
+- **VIEW** tests are optional for template
+- **IF TESTED**: Use `qtbot` and QApplication
+- **VALIDATE** signal connections if needed
+- **KEEP** tests simple and focused
+
+### Integration Testing
+- **TEST** interactions between layers
+- **VALIDATE** dependency injection works
+- **CHECK** signal flow across boundaries
+- **TEST** complete user workflows
 
 ## Type Safety and Validation Testing
 
@@ -123,23 +137,59 @@ addopts = "--cov=src --cov-report=html --cov-report=term-missing"
 
 ## Repository Integration
 
-### Shared Testing Utilities
-- **USE** `projects/common_lib/` for shared test utilities and fixtures
-- **CREATE** reusable testing patterns and helpers
-- **MAINTAIN** consistency across project test suites
-- **ELIMINATE** duplicate testing code through shared utilities
+### QApplication Fixture
+Ensure `tests/conftest.py` has:
+```python
+import pytest
+from PySide6.QtWidgets import QApplication
 
-### Python Standard Library Focus
-- **PREFER** built-in testing capabilities and assert statements
-- **USE** unittest.mock for mocking needs
-- **LEVERAGE** built-in modules for test data generation
-- **MINIMIZE** external testing dependencies beyond pytest
+@pytest.fixture(scope="session")
+def qapp():
+    """Create QApplication instance for tests."""
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication([])
+    yield app
+```
 
-### Linux Environment Compliance
-- **IMPORTANT** All tests designed for Linux environments only
-- **TEST** Linux-specific paths, commands, and system calls
-- **NOT COMPATIBLE** with Windows environments
-- **VALIDATE** proper behavior on target Linux systems
+### Python Standard Library and Mocking
+- **USE** unittest.mock or pytest-mock for mocking
+- **MOCK** Service dependencies in ViewModel tests
+- **ISOLATE** units under test
+- **VERIFY** mock interactions with `assert_called_once()` etc.
+
+### Example Tests
+
+#### Model Test
+```python
+def test_model_validation():
+    """Test that model validates data correctly."""
+    # Arrange
+    model = ExampleModel(value="test")
+
+    # Act
+    is_valid = model.validate()
+
+    # Assert
+    assert is_valid is True
+```
+
+#### ViewModel Test with Signals
+```python
+def test_viewmodel_emits_signal(qtbot, mocker):
+    """Test that viewmodel emits signal when data changes."""
+    # Arrange
+    mock_service = mocker.Mock()
+    mock_service.fetch.return_value = ["item1"]
+    vm = ExampleViewModel(mock_service)
+
+    # Act & Assert
+    with qtbot.waitSignal(vm.data_changed, timeout=1000) as blocker:
+        vm.load_data()
+
+    assert blocker.args[0] == ["item1"]
+    mock_service.fetch.assert_called_once()
+```
 
 ## Testing Decision Framework
 

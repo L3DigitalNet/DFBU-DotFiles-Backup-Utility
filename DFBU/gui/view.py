@@ -407,7 +407,7 @@ class MainWindow(QMainWindow):
             if hasattr(loaded_window, "menuBar"):
                 menu_bar = loaded_window.menuBar()
                 if menu_bar:
-                    menu_bar.setParent(self)
+                    # Set menubar without reparenting to avoid object lifecycle issues
                     self.setMenuBar(menu_bar)
 
             # Extract and set statusbar if present
@@ -539,7 +539,7 @@ class MainWindow(QMainWindow):
 
         # Status bar and progress bar
         self.status_bar = self.statusBar()
-        self.progress_bar: QProgressBar = ui_widget.findChild(
+        self.progress_bar: QProgressBar = self.status_bar.findChild(
             QProgressBar, "progress_bar"
         )  # type: ignore[assignment]
 
@@ -555,6 +555,17 @@ class MainWindow(QMainWindow):
             QAction, "actionStartRestore"
         )  # type: ignore[assignment]
         self.action_about: QAction = loaded_window.findChild(QAction, "actionAbout")  # type: ignore[assignment]
+
+        # Fix Qt object ownership: Reparent actions to prevent deletion
+        for action in [
+            self.action_load_config,
+            self.action_exit,
+            self.action_start_backup,
+            self.action_start_restore,
+            self.action_about,
+        ]:
+            if action:
+                action.setParent(self)
 
         # Dynamic progress labels (created programmatically, not from UI file)
         self.progress_label = QLabel("Ready")

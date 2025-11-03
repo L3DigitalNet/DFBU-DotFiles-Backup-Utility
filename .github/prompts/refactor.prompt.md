@@ -1,41 +1,44 @@
 ---
-description: "Code Refactoring and Optimization following repository guidelines"
+description: "Code Refactoring following MVVM architecture and SOLID principles"
 mode: "agent"
 ---
 
-# Code Refactoring and Optimization
+# Code Refactoring for PySide6 MVVM Applications
 
-Perform comprehensive refactoring of ${file} or project following repository guidelines and clean architecture principles.
+Perform comprehensive refactoring of ${file} or project following MVVM architecture, SOLID principles, and repository guidelines.
 
-Follow [repository guidelines](../copilot-instructions.md).
+Follow [repository guidelines](../copilot-instructions.md) and [AGENTS.md](../../AGENTS.md).
 
 ## Core Refactoring Principles
 
+### MVVM Separation - CRITICAL
+- **MUST** maintain strict layer boundaries (Model/View/ViewModel)
+- **NEVER** add Qt imports to Model layer
+- **ALWAYS** use signals for cross-layer communication
+- **MUST** inject dependencies through constructors
+- **VERIFY** no business logic in Views
+- **ENSURE** ViewModels don't manipulate widgets directly
+
 ### DRY (Don't Repeat Yourself) - HIGH PRIORITY
-- **MUST** eliminate ALL code duplication through abstraction and modularization
-- **MUST** maintain single source of truth for all data structures and business logic
-- **MUST** centralize constants and configuration in dedicated modules
-- **MUST** extract common patterns into base classes or utility functions
-- **MUST** consolidate similar logic into unified implementations
+- **ELIMINATE** code duplication through abstraction
+- **MAINTAIN** single source of truth for business logic
+- **CENTRALIZE** constants in `src/utils/constants.py`
+- **EXTRACT** common patterns into base classes
+- **CONSOLIDATE** similar logic into unified implementations
 
-### Python Standard Library First - MANDATORY
-- **MUST** use Python standard library solutions before considering external dependencies
-- **MUST** leverage built-in modules: `pathlib`, `json`, `csv`, `datetime`, `collections`, `itertools`, `functools`
-- **ONLY** add external dependencies when standard library cannot reasonably solve the problem
-- **MUST** justify external dependencies with comments explaining why standard library is insufficient
-- **MUST** replace existing external dependencies with standard library equivalents where possible
+### Python Standard Library First
+- **PREFER** Python standard library over external dependencies
+- **USE** built-in modules: `pathlib`, `dataclasses`, `typing`, `collections`
+- **ONLY** add dependencies when necessary (PySide6, pytest, etc.)
+- **JUSTIFY** external dependencies with comments
 
-### Clean Code and Confident Design - ESSENTIAL
-- **PREFER** confident, clean code over defensive programming patterns
-- **AVOID** unnecessary null/None checks when program flow guarantees valid values
-- **PREFER** explicit initialization and clear program flow over defensive conditionals
-- **MUST** design code that reflects actual program behavior and constraints
-- **MUST** order functions and classes to reflect logical flow and dependencies; classes always listed first
-- **AVOID** excessive defensive checks that add noise without meaningful protection
-- **PREFER** early validation and fail-fast approaches over scattered defensive checks
-- **MUST** use type hints to document and enforce design assumptions
-- **PREFER** clear, linear program flow with proper initialization order
-- **AVOID** "just in case" code that handles scenarios that shouldn't occur in correct usage
+### Clean Code and Type Safety
+- **USE** type hints for ALL functions, methods, parameters
+- **PREFER** `str | None` over `Optional[str]`
+- **USE** `list[str]` over `List[str]`
+- **APPLY** `@dataclass` for simple data containers
+- **USE** `Protocol` for interface definitions
+- **ENSURE** clear, readable code structure
 
 ## Type Hints and Documentation
 
@@ -44,82 +47,118 @@ Follow [repository guidelines](../copilot-instructions.md).
 - **MUST** use modern union syntax: `str | None` not `Optional[str]`
 - **MUST** use collection types: `list[str]`, `dict[str, int]`, `set[int]`
 - **MUST** use `Final` for constants, `ClassVar` for class variables, `TypedDict` for structured dicts
-- **MUST** use `Protocol` for interfaces, `TypeVar`/`Generic` for reusable components
-- **AVOID** `Any` type - use specific types or protocols
-
-### Documentation Standards
-- Follow repository docstring standards as per [copilot-instructions.md](../copilot-instructions.md)
-- **MUST** include docstrings for ALL public functions, methods, and classes
-- **MUST** follow specific docstring format patterns
-- **MUST** maintain 80 character limit for docstring lines
-- **STREAMLINED** approach: Brief descriptions with types in hints, examples only for complex logic
-
-## Architectural Improvements
+## SOLID Principles Application
 
 ### Single Responsibility Principle
-- **MUST** keep functions focused (single responsibility)
-- **MUST** ensure each class has clear, cohesive purpose
-- **MUST** organize code into focused, single-purpose modules
-- **MUST** separate business logic, data access, and presentation layers
-- **AVOID** deep nesting (max 3 levels)
-- **AVOID** complex conditional statements
+- **ONE** purpose per class/function
+- **SEPARATE** UI, business logic, and data access
+- **EXTRACT** mixed responsibilities into focused classes
 
-### Clean Architecture Patterns
-- **MUST** implement proper separation of concerns
-- **MUST** create clear interfaces and boundaries between components
-- **MUST** design for composition over inheritance
-- **MUST** follow SOLID principles in class design
-- **MUST** implement clear dependency management
+### Open/Closed Principle
+- **EXTEND** behavior through composition
+- **USE** abstract base classes for extensibility
+- **AVOID** modifying existing, working code
+
+### Liskov Substitution Principle
+- **ENSURE** derived classes are substitutable
+- **MAINTAIN** consistent contracts
+- **PRESERVE** base class behavior expectations
+
+### Interface Segregation Principle
+- **CREATE** focused interfaces with `Protocol`
+- **AVOID** fat interfaces with unused methods
+- **SPLIT** large interfaces into cohesive units
+
+### Dependency Inversion Principle
+- **DEPEND** on abstractions (protocols, ABCs)
+- **INJECT** dependencies through constructors
+- **AVOID** creating dependencies inside classes
+
+## Refactoring Patterns for MVVM
+
+### Extract to ViewModel
+Move presentation logic from View to ViewModel:
+```python
+# Before: Logic in View
+class MyView(QWidget):
+    def on_button_click(self):
+        data = self.fetch_data()  # Wrong!
+        self.process(data)        # Wrong!
+
+# After: Logic in ViewModel
+class MyViewModel(QObject):
+    data_ready = Signal(list)
+
+    def load_data(self):
+        data = self._service.fetch()
+        self.data_ready.emit(data)
+
+class MyView(QWidget):
+    def __init__(self, vm: MyViewModel):
+        vm.data_ready.connect(self._update_ui)
+        self._button.clicked.connect(vm.load_data)
+```
+
+### Extract to Model
+Move business logic from ViewModel to Model:
+```python
+# Before: Business logic in ViewModel
+class MyViewModel(QObject):
+    def calculate_total(self, items):
+        return sum(item.price * item.quantity for item in items)
+
+# After: Business logic in Model
+class OrderCalculator:
+    @staticmethod
+    def calculate_total(items: list[Item]) -> float:
+        return sum(item.price * item.quantity for item in items)
+
+class MyViewModel(QObject):
+    def update_total(self):
+        total = OrderCalculator.calculate_total(self._items)
+        self.total_changed.emit(total)
+```
+
+### Extract to Service
+Move external interactions to Service layer:
+```python
+# Service for file I/O, API calls, database
+class DataService:
+    def fetch_data(self) -> list[dict]:
+        # File I/O or API call
+        pass
+
+# ViewModel uses Service
+class MyViewModel(QObject):
+    def __init__(self, service: DataService):
+        self._service = service
+```
 
 ## Code Quality Standards
 
-### Function and Class Design
-- **MUST** use descriptive, self-documenting names for all elements
-- **MUST** follow strict PEP 8 compliance
-- **MUST** use f-string formatting (never `.format()` or `%` formatting)
-- **MUST** list function arguments on separate lines when more than two arguments
-- **MUST** align arguments with opening parenthesis or use hanging indent (4 spaces)
+### Naming Conventions
+- **Classes**: PascalCase (e.g., `MainViewModel`)
+- **Functions/Methods**: snake_case (e.g., `load_data`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_ITEMS`)
+- **Private**: Leading underscore (e.g., `_internal_method`)
+- **Signals**: Descriptive past tense (e.g., `data_changed`)
 
-### Performance and Maintainability
-- **MUST** optimize for readability and maintainability over premature optimization
-- **MUST** reduce complexity through clear design patterns
-- **MUST** use built-in functions and data structures for better performance
-- **MAY** suggest external libraries ONLY when they provide significant, justified benefits
-- **PREFER** eliminate performance bottlenecks through proper algorithm and data structure choices if this does not compromise code clarity
+### Code Organization
+- **IMPORTS**: Standard library, third-party, local (separated)
+- **ORDER**: Classes first, then functions
+- **GROUPING**: Related methods together
+- **SPACING**: Two blank lines between top-level definitions
 
-## Version-Aware Refactoring Strategy
+## Refactoring Checklist
 
-### Pre-v1.0.0 Focus (Current Phase)
-- **DEFER** comprehensive error handling until v1.0.0
-- **FOCUS** on clean architecture, confident design patterns
-- **PRIORITIZE** core functionality and clear program flow
-- **IMPLEMENT** proper initialization sequences that guarantee valid state
-- **AVOID** excessive defensive programming patterns
-
-### Incremental Improvement Approach
-- **MUST** make small, testable improvements rather than large rewrites
-- **MUST** preserve external behavior during refactoring
-- **MUST** maintain or improve test coverage
-- **MUST** update documentation to reflect changes
-
-## Repository Integration
-
-### Project Structure Compliance
-- **MUST** follow project template structure from `templates/my_project_folder_template/`
-- **MUST** store ALL test files in each project's `/tests/` directory
-- **MUST** maintain proper `__init__.py` files and package organization
-
-### Linux Environment Compliance
-- **PYTHON VERSION**: Ensure compatibility with Python 3.14+.
-- **IMPORTANT** All refactored code designed for Linux environments only
-- **MUST** use Linux-specific paths, commands, and system calls where appropriate
-- **NOT COMPATIBLE** with Windows environments
-
-## Refactoring Decision Framework
-
-### When refactoring, prioritize:
-1. **DRY Violations**: Can this logic be unified with existing implementations?
-2. **Standard Library**: Can external dependencies be replaced with built-in solutions?
-3. **Type Safety**: Are all elements properly typed and documented?
+- [ ] MVVM layers properly separated
+- [ ] Dependencies injected, not created
+- [ ] Type hints on all functions/methods
+- [ ] Docstrings on public APIs
+- [ ] No code duplication
+- [ ] SOLID principles followed
+- [ ] Tests updated and passing
+- [ ] No Qt imports in Models
+- [ ] Signals used for cross-layer communication
 4. **Confident Design**: Can defensive patterns be replaced with architectural solutions?
 5. **Reusability**: Can this be generalized for use by other projects?
