@@ -342,28 +342,6 @@
           </layout>
          </widget>
         </item>
-        <item>
-         <widget class="QGroupBox" name="operation_log_group">
-          <property name="title">
-           <string>Operation Log</string>
-          </property>
-          <layout class="QVBoxLayout" name="operation_log_layout">
-           <item>
-            <widget class="QTextEdit" name="operation_log">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="restore_tab">
@@ -458,22 +436,6 @@ Example: ~/GitHub/dotfiles/ (containing hostname subdirectory)</string>
 WARNING: This will overwrite existing files at destination paths.</string>
              </property>
              <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="restore_log_group">
-          <property name="title">
-           <string>Operation Log</string>
-          </property>
-          <layout class="QVBoxLayout" name="restore_log_layout">
-           <item>
-            <widget class="QTextEdit" name="restore_operation_log">
-             <property name="readOnly">
               <bool>true</bool>
              </property>
             </widget>
@@ -756,6 +718,51 @@ WARNING: This will overwrite existing files at destination paths.</string>
               </size>
              </property>
             </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="logs_tab">
+       <attribute name="title">
+        <string>Logs</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="logs_layout">
+        <item>
+         <widget class="QGroupBox" name="backup_log_group">
+          <property name="title">
+           <string>Backup Operation Log</string>
+          </property>
+          <layout class="QVBoxLayout" name="backup_log_layout">
+           <item>
+            <widget class="QTextEdit" name="operation_log">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="restore_log_group">
+          <property name="title">
+           <string>Restore Operation Log</string>
+          </property>
+          <layout class="QVBoxLayout" name="restore_log_layout">
+           <item>
+            <widget class="QTextEdit" name="restore_operation_log">
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
            </item>
           </layout>
          </widget>

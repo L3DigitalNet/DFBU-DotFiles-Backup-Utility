@@ -677,10 +677,6 @@ class MainWindow(QMainWindow):
             if action:
                 action.setParent(self)
 
-        # Dynamic progress labels (created programmatically, not from UI file)
-        self.progress_label = QLabel("Ready")
-        self.restore_progress_label = QLabel("Ready")
-
     def _connect_ui_signals(self) -> None:
         """Connect UI element signals to handler methods."""
         # Backup tab connections
@@ -831,7 +827,6 @@ class MainWindow(QMainWindow):
             # Clear operation log
             self.operation_log.clear()
             self.operation_log.append("=== Backup Operation Started ===\n")
-            self.progress_label.setText("Starting backup...")
 
             # Disable buttons during operation
             self.backup_btn.setEnabled(False)
@@ -904,7 +899,6 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Clear operation log
             self.restore_operation_log.clear()
-            self.restore_progress_label.setText("Starting restore...")
 
             # Disable buttons during operation
             self.restore_btn.setEnabled(False)
@@ -921,22 +915,24 @@ class MainWindow(QMainWindow):
         """Handle progress updates."""
         self.progress_bar.setValue(value)
 
-        # Update progress label
-        current_tab = self.tab_widget.currentIndex()
-        if current_tab == 0:  # Backup tab
-            self.progress_label.setText(f"Progress: {value}%")
-        elif current_tab == 1:  # Restore tab
-            self.restore_progress_label.setText(f"Progress: {value}%")
-
     def _on_item_processed(self, source: str, destination: str) -> None:
         """Handle item processed signal."""
         log_message = f"✓ {Path(source).name} → {Path(destination).name}\n"
 
-        # Always update the backup operation log (regardless of tab)
-        # This ensures logs are captured even if user switches tabs
-        self.operation_log.moveCursor(QTextCursor.MoveOperation.End)
-        self.operation_log.insertPlainText(log_message)
-        self.operation_log.ensureCursorVisible()
+        # Determine which log to update based on which worker is active
+        # Check viewmodel to see which operation is running
+        if self.viewmodel.backup_worker and self.viewmodel.backup_worker.isRunning():
+            # Backup operation - write to backup log
+            self.operation_log.moveCursor(QTextCursor.MoveOperation.End)
+            self.operation_log.insertPlainText(log_message)
+            self.operation_log.ensureCursorVisible()
+        elif (
+            self.viewmodel.restore_worker and self.viewmodel.restore_worker.isRunning()
+        ):
+            # Restore operation - write to restore log
+            self.restore_operation_log.moveCursor(QTextCursor.MoveOperation.End)
+            self.restore_operation_log.insertPlainText(log_message)
+            self.restore_operation_log.ensureCursorVisible()
 
     def _on_item_skipped(self, path: str, reason: str) -> None:
         """
@@ -954,7 +950,7 @@ class MainWindow(QMainWindow):
 
             log_message = f"⊘ Skipped {new_skips} unchanged files (total: {self._skipped_count})...\n"
 
-            # Always update operation log regardless of current tab
+            # Update backup operation log (skips only happen during backup)
             self.operation_log.moveCursor(QTextCursor.MoveOperation.End)
             self.operation_log.insertPlainText(log_message)
             self.operation_log.ensureCursorVisible()
@@ -970,10 +966,12 @@ class MainWindow(QMainWindow):
         self.restore_btn.setEnabled(True)
         self.browse_restore_btn.setEnabled(True)
 
-        # Update status and operation log
-        current_tab = self.tab_widget.currentIndex()
-        if current_tab == 0:  # Backup tab
-            self.progress_label.setText("Backup completed successfully")
+        # Determine which operation completed and update the appropriate log
+        if (
+            self.viewmodel.backup_worker
+            and not self.viewmodel.backup_worker.isRunning()
+        ):
+            # Backup just completed
             # Log any remaining skipped files
             if self._skipped_count > self._last_logged_skip_count:
                 remaining = self._skipped_count - self._last_logged_skip_count
@@ -985,8 +983,11 @@ class MainWindow(QMainWindow):
             self.operation_log.verticalScrollBar().setValue(
                 self.operation_log.verticalScrollBar().maximum()
             )
-        elif current_tab == 1:  # Restore tab
-            self.restore_progress_label.setText("Restore completed successfully")
+        elif (
+            self.viewmodel.restore_worker
+            and not self.viewmodel.restore_worker.isRunning()
+        ):
+            # Restore just completed
             self.restore_operation_log.append("\n=== Restore Operation Completed ===\n")
             self.restore_operation_log.verticalScrollBar().setValue(
                 self.restore_operation_log.verticalScrollBar().maximum()
@@ -999,12 +1000,16 @@ class MainWindow(QMainWindow):
         """Handle error signal."""
         log_message = f"✗ Error in {context}: {error_message}\n"
 
-        # Determine which log to update
-        current_tab = self.tab_widget.currentIndex()
-        if current_tab == 0:  # Backup tab
+        # Determine which log to update based on which worker is active
+        if self.viewmodel.backup_worker and self.viewmodel.backup_worker.isRunning():
             self.operation_log.append(log_message)
-        elif current_tab == 1:  # Restore tab
+        elif (
+            self.viewmodel.restore_worker and self.viewmodel.restore_worker.isRunning()
+        ):
             self.restore_operation_log.append(log_message)
+        else:
+            # If neither is running, it's likely a startup error - log to backup log
+            self.operation_log.append(log_message)
 
         # Hide and reset progress bar on error
         self.progress_bar.setVisible(False)
