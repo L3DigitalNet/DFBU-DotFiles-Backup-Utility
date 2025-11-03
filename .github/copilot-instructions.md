@@ -160,16 +160,78 @@ class MyViewModel(QObject):
 
 ## Python Code Standards
 
-### Type Hints
-- Always use type hints for function parameters and return values
-- Use `typing` module for complex types
-- Example:
-```python
-from typing import Optional, List, Protocol
+### Type Hints (MANDATORY - STRICT ENFORCEMENT)
 
-def process_data(items: List[str], config: Optional[dict] = None) -> bool:
-    ...
+**CRITICAL**: Type hints are MANDATORY for ALL code, not optional guidelines.
+
+**Required type hints:**
+- ✅ **ALL** function parameters (including `self` when helpful)
+- ✅ **ALL** function return values (including `None` and `-> None`)
+- ✅ **ALL** class attributes defined in `__init__`
+- ✅ **ALL** module-level variables and constants
+- ✅ **ALL** lambda parameters when type isn't obvious
+- ✅ **ALL** property getters and setters
+
+**Type hint standards:**
+- Use modern Python 3.10+ syntax: `list[str]` not `List[str]`
+- Use `|` union syntax: `str | None` not `Optional[str]`
+- Use `collections.abc` for protocols: `Callable`, `Iterable`, `Sequence`
+- Always specify generic types: `list[DotFileDict]` not `list`
+- Use `Final` for constants that should never change
+- Use `TypedDict` for structured dictionaries
+- Use `Protocol` for interface definitions
+
+**Examples:**
+```python
+from typing import Final, Protocol
+from collections.abc import Callable
+from pathlib import Path
+
+# Module-level constants (use Final)
+MAX_RETRIES: Final[int] = 3
+CONFIG_DIR: Final[Path] = Path.home() / ".config"
+
+# Function with full type hints
+def process_data(
+    items: list[str],
+    config: dict[str, Any] | None = None,
+    callback: Callable[[str], bool] | None = None
+) -> bool:
+    """Process items with optional config."""
+    return True
+
+# Class with typed attributes
+class DataProcessor:
+    """Process data items."""
+
+    def __init__(self, max_items: int) -> None:
+        """Initialize processor."""
+        self.max_items: int = max_items
+        self.processed_count: int = 0
+        self._cache: dict[str, Any] = {}
+
+    @property
+    def is_full(self) -> bool:
+        """Check if processor is at capacity."""
+        return self.processed_count >= self.max_items
+
+# Protocol for interface definition
+class DataServiceProtocol(Protocol):
+    """Protocol for data service implementations."""
+
+    def fetch(self, key: str) -> list[dict[str, Any]]:
+        """Fetch data by key."""
+        ...
+
+    def store(self, key: str, data: list[dict[str, Any]]) -> bool:
+        """Store data with key."""
+        ...
 ```
+
+**Type checking:**
+- Run `mypy src/` regularly to verify type correctness
+- Fix ALL type checking errors before committing
+- Use `# type: ignore[error-code]` sparingly with justification comments
 
 ### Error Handling
 - Use specific exception types

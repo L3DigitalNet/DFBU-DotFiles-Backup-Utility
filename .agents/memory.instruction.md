@@ -401,26 +401,54 @@ class ApplicationFactory:
 - Use context managers for files
 - Clean up timers and threads
 
-## Type Hints (Mandatory)
+## Type Hints (MANDATORY - STRICT ENFORCEMENT)
+
+**CRITICAL**: Type hints are MANDATORY for ALL code, not optional guidelines.
+
+### Required Coverage
+
+- ✅ ALL function parameters and return values
+- ✅ ALL class attributes in `__init__`
+- ✅ ALL module-level variables and constants
+- ✅ ALL properties (getters and setters)
+- ✅ Use modern Python 3.10+ syntax
+- ✅ Use `|` for unions, not `Optional`
+- ✅ Use `list[T]` not `List[T]`
+- ✅ Use `Final` for constants
+- ✅ Specify generic types fully: `dict[str, int]` not `dict`
 
 ### Standard Usage
 
 ```python
-from typing import List, Dict, Optional, Protocol, TypeVar
+from typing import Final, Protocol, TypeVar, Any
+from collections.abc import Callable
+from pathlib import Path
 
-T = TypeVar('T')
+# Constants with Final
+MAX_RETRIES: Final[int] = 3
 
+# Modern type hints
 def process_items(
-    items: List[str],
-    config: Optional[Dict[str, Any]] = None
+    items: list[str],
+    config: dict[str, Any] | None = None,
+    callback: Callable[[str], bool] | None = None
 ) -> bool:
     """Process items with optional configuration."""
     return True
 
+# Class with full typing
+class DataManager:
+    def __init__(self, path: Path) -> None:
+        self.path: Path = path
+        self.cache: dict[str, Any] = {}
+
+# Protocol for interfaces
 class Repository(Protocol):
-    def save(self, item: T) -> None:
+    def save(self, item: Any) -> None:
         ...
 ```
+
+**Verification**: Run `mypy src/` to check type correctness before committing.
 
 ## Documentation Requirements
 
