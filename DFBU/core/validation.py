@@ -147,15 +147,25 @@ class ConfigValidator:
         paths: list[str] = []
         if "paths" in raw_dotfile:
             # New format: paths is already a list
-            paths_value = raw_dotfile.get("paths", [])
+            paths_value: Any = raw_dotfile.get("paths", [])
             if isinstance(paths_value, list):
                 paths = [str(p) for p in paths_value]
             else:
                 paths = [str(paths_value)]
         elif "path" in raw_dotfile:
             # Legacy format: convert single path to list
-            path_value = raw_dotfile.get("path", "").strip()
-            paths = [path_value] if path_value else [""]
+            # Handle case where 'path' might accidentally be a list (corrupted TOML)
+            path_value = raw_dotfile.get("path", "")
+            if isinstance(path_value, list):
+                # 'path' was saved as list by mistake - convert to list of strings
+                paths = [str(p) for p in path_value]
+            elif isinstance(path_value, str):
+                # Normal case: 'path' is a string
+                path_str = path_value.strip()
+                paths = [path_str] if path_str else [""]
+            else:
+                # Unknown type - convert to string
+                paths = [str(path_value)]
         else:
             # No path provided
             paths = [""]

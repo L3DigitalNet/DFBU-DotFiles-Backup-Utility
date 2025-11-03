@@ -73,6 +73,8 @@ from PySide6.QtWidgets import (
 )
 from viewmodel import DFBUViewModel
 
+from gui.input_validation import InputValidator
+
 
 class NumericTableWidgetItem(QTableWidgetItem):
     """
@@ -96,12 +98,14 @@ class NumericTableWidgetItem(QTableWidgetItem):
         other_value = other.data(Qt.ItemDataRole.UserRole)
 
         # Handle None values by treating them as 0
-        if self_value is None:
-            self_value = 0
-        if other_value is None:
-            other_value = 0
+        self_numeric: int | float = (
+            self_value if isinstance(self_value, (int, float)) else 0
+        )
+        other_numeric: int | float = (
+            other_value if isinstance(other_value, (int, float)) else 0
+        )
 
-        return self_value < other_value
+        return self_numeric < other_numeric
 
 
 class AddDotfileDialog(QDialog):
@@ -251,18 +255,36 @@ class AddDotfileDialog(QDialog):
 
     def _on_browse_path(self) -> None:
         """Handle browse button click to select file or directory."""
-        # First try to select a file
-        file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Select File",
-            str(Path.home()),
-            "All Files (*)",
-        )
+        # Create custom message box to ask user what type to select
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Select Type")
+        msg_box.setText("What would you like to select?")
+        msg_box.setIcon(QMessageBox.Icon.Question)
 
-        if file_path:
-            self.path_input_edit.setText(file_path)
-        else:
-            # If no file selected, try directory
+        # Add custom buttons with clear labels
+        file_button = msg_box.addButton("File", QMessageBox.ButtonRole.YesRole)
+        dir_button = msg_box.addButton("Directory", QMessageBox.ButtonRole.NoRole)
+        _cancel_button = msg_box.addButton("Cancel", QMessageBox.ButtonRole.RejectRole)
+
+        msg_box.setDefaultButton(file_button)
+        msg_box.exec()
+
+        clicked_button = msg_box.clickedButton()
+
+        if clicked_button == file_button:
+            # Select a file
+            file_path, _ = QFileDialog.getOpenFileName(
+                self,
+                "Select File",
+                str(Path.home()),
+                "All Files (*)",
+            )
+
+            if file_path:
+                self.path_input_edit.setText(file_path)
+
+        elif clicked_button == dir_button:
+            # Select a directory
             dir_path = QFileDialog.getExistingDirectory(
                 self, "Select Directory", str(Path.home())
             )
@@ -275,6 +297,12 @@ class AddDotfileDialog(QDialog):
         path_text = self.path_input_edit.text().strip()
 
         if not path_text:
+            return
+
+        # Validate path before adding
+        validation_result = InputValidator.validate_path(path_text, must_exist=False)
+        if not validation_result.success:
+            QMessageBox.warning(self, "Invalid Path", validation_result.error_message)
             return
 
         # Check for duplicates
@@ -295,6 +323,88 @@ class AddDotfileDialog(QDialog):
 
         for item in selected_items:
             self.paths_list.takeItem(self.paths_list.row(item))
+
+    def accept(self) -> None:
+        """
+        Override accept to validate input before closing dialog.
+
+        Validates all fields and shows error message if validation fails.
+        """
+        # Validate category
+        category = self.category_combo.currentText().strip()
+        validation_result = InputValidator.validate_string(
+            category, field_name="Category", min_length=1, max_length=100
+        )
+        if not validation_result.success:
+            QMessageBox.warning(
+                self, "Validation Error", validation_result.error_message
+            )
+            self.category_combo.setFocus()
+            return
+
+        # Validate subcategory
+        subcategory = self.subcategory_combo.currentText().strip()
+        validation_result = InputValidator.validate_string(
+            subcategory, field_name="Subcategory", min_length=1, max_length=100
+        )
+        if not validation_result.success:
+            QMessageBox.warning(
+                self, "Validation Error", validation_result.error_message
+            )
+            self.subcategory_combo.setFocus()
+            return
+
+        # Validate application
+        application = self.application_edit.text().strip()
+        validation_result = InputValidator.validate_string(
+            application, field_name="Application", min_length=1, max_length=100
+        )
+        if not validation_result.success:
+            QMessageBox.warning(
+                self, "Validation Error", validation_result.error_message
+            )
+            self.application_edit.setFocus()
+            return
+
+        # Validate description
+        description = self.description_edit.text().strip()
+        validation_result = InputValidator.validate_string(
+            description,
+            field_name="Description",
+            allow_empty=True,
+            max_length=255,
+        )
+        if not validation_result.success:
+            QMessageBox.warning(
+                self, "Validation Error", validation_result.error_message
+            )
+            self.description_edit.setFocus()
+            return
+
+        # Validate paths
+        paths = self.get_paths()
+        if not paths:
+            QMessageBox.warning(
+                self,
+                "Validation Error",
+                "At least one path is required.",
+            )
+            self.path_input_edit.setFocus()
+            return
+
+        # Validate each path
+        for path_str in paths:
+            validation_result = InputValidator.validate_path(path_str, must_exist=False)
+            if not validation_result.success:
+                QMessageBox.warning(
+                    self,
+                    "Validation Error",
+                    f"Invalid path '{path_str}': {validation_result.error_message}",
+                )
+                return
+
+        # All validation passed, call parent accept
+        super().accept()
 
     def get_paths(self) -> list[str]:
         """
@@ -1262,10 +1372,10 @@ class MainWindow(QMainWindow):
         item = self.dotfile_table.item(table_row, 0)
         if item:
             original_idx = item.data(Qt.ItemDataRole.UserRole)
-            if original_idx is not None and isinstance(original_idx, int):
+            if isinstance(original_idx, int):
                 return original_idx
         # Fallback to table row if no data stored (shouldn't happen)
-        return table_row
+        return int(table_row)
 
     def _on_dotfile_selection_changed(self) -> None:
         """Handle dotfile table selection change."""

@@ -161,7 +161,7 @@ cat tests/integration/test_application.py
 
 ### MVVM Flow
 
-```
+```text
 User Action (View) → Signal → ViewModel Method → Service/Model → Signal → View Update
 ```
 

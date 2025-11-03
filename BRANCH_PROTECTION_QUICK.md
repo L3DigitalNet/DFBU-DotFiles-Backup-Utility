@@ -43,7 +43,7 @@ git stash pop
 
 If you see:
 
-```
+```text
 ❌ ERROR: Direct commits to 'main' branch are not allowed!
 ```
 

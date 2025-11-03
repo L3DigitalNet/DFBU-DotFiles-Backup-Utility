@@ -325,7 +325,7 @@ If you need to learn more:
 
 Use this space to track your project-specific customizations:
 
-```
+```text
 Project Name: ___________________________
 Start Date: ___________________________
 Target Release: ___________________________

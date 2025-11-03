@@ -50,6 +50,8 @@ from model import DFBUModel
 # PySide6 imports for signals and threading
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
 
+from gui.input_validation import InputValidator
+
 
 class BackupWorker(QThread):
     """
@@ -127,7 +129,7 @@ class BackupWorker(QThread):
         self, src_path: Path, dest_path: Path, skip_identical: bool = False
     ) -> bool:
         """
-        Process individual file backup.
+        Process individual file backup with comprehensive error handling.
 
         Args:
             src_path: Source file path
@@ -139,42 +141,77 @@ class BackupWorker(QThread):
         """
         # Model must be set before running
         if not self.model:
+            self.error_occurred.emit(
+                str(src_path), "Internal error: Model not initialized"
+            )
             return False
 
         start_time = time.perf_counter()
 
-        # Check readability
-        if not self.model.check_readable(src_path):
-            self.item_skipped.emit(str(src_path), "Permission denied")
+        try:
+            # Check source file exists
+            if not src_path.exists():
+                self.item_skipped.emit(str(src_path), "File not found")
+                self.model.record_item_skipped()
+                return False
+
+            # Check readability
+            if not self.model.check_readable(src_path):
+                self.item_skipped.emit(
+                    str(src_path), "Permission denied (no read access)"
+                )
+                self.model.record_item_skipped()
+                return False
+
+            # Check if file is identical before copying (optimization for mirror mode)
+            if skip_identical and self.model.files_are_identical(src_path, dest_path):
+                self.item_skipped.emit(str(src_path), "File unchanged")
+                self.model.record_item_skipped()
+                return True
+
+            # Copy file with skip_identical optimization
+            success = self.model.copy_file(
+                src_path, dest_path, create_parent=True, skip_identical=skip_identical
+            )
+
+            if success:
+                elapsed = time.perf_counter() - start_time
+                self.model.record_item_processed(elapsed)
+                self.item_processed.emit(str(src_path), str(dest_path))
+            else:
+                self.model.record_item_failed()
+                self.error_occurred.emit(
+                    str(src_path), "Failed to copy file (unknown error)"
+                )
+
+            return success
+
+        except PermissionError as e:
+            self.item_skipped.emit(str(src_path), f"Permission denied: {e}")
             self.model.record_item_skipped()
             return False
-
-        # Check if file is identical before copying (optimization for mirror mode)
-        if skip_identical and self.model.files_are_identical(src_path, dest_path):
-            self.item_skipped.emit(str(src_path), "File unchanged")
+        except FileNotFoundError as e:
+            self.item_skipped.emit(str(src_path), f"File not found: {e}")
             self.model.record_item_skipped()
-            return True
-
-        # Copy file with skip_identical optimization
-        success = self.model.copy_file(
-            src_path, dest_path, create_parent=True, skip_identical=skip_identical
-        )
-
-        if success:
-            elapsed = time.perf_counter() - start_time
-            self.model.record_item_processed(elapsed)
-            self.item_processed.emit(str(src_path), str(dest_path))
-        else:
+            return False
+        except OSError as e:
+            # Disk full, read-only filesystem, etc.
+            self.error_occurred.emit(str(src_path), f"Filesystem error: {e}")
             self.model.record_item_failed()
-            self.error_occurred.emit(str(src_path), "Failed to copy file")
-
-        return success
+            return False
+        except Exception as e:
+            # Catch-all for unexpected errors
+            self.error_occurred.emit(
+                str(src_path), f"Unexpected error: {type(e).__name__}: {e}"
+            )
+            self.model.record_item_failed()
+            return False
 
     def _process_directory(
         self, src_path: Path, dest_path: Path, skip_identical: bool = False
     ) -> int:
         """
-        Process directory backup recursively.
+        Process directory backup recursively with comprehensive error handling.
 
         Args:
             src_path: Source directory path
@@ -186,36 +223,77 @@ class BackupWorker(QThread):
         """
         # Model must be set before running
         if not self.model:
+            self.error_occurred.emit(
+                str(src_path), "Internal error: Model not initialized"
+            )
             return 0
 
-        # Check readability
-        if not self.model.check_readable(src_path):
-            self.item_skipped.emit(str(src_path), "Permission denied")
+        try:
+            # Check directory exists
+            if not src_path.exists():
+                self.item_skipped.emit(str(src_path), "Directory not found")
+                self.model.record_item_skipped()
+                return 0
+
+            # Check it's actually a directory
+            if not src_path.is_dir():
+                self.item_skipped.emit(str(src_path), "Not a directory")
+                self.model.record_item_skipped()
+                return 0
+
+            # Check readability
+            if not self.model.check_readable(src_path):
+                self.item_skipped.emit(
+                    str(src_path), "Permission denied (no read access)"
+                )
+                self.model.record_item_skipped()
+                return 0
+
+            # Copy directory with skip_identical optimization
+            results = self.model.copy_directory(
+                src_path, dest_path, skip_identical=skip_identical
+            )
+
+            # Process results
+            success_count = 0
+            skipped_count = 0
+            for src_file, dest_file, success, skipped in results:
+                if success:
+                    if skipped:
+                        skipped_count += 1
+                        self.item_skipped.emit(str(src_file), "File unchanged")
+                    else:
+                        success_count += 1
+                        self.item_processed.emit(str(src_file), str(dest_file))
+                elif dest_file is None:
+                    self.item_skipped.emit(
+                        str(src_file), "Permission denied or read error"
+                    )
+                else:
+                    self.error_occurred.emit(str(src_file), "Failed to copy file")
+
+            return success_count
+
+        except PermissionError as e:
+            self.item_skipped.emit(str(src_path), f"Permission denied: {e}")
             self.model.record_item_skipped()
             return 0
-
-        # Copy directory with skip_identical optimization
-        results = self.model.copy_directory(
-            src_path, dest_path, skip_identical=skip_identical
-        )
-
-        # Process results
-        success_count = 0
-        skipped_count = 0
-        for src_file, dest_file, success, skipped in results:
-            if success:
-                if skipped:
-                    skipped_count += 1
-                    self.item_skipped.emit(str(src_file), "File unchanged")
-                else:
-                    success_count += 1
-                    self.item_processed.emit(str(src_file), str(dest_file))
-            elif dest_file is None:
-                self.item_skipped.emit(str(src_file), "Permission denied or read error")
-            else:
-                self.error_occurred.emit(str(src_file), "Failed to copy file")
-
-        return success_count
+        except FileNotFoundError as e:
+            self.item_skipped.emit(str(src_path), f"Directory not found: {e}")
+            self.model.record_item_skipped()
+            return 0
+        except OSError as e:
+            # Disk full, read-only filesystem, etc.
+            self.error_occurred.emit(str(src_path), f"Filesystem error: {e}")
+            self.model.record_item_failed()
+            return 0
+        except Exception as e:
+            # Catch-all for unexpected errors
+            self.error_occurred.emit(
+                str(src_path), f"Unexpected error: {type(e).__name__}: {e}"
+            )
+            self.model.record_item_failed()
+            return 0
 
     def _process_mirror_backup(self) -> None:
         """Process mirror backup for all configured dotfiles."""
@@ -651,7 +729,11 @@ class DFBUViewModel(QObject):
         if not isinstance(value, valid_options[key]):
             return False
 
-        return self.model.update_option(key, value)
+        # Type narrowing - value is now known to be bool | int | str
+        if isinstance(value, (bool, int, str)):
+            return self.model.update_option(key, value)
+
+        return False
 
     def command_update_path(self, path_type: str, value: str) -> bool:
         """
@@ -1032,10 +1114,10 @@ class DFBUViewModel(QObject):
 
     def load_settings(self) -> dict[str, Any]:
         """
-        Load persisted settings from QSettings.
+        Load persisted settings from QSettings with validation.
 
         Returns:
-            Dictionary of loaded settings
+            Dictionary of loaded settings (safe/validated values only)
         """
         config_path_str: str = str(self.settings.value("configPath", ""))
         restore_source_str: str = str(self.settings.value("restoreSource", ""))
@@ -1047,17 +1129,27 @@ class DFBUViewModel(QObject):
             "window_state": self.settings.value("windowState"),
         }
 
-        # Apply loaded config path if exists
+        # Validate and apply loaded config path if exists
         if config_path_str:
-            config_path = Path(config_path_str)
-            if config_path.exists():
-                self.model.config_path = config_path
+            validation_result = InputValidator.validate_path(
+                config_path_str, must_exist=True
+            )
+            if validation_result.success:
+                config_path = Path(config_path_str)
+                if config_path.exists():
+                    self.model.config_path = config_path
+            # Silently ignore invalid paths (settings may be from old session)
 
-        # Apply restore source if exists
+        # Validate and apply restore source if exists
         if restore_source_str:
-            restore_path = Path(restore_source_str)
-            if restore_path.exists():
-                self.restore_source_directory = restore_path
+            validation_result = InputValidator.validate_path(
+                restore_source_str, must_exist=True
+            )
+            if validation_result.success:
+                restore_path = Path(restore_source_str)
+                if restore_path.exists():
+                    self.restore_source_directory = restore_path
+            # Silently ignore invalid paths
 
         return settings_dict
 
