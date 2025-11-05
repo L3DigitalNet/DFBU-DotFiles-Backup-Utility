@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>700</height>
+    <width>1282</width>
+    <height>970</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -20,23 +20,83 @@
    <string>DFBU GUI</string>
   </property>
   <widget class="QWidget" name="central_widget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <layout class="QVBoxLayout" name="main_layout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QTabWidget" name="tab_widget">
+      <property name="tabShape">
+       <enum>QTabWidget::TabShape::Rounded</enum>
+      </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="backup_tab">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <attribute name="title">
         <string>Backup</string>
        </attribute>
        <layout class="QVBoxLayout" name="backup_layout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QGroupBox" name="config_group">
           <property name="title">
            <string>Configuration File</string>
           </property>
           <layout class="QHBoxLayout" name="config_layout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
             <widget class="QLineEdit" name="config_path_edit">
              <property name="readOnly">
@@ -67,7 +127,7 @@
         <item>
          <widget class="QGroupBox" name="dotfile_group">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -76,6 +136,21 @@
            <string>Configured Dotfiles</string>
           </property>
           <layout class="QVBoxLayout" name="dotfile_layout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
             <widget class="QTableWidget" name="dotfile_table">
              <property name="alternatingRowColors">
@@ -131,6 +206,9 @@
            </item>
            <item>
             <layout class="QHBoxLayout" name="dotfile_buttons_layout">
+             <property name="spacing">
+              <number>6</number>
+             </property>
              <item>
               <widget class="QPushButton" name="add_dotfile_btn">
                <property name="text">
@@ -189,11 +267,11 @@
                <property name="enabled">
                 <bool>false</bool>
                </property>
-               <property name="text">
-                <string>Save Dotfile Configuration</string>
-               </property>
                <property name="toolTip">
                 <string>Save enable/disable changes to the configuration file (not the backup itself)</string>
+               </property>
+               <property name="text">
+                <string>Save Dotfile Configuration</string>
                </property>
               </widget>
              </item>
@@ -217,12 +295,36 @@
         </item>
         <item>
          <widget class="QGroupBox" name="backup_options_group">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="title">
            <string>Backup Options</string>
           </property>
           <layout class="QVBoxLayout" name="backup_options_layout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
             <layout class="QHBoxLayout" name="backup_mode_layout">
+             <property name="spacing">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QCheckBox" name="mirror_checkbox">
                <property name="text">
@@ -274,11 +376,11 @@
              </item>
              <item>
               <widget class="QCheckBox" name="force_full_backup_checkbox">
-               <property name="text">
-                <string>Force Full Backup</string>
-               </property>
                <property name="toolTip">
                 <string>When checked, all files will be copied even if unchanged (slower but ensures complete backup)</string>
+               </property>
+               <property name="text">
+                <string>Force Full Backup</string>
                </property>
                <property name="checked">
                 <bool>false</bool>
@@ -306,11 +408,11 @@
                <property name="enabled">
                 <bool>false</bool>
                </property>
-               <property name="text">
-                <string>Start Backup</string>
-               </property>
                <property name="toolTip">
                 <string>Start backup operation to copy enabled dotfiles to backup locations</string>
+               </property>
+               <property name="text">
+                <string>Start Backup</string>
                </property>
               </widget>
              </item>
@@ -449,16 +551,40 @@ WARNING: This will overwrite existing files at destination paths.</string>
        </layout>
       </widget>
       <widget class="QWidget" name="config_tab">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <attribute name="title">
         <string>Configuration</string>
        </attribute>
        <layout class="QVBoxLayout" name="config_tab_layout">
         <item>
          <widget class="QGroupBox" name="config_settings_group">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="title">
            <string>Configuration Settings</string>
           </property>
           <layout class="QVBoxLayout" name="config_settings_layout">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
             <layout class="QFormLayout" name="config_form_layout">
              <item row="0" column="0" colspan="2">
@@ -599,6 +725,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="9" column="0" colspan="2">
               <widget class="QLabel" name="archive_opts_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="styleSheet">
                 <string>font-weight: bold; margin-top: 10px;</string>
                </property>
@@ -616,6 +748,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="10" column="1">
               <widget class="QSpinBox" name="config_compression_spinbox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="toolTip">
                 <string>0 = no compression, 9 = maximum compression</string>
                </property>
@@ -651,7 +789,7 @@ WARNING: This will overwrite existing files at destination paths.</string>
              <item row="12" column="1">
               <widget class="QSpinBox" name="config_max_archives_spinbox">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -671,23 +809,16 @@ WARNING: This will overwrite existing files at destination paths.</string>
            </item>
            <item>
             <layout class="QHBoxLayout" name="config_save_layout">
-             <item>
-              <spacer name="config_save_spacer">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
+             <item alignment="Qt::AlignmentFlag::AlignLeft">
               <widget class="QPushButton" name="save_config_btn">
                <property name="enabled">
                 <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
                </property>
                <property name="text">
                 <string>Save Configuration</string>
@@ -768,8 +899,8 @@ WARNING: This will overwrite existing files at destination paths.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1000</width>
-     <height>33</height>
+     <width>1282</width>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
