@@ -249,7 +249,7 @@ python src/main.py
 
 ## Directory Structure
 
-```
+```text
 Template-Desktop-Application/
 ├── src/
 │   ├── models/         # Pure Python business logic
