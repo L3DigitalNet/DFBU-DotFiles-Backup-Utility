@@ -16,16 +16,6 @@ rotate_archives = true
 max_archives = 5
 
 [[dotfile]]
-category = "Custom"
-application = ".config/bin"
-description = "Critical configs and data files"
-enabled = true
-paths = [
-    "~/.config/bin/pythonScripts/requirements.txt",
-    "~/.config/bin/pythonScripts/DFBU/data/dfbu-config.toml",
-]
-
-[[dotfile]]
 category = "Shell configs"
 application = "Bash"
 description = "Bash shell configuration and startup script"
@@ -1676,3 +1666,60 @@ application = "ExportScripts"
 description = "Moves scripts from local GitHub repos to ~/.config/bin"
 enabled = true
 path = "~/.config/bin/pythonScripts/ExportScripts"
+
+[[dotfile]]
+category = "Applications"
+application = "Firefox"
+description = "Configuration files"
+enabled = true
+paths = [
+    "~/.mozilla/firefox/0u2cfm04.default-release/prefs.js",
+    "/usr/lib64/firefox/defaults/pref",
+]
+
+[[dotfile]]
+category = "Applications"
+application = "Qt Widget Designer"
+description = "Qt GUI application design tool"
+enabled = true
+paths = [
+    "~/.config/QtProject/Designer.conf",
+    "~/.config/QtProject/QtDesignStudio.ini",
+    "~/.config/QtProject/UserFeedback.QtCreator.conf",
+    "~/.config/QtProject/UserFeedback.QtTools.conf",
+]
+
+[[dotfile]]
+category = "Applications"
+application = "Librewolf"
+description = "Browser configs"
+enabled = true
+paths = [
+    "~/.librewolf/profiles.ini",
+    "~/.librewolf/26900oaf.default-default/prefs.js",
+    "~/.librewolf/26900oaf.default-default/logins.json",
+    "~/.librewolf/26900oaf.default-default/cert9.db",
+    "~/.librewolf/26900oaf.default-default/signedInUser.json",
+    "~/.librewolf/26900oaf.default-default/times.json",
+    "~/.librewolf/26900oaf.default-default/logins-backup.json",
+    "~/.librewolf/26900oaf.default-default/extension-settings.json",
+    "~/.librewolf/26900oaf.default-default/extensions.json",
+    "~/.librewolf/26900oaf.default-default/extension-preferences.json",
+    "~/.librewolf/26900oaf.default-default/autofill-profiles.json",
+    "~/.librewolf/26900oaf.default-default/addons.json",
+    "~/.librewolf/26900oaf.default-default/settings/data.safe.bin",
+    "~/.librewolf/26900oaf.default-default/sessionstore-backups/previous.jsonlz4",
+    "~/.librewolf/26900oaf.default-default/extension-store-menus/data.safe.bin",
+    "~/.librewolf/26900oaf.default-default/bookmarkbackups/bookmarks-2025-11-04_5_Pj-NhTiWgeDRSHpeVGXvyj-Ig9ZAZUYv65_h26vL7Wg=.jsonlz4",
+]
+
+[[dotfile]]
+category = "Applications"
+application = "Steam"
+description = "Steam configs"
+enabled = true
+paths = [
+    "~/.steam/steam/config/config.vdf",
+    "~/.steam/steam/config/loginusers.vdf",
+    "~/.steam/steam/config/libraryfolders.vdf",
+]
