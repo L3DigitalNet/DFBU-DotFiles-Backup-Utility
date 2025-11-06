@@ -165,29 +165,30 @@ path = "~/.test3"
         viewmodel.command_load_config()
 
         # Mock size data (small, large, medium)
+        size_data = {
+            0: 1024,  # 1 KB
+            1: 10485760,  # 10 MB
+            2: 102400,  # 100 KB
+        }
+
         with patch.object(
             viewmodel,
             "get_dotfile_sizes",
-            return_value={
-                0: 1024,  # 1 KB
-                1: 10485760,  # 10 MB
-                2: 102400,  # 100 KB
-            },
+            return_value=size_data,
         ):
             window._update_dotfile_table()
 
-        # Act - Sort by size column (column 4)
-        window.dotfile_table.sortItems(4, Qt.SortOrder.AscendingOrder)
+            # Act - Sort by size column (column 4) while still in patch context
+            window.dotfile_table.sortItems(4, Qt.SortOrder.AscendingOrder)
 
-        # Assert - Should be sorted: 1KB, 100KB, 10MB
-        # Get original indices from sorted table
-        first_idx = window._get_original_dotfile_index(0)
-        second_idx = window._get_original_dotfile_index(1)
-        third_idx = window._get_original_dotfile_index(2)
+            # Assert - Should be sorted: 1KB, 100KB, 10MB
+            # Get original indices from sorted table
+            first_idx = window._get_original_dotfile_index(0)
+            second_idx = window._get_original_dotfile_index(1)
+            third_idx = window._get_original_dotfile_index(2)
 
-        # Verify order by checking sizes
-        sizes = viewmodel.get_dotfile_sizes()
-        assert sizes[first_idx] < sizes[second_idx] < sizes[third_idx]
+            # Verify order by checking sizes
+            assert size_data[first_idx] < size_data[second_idx] < size_data[third_idx]
 
     def test_table_sorts_by_enabled_status(self, qapp, tmp_path):
         """Test table sorts correctly by enabled column."""
@@ -240,9 +241,9 @@ enabled = true
         # Act - Sort by enabled column (column 0)
         window.dotfile_table.sortItems(0, Qt.SortOrder.AscendingOrder)
 
-        # Assert - Disabled items should come first (✗ < ✓)
+        # Assert - Enabled items should come first (✓ < ✗ in Unicode)
         first_item = window.dotfile_table.item(0, 0)
-        assert first_item.text() == "✗"
+        assert first_item.text() == "✓"
 
     def test_table_sorts_by_category_alphabetically(self, qapp, tmp_path):
         """Test table sorts correctly by category column alphabetically."""
