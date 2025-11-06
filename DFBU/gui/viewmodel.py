@@ -45,12 +45,10 @@ from typing import Any, Final
 
 # Local imports
 from core.common_types import DotFileDict, OptionsDict
-from model import DFBUModel
-
-# PySide6 imports for signals and threading
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
 
 from gui.input_validation import InputValidator
+from gui.model import DFBUModel
 
 
 class BackupWorker(QThread):

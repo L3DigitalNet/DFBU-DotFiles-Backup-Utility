@@ -42,7 +42,6 @@ from pathlib import Path
 from typing import Any, Final
 
 # Local imports
-from constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
 from core.common_types import DotFileDict
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QCloseEvent, QColor, QTextCursor
@@ -71,9 +70,10 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from viewmodel import DFBUViewModel
 
+from gui.constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
 from gui.input_validation import InputValidator
+from gui.viewmodel import DFBUViewModel
 
 
 # Constants for view configuration
@@ -561,64 +561,69 @@ class MainWindow(QMainWindow):
 
         # Backup tab widgets
         self.config_path_edit: QLineEdit = ui_widget.findChild(
-            QLineEdit, "config_path_edit"
+            QLineEdit, "configGroupPathEdit"
         )  # type: ignore[assignment]
         self.load_config_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "load_config_btn"
+            QPushButton, "configGroupLoadButton"
         )  # type: ignore[assignment]
         self.dotfile_table: QTableWidget = ui_widget.findChild(
-            QTableWidget, "dotfile_table"
+            QTableWidget, "fileGroupFileTable"
         )  # type: ignore[assignment]
-        self.total_size_label: QLabel = ui_widget.findChild(QLabel, "total_size_label")  # type: ignore[assignment]
+        self.total_size_label: QLabel = ui_widget.findChild(
+            QLabel, "fileGroupTotalSizeLabel"
+        )  # type: ignore[assignment]
         self.add_dotfile_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "add_dotfile_btn"
+            QPushButton, "fileGroupAddFileButton"
         )  # type: ignore[assignment]
         self.update_dotfile_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "update_dotfile_btn"
+            QPushButton, "fileGroupUpdateFileButton"
         )  # type: ignore[assignment]
         self.remove_dotfile_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "remove_dotfile_btn"
+            QPushButton, "fileGroupRemoveFileButton"
         )  # type: ignore[assignment]
         self.toggle_enabled_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "toggle_enabled_btn"
+            QPushButton, "fileGroupToggleEnabledButton"
         )  # type: ignore[assignment]
         self.save_dotfiles_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "save_dotfiles_btn"
+            QPushButton, "fileGroupSaveFilesButton"
         )  # type: ignore[assignment]
         self.mirror_checkbox: QCheckBox = ui_widget.findChild(
-            QCheckBox, "mirror_checkbox"
+            QCheckBox, "mirrorCheckbox"
         )  # type: ignore[assignment]
         self.archive_checkbox: QCheckBox = ui_widget.findChild(
-            QCheckBox, "archive_checkbox"
+            QCheckBox, "archiveCheckbox"
         )  # type: ignore[assignment]
         self.force_full_backup_checkbox: QCheckBox = ui_widget.findChild(
-            QCheckBox, "force_full_backup_checkbox"
+            QCheckBox, "forceBackupCheckbox"
         )  # type: ignore[assignment]
-        self.backup_btn: QPushButton = ui_widget.findChild(QPushButton, "backup_btn")  # type: ignore[assignment]
-        self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "operation_log")  # type: ignore[assignment]
+        self.backup_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "startBackupButton"
+        )  # type: ignore[assignment]
+        self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "logBox")  # type: ignore[assignment]
 
         # Validate critical widgets were found
         if not self.operation_log:
-            raise RuntimeError("operation_log widget not found in UI file!")
+            raise RuntimeError("logBox widget not found in UI file!")
 
         # Restore tab widgets
         self.restore_source_edit: QLineEdit = ui_widget.findChild(
-            QLineEdit, "restore_source_edit"
+            QLineEdit, "restoreSourceEdit"
         )  # type: ignore[assignment]
         self.browse_restore_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "browse_restore_btn"
+            QPushButton, "restoreSourceBrowseButton"
         )  # type: ignore[assignment]
-        self.restore_btn: QPushButton = ui_widget.findChild(QPushButton, "restore_btn")  # type: ignore[assignment]
-        self.restore_operation_log: QTextEdit = ui_widget.findChild(
-            QTextEdit, "restore_operation_log"
+        self.restore_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "restoreSourceButton"
         )  # type: ignore[assignment]
+        # Note: Restore operation log uses the same logBox widget in the Logs tab
+        self.restore_operation_log: QTextEdit = self.operation_log
 
         # Configuration tab widgets
         self.config_mirror_path_edit: QLineEdit = ui_widget.findChild(
             QLineEdit, "config_mirror_path_edit"
         )  # type: ignore[assignment]
         self.config_archive_path_edit: QLineEdit = ui_widget.findChild(
-            QLineEdit, "config_archive_path_edit"
+            QLineEdit, "configArchivePathEdit"
         )  # type: ignore[assignment]
         self.config_mirror_checkbox: QCheckBox = ui_widget.findChild(
             QCheckBox, "config_mirror_checkbox"
@@ -642,8 +647,11 @@ class MainWindow(QMainWindow):
             QSpinBox, "config_max_archives_spinbox"
         )  # type: ignore[assignment]
         self.save_config_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "save_config_btn"
+            QPushButton, "saveConfigButton"
         )  # type: ignore[assignment]
+
+        # Logs tab widgets
+        self.save_log_btn: QPushButton = ui_widget.findChild(QPushButton, "pushButton")  # type: ignore[assignment]
 
         # Status bar and progress bar
         self.status_bar = self.statusBar()
@@ -679,7 +687,7 @@ class MainWindow(QMainWindow):
         """Connect UI element signals to handler methods."""
         # Backup tab connections
         browse_config_btn: QPushButton = self.central_widget.findChild(
-            QPushButton, "browse_config_btn"
+            QPushButton, "configGroupBrowseButton"
         )  # type: ignore[assignment]
         browse_config_btn.clicked.connect(self._on_browse_config)
         self.load_config_btn.clicked.connect(self._on_load_config)
@@ -704,7 +712,7 @@ class MainWindow(QMainWindow):
             QPushButton, "browse_mirror_btn"
         )  # type: ignore[assignment]
         browse_archive_btn: QPushButton = self.central_widget.findChild(
-            QPushButton, "browse_archive_btn"
+            QPushButton, "browseArchiveButton"
         )  # type: ignore[assignment]
         browse_mirror_btn.clicked.connect(self._on_browse_mirror_dir)
         browse_archive_btn.clicked.connect(self._on_browse_archive_dir)
@@ -721,6 +729,9 @@ class MainWindow(QMainWindow):
         self.config_rotate_checkbox.stateChanged.connect(self._on_config_changed)
         self.config_max_archives_spinbox.valueChanged.connect(self._on_config_changed)
         self.save_config_btn.clicked.connect(self._on_save_config)
+
+        # Logs tab connections
+        self.save_log_btn.clicked.connect(self._on_save_log)
 
         # Menu action connections
         self.action_load_config.triggered.connect(self._on_browse_config)
@@ -824,6 +835,9 @@ class MainWindow(QMainWindow):
             self.operation_log.clear()
             self.operation_log.append("=== Backup Operation Started ===\n")
 
+            # Switch to Logs tab (index 3)
+            self.tab_widget.setCurrentIndex(3)
+
             # Disable buttons during operation
             self.backup_btn.setEnabled(False)
             self.load_config_btn.setEnabled(False)
@@ -895,6 +909,9 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Clear operation log
             self.restore_operation_log.clear()
+
+            # Switch to Logs tab (index 3)
+            self.tab_widget.setCurrentIndex(3)
 
             # Disable buttons during operation
             self.restore_btn.setEnabled(False)
@@ -975,6 +992,8 @@ class MainWindow(QMainWindow):
                     f"⊘ Skipped {remaining} unchanged files (total: {self._skipped_count})...\n"
                 )
             self.operation_log.append("\n=== Backup Operation Completed ===\n")
+            # Write summary statistics to log
+            self.operation_log.append(f"\n{summary}\n")
             # Ensure log is scrolled to bottom
             self.operation_log.verticalScrollBar().setValue(
                 self.operation_log.verticalScrollBar().maximum()
@@ -985,12 +1004,11 @@ class MainWindow(QMainWindow):
         ):
             # Restore just completed
             self.restore_operation_log.append("\n=== Restore Operation Completed ===\n")
+            # Write summary statistics to log
+            self.restore_operation_log.append(f"\n{summary}\n")
             self.restore_operation_log.verticalScrollBar().setValue(
                 self.restore_operation_log.verticalScrollBar().maximum()
             )
-
-        # Show completion dialog with statistics
-        QMessageBox.information(self, "Operation Complete", summary)
 
     def _on_error_occurred(self, context: str, error_message: str) -> None:
         """Handle error signal."""
@@ -1568,6 +1586,46 @@ class MainWindow(QMainWindow):
 
         # Update status bar
         self.status_bar.showMessage(f"Configuration updated: {dotfile_count} dotfiles")
+
+    def _on_save_log(self) -> None:
+        """Handle save log button click."""
+        # Get current log content
+        log_content = self.operation_log.toPlainText()
+
+        # Check if log is empty
+        if not log_content.strip():
+            QMessageBox.information(
+                self,
+                "Empty Log",
+                "The log is currently empty. There is nothing to save.",
+            )
+            return
+
+        # Open file save dialog
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Log File",
+            str(Path.home() / "dfbu_log.txt"),
+            "Text Files (*.txt);;All Files (*)",
+        )
+
+        if file_path:
+            try:
+                # Write log content to file
+                Path(file_path).write_text(log_content, encoding="utf-8")
+
+                # Show success message in status bar (non-blocking)
+                self.status_bar.showMessage(
+                    f"Log saved to {Path(file_path).name}",
+                    STATUS_MESSAGE_TIMEOUT_MS,
+                )
+            except (OSError, PermissionError) as e:
+                # Show error dialog if save fails
+                QMessageBox.critical(
+                    self,
+                    "Save Failed",
+                    f"Failed to save log file:\n{e}",
+                )
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Handle window close event."""
