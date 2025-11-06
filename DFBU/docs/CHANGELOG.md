@@ -15,14 +15,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **AddDotfileDialog UI File**: Created Qt Designer .ui file for AddDotfileDialog with standardized naming
+  - Added `gui/designer/add_dotfile_dialog.ui` for dialog interface
+  - Added `gui/designer/main_window_complete.ui` with updated widget references
+- **Protocol Definitions Module**: Comprehensive protocol interfaces for MVVM architecture
+  - Added `gui/protocols.py` (502 lines) with ModelProtocol, ViewModelProtocol, and component protocols
+  - Defined clear contracts between MVVM layers following Interface Segregation Principle
+  - Type-safe interface definitions using Python's Protocol for better IDE support
+- **Project Documentation Enhancements**:
+  - Created comprehensive `scripts/README.md` documenting setup and utility scripts
+  - Updated `CONTRIBUTING.md` with DFBU-specific guidelines and branch protection workflow
+  - Added test coverage reports in `TEST_COVERAGE_REPORT.md`, `UI_INTEGRATION_CHECKLIST.md`, and `UI_INTEGRATION_SUMMARY.md`
 
 ### Changed
-
-### Deprecated
-
-### Removed
+- **Widget Naming Convention**: Updated all UI widgets to follow lowerCamelCase naming convention
+  - Standardized button, label, and widget naming for consistency
+  - Updated widget references throughout View layer to match Qt Designer naming
+  - Improved code readability and maintainability with consistent naming patterns
+- **Configuration Updates**: Enhanced dotfile configuration with new application entries
+  - Added Firefox, Qt Widget Designer, Librewolf, and Steam configurations
+  - Removed obsolete custom dotfile entries
+  - Updated configuration structure for better organization
+- **Documentation Organization**: Moved documentation files to centralized `docs/` directory
+  - Relocated BRANCH_PROTECTION.md, QUICKSTART.md, UI_DESIGN_GUIDE.md, and related docs
+  - Improved project structure and documentation discoverability
+- **MyPy Configuration**: Updated mypy.ini with improved type checking settings
 
 ### Fixed
+- **UI Integration**: Resolved widget reference issues in main window and dialog components
+- **Test Reliability**: Updated test files to reflect widget naming changes and improve reliability
 
 ### Security
 
