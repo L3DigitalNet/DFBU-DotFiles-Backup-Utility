@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1282</width>
-    <height>970</height>
+    <width>1000</width>
+    <height>799</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -48,9 +48,9 @@
        <enum>QTabWidget::TabShape::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
-      <widget class="QWidget" name="backup_tab">
+      <widget class="QWidget" name="backupTab">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -194,8 +194,14 @@
              </column>
             </widget>
            </item>
-           <item>
+           <item alignment="Qt::AlignmentFlag::AlignLeft">
             <widget class="QLabel" name="total_size_label">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="styleSheet">
               <string>font-weight: bold; padding: 5px;</string>
              </property>
@@ -207,6 +213,18 @@
            <item>
             <layout class="QHBoxLayout" name="dotfile_buttons_layout">
              <property name="spacing">
+              <number>6</number>
+             </property>
+             <property name="leftMargin">
+              <number>6</number>
+             </property>
+             <property name="topMargin">
+              <number>6</number>
+             </property>
+             <property name="rightMargin">
+              <number>6</number>
+             </property>
+             <property name="bottomMargin">
               <number>6</number>
              </property>
              <item>
@@ -247,22 +265,6 @@
               </widget>
              </item>
              <item>
-              <spacer name="dotfile_buttons_middle_spacer">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Policy::Maximum</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
               <widget class="QPushButton" name="save_dotfiles_btn">
                <property name="enabled">
                 <bool>false</bool>
@@ -271,22 +273,9 @@
                 <string>Save enable/disable changes to the configuration file (not the backup itself)</string>
                </property>
                <property name="text">
-                <string>Save Dotfile Configuration</string>
+                <string>Save Config</string>
                </property>
               </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
              </item>
             </layout>
            </item>
@@ -294,15 +283,15 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="backup_options_group">
+         <widget class="QWidget" name="backupOptionsGroup" native="true">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
-          </property>
-          <property name="title">
-           <string>Backup Options</string>
           </property>
           <layout class="QVBoxLayout" name="backup_options_layout">
            <property name="spacing">
@@ -321,113 +310,187 @@
             <number>0</number>
            </property>
            <item>
-            <layout class="QHBoxLayout" name="backup_mode_layout">
+            <layout class="QHBoxLayout" name="backupModeLayout">
              <property name="spacing">
-              <number>0</number>
+              <number>6</number>
+             </property>
+             <property name="leftMargin">
+              <number>12</number>
+             </property>
+             <property name="topMargin">
+              <number>6</number>
+             </property>
+             <property name="rightMargin">
+              <number>6</number>
+             </property>
+             <property name="bottomMargin">
+              <number>6</number>
              </property>
              <item>
-              <widget class="QCheckBox" name="mirror_checkbox">
-               <property name="text">
-                <string>Mirror</string>
+              <widget class="QWidget" name="backupOptionsLabelContainer" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
                </property>
-               <property name="checked">
-                <bool>true</bool>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item alignment="Qt::AlignmentFlag::AlignLeft">
+                 <widget class="QLabel" name="backupOptionsLabel">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="font">
+                   <font>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Backup Options</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item alignment="Qt::AlignmentFlag::AlignHCenter">
+              <widget class="QWidget" name="backupCheckBoxContainer" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
                </property>
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <property name="spacing">
+                 <number>12</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item alignment="Qt::AlignmentFlag::AlignLeft">
+                 <widget class="QCheckBox" name="mirrorCheckbox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Mirror</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item alignment="Qt::AlignmentFlag::AlignLeft">
+                 <widget class="QCheckBox" name="archiveCheckbox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text">
+                   <string>Archive</string>
+                  </property>
+                 </widget>
+                </item>
+                <item alignment="Qt::AlignmentFlag::AlignLeft">
+                 <widget class="QCheckBox" name="forceBackupCheckbox">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="toolTip">
+                   <string>When checked, all files will be copied even if unchanged (slower but ensures complete backup)</string>
+                  </property>
+                  <property name="text">
+                   <string>Force Full Backup</string>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
+              <widget class="QWidget" name="startBackupButtonContainer" native="true">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
                </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Policy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="archive_checkbox">
-               <property name="text">
-                <string>Compressed Archive</string>
-               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QPushButton" name="startBackupButton">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="toolTip">
+                   <string>Start backup operation to copy enabled dotfiles to backup locations</string>
+                  </property>
+                  <property name="text">
+                   <string>Start Backup</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_force">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Policy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="force_full_backup_checkbox">
-               <property name="toolTip">
-                <string>When checked, all files will be copied even if unchanged (slower but ensures complete backup)</string>
-               </property>
-               <property name="text">
-                <string>Force Full Backup</string>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="backup_mode_spacer">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Policy::Maximum</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>153</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="backup_btn">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="toolTip">
-                <string>Start backup operation to copy enabled dotfiles to backup locations</string>
-               </property>
-               <property name="text">
-                <string>Start Backup</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
              </item>
             </layout>
            </item>
@@ -436,42 +499,223 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="restore_tab">
+      <widget class="QWidget" name="restoreTab">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <attribute name="title">
         <string>Restore</string>
        </attribute>
        <layout class="QVBoxLayout" name="restore_layout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QGroupBox" name="restore_source_group">
-          <property name="title">
-           <string>Restore Source</string>
+         <widget class="QWidget" name="restoreSourceGroup" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <layout class="QVBoxLayout" name="restore_source_layout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+           <property name="leftMargin">
+            <number>6</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
+            <number>6</number>
+           </property>
            <item>
-            <widget class="QLabel" name="restore_info_label">
-             <property name="text">
-              <string>Select the backup directory containing the hostname folder.
-Example: ~/GitHub/dotfiles/ (containing hostname subdirectory)</string>
+            <widget class="QWidget" name="restoreSourceLabelContainer" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
              </property>
-             <property name="wordWrap">
-              <bool>true</bool>
+             <layout class="QHBoxLayout" name="restoreSourceLabelLayout">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="restoreSourceLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Restore Source Path</string>
+                </property>
+                <property name="margin">
+                 <number>6</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="restoreSourceLine">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="restore_path_layout">
+            <widget class="QWidget" name="restoreSourceInfoButtonContainer" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <layout class="QHBoxLayout" name="restoreSourceInfoButtonLayout" stretch="20,1,20">
+              <property name="spacing">
+               <number>6</number>
+              </property>
+              <property name="leftMargin">
+               <number>6</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QLabel" name="restoreSourceInfoLabel">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Select the backup directory containing the hostname folder.
+Example: ~/GitHub/dotfiles/ (containing hostname subdirectory)</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+                <property name="margin">
+                 <number>5</number>
+                </property>
+               </widget>
+              </item>
+              <item alignment="Qt::AlignmentFlag::AlignHCenter">
+               <widget class="Line" name="restoreSourceInfoButtonLine">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>50</height>
+                 </size>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Orientation::Vertical</enum>
+                </property>
+               </widget>
+              </item>
+              <item alignment="Qt::AlignmentFlag::AlignLeft">
+               <widget class="QPushButton" name="restoreSourceButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Start Restore</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="restorePathLayout">
              <item>
-              <widget class="QLineEdit" name="restore_source_edit">
+              <widget class="QLineEdit" name="restoreSourceEdit">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="frame">
+                <bool>true</bool>
+               </property>
                <property name="readOnly">
                 <bool>true</bool>
                </property>
                <property name="placeholderText">
                 <string>Path to backup directory with hostname</string>
                </property>
+               <property name="clearButtonEnabled">
+                <bool>false</bool>
+               </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="browse_restore_btn">
+              <widget class="QPushButton" name="restoreSourceBrowseButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Browse...</string>
                </property>
@@ -480,43 +724,75 @@ Example: ~/GitHub/dotfiles/ (containing hostname subdirectory)</string>
             </layout>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="restore_button_layout">
-             <item>
-              <spacer name="restore_button_spacer">
-               <property name="orientation">
-                <enum>Qt::Orientation::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="restore_btn">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="text">
-                <string>Start Restore</string>
-               </property>
-              </widget>
-             </item>
+            <layout class="QHBoxLayout" name="restoreSourceButtonLayout">
+             <property name="spacing">
+              <number>0</number>
+             </property>
             </layout>
            </item>
           </layout>
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="restore_info_group">
-          <property name="title">
-           <string>Restore Information</string>
+         <widget class="QWidget" name="restoreInfoGroup" native="true">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
           </property>
           <layout class="QVBoxLayout" name="restore_info_layout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
-            <widget class="QLabel" name="restore_info_text">
+            <widget class="QLabel" name="restoreInfoLabel">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="font">
+              <font>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Restore Information</string>
+             </property>
+             <property name="margin">
+              <number>6</number>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="restoreInfoLine">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item alignment="Qt::AlignmentFlag::AlignTop">
+            <widget class="QLabel" name="restoreInfoText">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="text">
               <string>Restore will:
 • Discover all files in the selected backup directory
@@ -530,27 +806,20 @@ WARNING: This will overwrite existing files at destination paths.</string>
              <property name="wordWrap">
               <bool>true</bool>
              </property>
+             <property name="margin">
+              <number>10</number>
+             </property>
+             <property name="indent">
+              <number>-1</number>
+             </property>
             </widget>
            </item>
           </layout>
          </widget>
         </item>
-        <item>
-         <spacer name="restore_bottom_spacer">
-          <property name="orientation">
-           <enum>Qt::Orientation::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="config_tab">
+      <widget class="QWidget" name="configTab">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -561,18 +830,33 @@ WARNING: This will overwrite existing files at destination paths.</string>
         <string>Configuration</string>
        </attribute>
        <layout class="QVBoxLayout" name="config_tab_layout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QGroupBox" name="config_settings_group">
+         <widget class="QWidget" name="configSettingsGroup" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="title">
-           <string>Configuration Settings</string>
-          </property>
           <layout class="QVBoxLayout" name="config_settings_layout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -586,9 +870,128 @@ WARNING: This will overwrite existing files at destination paths.</string>
             <number>0</number>
            </property>
            <item>
-            <layout class="QFormLayout" name="config_form_layout">
+            <widget class="QWidget" name="configSettingsLabelContainer" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <layout class="QVBoxLayout" name="configSettingsLabelLayout">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QWidget" name="configSettingsLabelHeader" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <property name="leftMargin">
+                  <number>12</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>6</number>
+                 </property>
+                 <item alignment="Qt::AlignmentFlag::AlignLeft">
+                  <widget class="QLabel" name="configSettingsLabel">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <bold>false</bold>
+                    </font>
+                   </property>
+                   <property name="text">
+                    <string>Configuration Settings</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignmentFlag::AlignCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="saveConfigButton">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>Save Config</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
+              <item>
+               <widget class="Line" name="configSettingsLine">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <layout class="QFormLayout" name="configFormLayout">
+             <property name="horizontalSpacing">
+              <number>6</number>
+             </property>
+             <property name="verticalSpacing">
+              <number>3</number>
+             </property>
+             <property name="leftMargin">
+              <number>6</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>6</number>
+             </property>
+             <property name="bottomMargin">
+              <number>6</number>
+             </property>
              <item row="0" column="0" colspan="2">
               <widget class="QLabel" name="paths_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="styleSheet">
                 <string>font-weight: bold; margin-top: 10px;</string>
                </property>
@@ -599,6 +1002,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="mirror_path_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Mirror Directory:</string>
                </property>
@@ -608,6 +1017,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
               <layout class="QHBoxLayout" name="mirror_path_layout">
                <item>
                 <widget class="QLineEdit" name="config_mirror_path_edit">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="placeholderText">
                   <string>Mirror backup directory</string>
                  </property>
@@ -615,6 +1030,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
                </item>
                <item>
                 <widget class="QPushButton" name="browse_mirror_btn">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="text">
                   <string>Browse...</string>
                  </property>
@@ -623,23 +1044,41 @@ WARNING: This will overwrite existing files at destination paths.</string>
               </layout>
              </item>
              <item row="2" column="0">
-              <widget class="QLabel" name="archive_path_label">
+              <widget class="QLabel" name="archivePathLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Archive Directory:</string>
                </property>
               </widget>
              </item>
              <item row="2" column="1">
-              <layout class="QHBoxLayout" name="archive_path_layout">
+              <layout class="QHBoxLayout" name="archivePathLayout">
                <item>
-                <widget class="QLineEdit" name="config_archive_path_edit">
+                <widget class="QLineEdit" name="configArchivePathEdit">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="placeholderText">
                   <string>Archive backup directory</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="browse_archive_btn">
+                <widget class="QPushButton" name="browseArchiveButton">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="text">
                   <string>Browse...</string>
                  </property>
@@ -649,6 +1088,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="3" column="0" colspan="2">
               <widget class="QLabel" name="modes_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="styleSheet">
                 <string>font-weight: bold; margin-top: 10px;</string>
                </property>
@@ -659,6 +1104,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="4" column="0">
               <widget class="QLabel" name="config_mirror_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Mirror Backup:</string>
                </property>
@@ -666,6 +1117,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="4" column="1">
               <widget class="QCheckBox" name="config_mirror_checkbox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Enable mirror backup (uncompressed)</string>
                </property>
@@ -673,6 +1130,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="5" column="0">
               <widget class="QLabel" name="config_archive_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Archive Backup:</string>
                </property>
@@ -680,6 +1143,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="5" column="1">
               <widget class="QCheckBox" name="config_archive_checkbox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Enable archive backup (compressed)</string>
                </property>
@@ -687,6 +1156,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="6" column="0" colspan="2">
               <widget class="QLabel" name="structure_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="styleSheet">
                 <string>font-weight: bold; margin-top: 10px;</string>
                </property>
@@ -697,6 +1172,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="7" column="0">
               <widget class="QLabel" name="hostname_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Hostname Subdir:</string>
                </property>
@@ -704,6 +1185,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="7" column="1">
               <widget class="QCheckBox" name="config_hostname_checkbox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Include hostname in backup path</string>
                </property>
@@ -711,6 +1198,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="8" column="0">
               <widget class="QLabel" name="date_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Date Subdir:</string>
                </property>
@@ -718,15 +1211,21 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="8" column="1">
               <widget class="QCheckBox" name="config_date_checkbox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Include date in backup path</string>
                </property>
               </widget>
              </item>
              <item row="9" column="0" colspan="2">
-              <widget class="QLabel" name="archive_opts_label">
+              <widget class="QLabel" name="archiveOpsLabel">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -740,7 +1239,13 @@ WARNING: This will overwrite existing files at destination paths.</string>
               </widget>
              </item>
              <item row="10" column="0">
-              <widget class="QLabel" name="compression_label">
+              <widget class="QLabel" name="compressionLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Compression Level:</string>
                </property>
@@ -767,6 +1272,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="11" column="0">
               <widget class="QLabel" name="rotate_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Rotate Archives:</string>
                </property>
@@ -774,6 +1285,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="11" column="1">
               <widget class="QCheckBox" name="config_rotate_checkbox">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Enable archive rotation</string>
                </property>
@@ -781,6 +1298,12 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
              <item row="12" column="0">
               <widget class="QLabel" name="max_archives_label">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>Max Archives:</string>
                </property>
@@ -807,65 +1330,72 @@ WARNING: This will overwrite existing files at destination paths.</string>
              </item>
             </layout>
            </item>
-           <item>
-            <layout class="QHBoxLayout" name="config_save_layout">
-             <item alignment="Qt::AlignmentFlag::AlignLeft">
-              <widget class="QPushButton" name="save_config_btn">
-               <property name="enabled">
-                <bool>false</bool>
-               </property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="text">
-                <string>Save Configuration</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="config_bottom_spacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
           </layout>
          </widget>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="logs_tab">
+      <widget class="QWidget" name="logTab">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <attribute name="title">
         <string>Logs</string>
        </attribute>
-       <layout class="QVBoxLayout" name="logs_layout">
+       <layout class="QVBoxLayout" name="logLayout">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
-         <widget class="QGroupBox" name="backup_log_group">
-          <property name="title">
-           <string>Backup Operation Log</string>
-          </property>
-          <layout class="QVBoxLayout" name="backup_log_layout">
+         <widget class="QWidget" name="logLabelContainer" native="true">
+          <layout class="QHBoxLayout" name="logLabelLayout">
+           <property name="leftMargin">
+            <number>12</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item>
-            <widget class="QTextEdit" name="operation_log">
+            <widget class="QLabel" name="logLabel">
              <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
                <horstretch>0</horstretch>
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="readOnly">
-              <bool>true</bool>
+             <property name="font">
+              <font>
+               <family>Noto Sans</family>
+               <bold>false</bold>
+              </font>
+             </property>
+             <property name="text">
+              <string>Logs</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Save Log File</string>
              </property>
             </widget>
            </item>
@@ -873,13 +1403,34 @@ WARNING: This will overwrite existing files at destination paths.</string>
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="restore_log_group">
-          <property name="title">
-           <string>Restore Operation Log</string>
-          </property>
-          <layout class="QVBoxLayout" name="restore_log_layout">
+         <widget class="QWidget" name="logBoxContainer" native="true">
+          <layout class="QVBoxLayout" name="logBoxLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>6</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>6</number>
+           </property>
+           <property name="bottomMargin">
+            <number>3</number>
+           </property>
            <item>
-            <widget class="QTextEdit" name="restore_operation_log">
+            <widget class="QTextEdit" name="logBox">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="lineWidth">
+              <number>1</number>
+             </property>
              <property name="readOnly">
               <bool>true</bool>
              </property>
@@ -899,8 +1450,8 @@ WARNING: This will overwrite existing files at destination paths.</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1282</width>
-     <height>30</height>
+     <width>1000</width>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -984,6 +1535,7 @@ WARNING: This will overwrite existing files at destination paths.</string>
    </property>
   </action>
  </widget>
+ <layoutdefault spacing="0" margin="0"/>
  <resources/>
  <connections/>
 </ui>
