@@ -42,9 +42,8 @@ from pathlib import Path
 from typing import Any, Final
 
 # Local imports
-from constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
 from core.common_types import DotFileDict
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QFile, Qt
 from PySide6.QtGui import QAction, QCloseEvent, QColor, QTextCursor
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
@@ -53,8 +52,6 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
-    QFormLayout,
-    QHBoxLayout,
     QHeaderView,
     QLabel,
     QLineEdit,
@@ -68,12 +65,12 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QTabWidget,
     QTextEdit,
-    QVBoxLayout,
     QWidget,
 )
-from viewmodel import DFBUViewModel
 
+from gui.constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
 from gui.input_validation import InputValidator
+from gui.viewmodel import DFBUViewModel
 
 
 # Constants for view configuration
@@ -116,6 +113,8 @@ class AddDotfileDialog(QDialog):
     """
     Dialog for adding or updating dotfile entry with support for multiple paths.
 
+    CRITICAL: UI is loaded from Qt Designer .ui file, NOT hardcoded.
+
     Attributes:
         category_combo: Editable combo box for category (prepopulated)
         application_edit: Line edit for application name
@@ -123,6 +122,10 @@ class AddDotfileDialog(QDialog):
         paths_list: List widget displaying all paths
         path_input_edit: Line edit for new path input
         enabled_checkbox: Checkbox for enabled status
+        browse_btn: Button to browse for file/directory
+        add_path_btn: Button to add path to list
+        remove_path_btn: Button to remove selected paths
+        button_box: Dialog button box with Ok/Cancel
 
     Public methods:
         exec: Show dialog and return result
@@ -145,83 +148,31 @@ class AddDotfileDialog(QDialog):
         """
         super().__init__(parent)
         self.is_update_mode = dotfile_data is not None
+
+        # Load UI from Qt Designer .ui file
+        self._load_ui()
+
+        # Set window title based on mode
         self.setWindowTitle(
             "Update Dotfile Entry" if self.is_update_mode else "Add Dotfile Entry"
         )
         self.setMinimumWidth(MIN_DIALOG_WIDTH)
         self.setMinimumHeight(MIN_DIALOG_HEIGHT)
 
-        # Create main layout
-        main_layout = QVBoxLayout(self)
-
-        # Add info label
+        # Update info label text based on mode
         info_text = (
             "Update the dotfile entry:"
             if self.is_update_mode
             else "Add a new dotfile entry to the configuration:"
         )
-        info_label = QLabel(info_text)
-        main_layout.addWidget(info_label)
+        self.info_label.setText(info_text)
 
-        # Create form layout for inputs
-        form_layout = QFormLayout()
-
-        # Category combo box (editable)
-        self.category_combo = QComboBox()
-        self.category_combo.setEditable(True)
-        self.category_combo.setPlaceholderText("e.g., Applications, Shell configs")
+        # Populate categories dropdown if provided
         if categories:
             self.category_combo.addItems(categories)
-        form_layout.addRow("Category:", self.category_combo)
 
-        # Application input
-        self.application_edit = QLineEdit()
-        self.application_edit.setPlaceholderText("e.g., Firefox, Bash")
-        form_layout.addRow("Application:", self.application_edit)
-
-        # Description input
-        self.description_edit = QLineEdit()
-        self.description_edit.setPlaceholderText(
-            "Brief description of the configuration"
-        )
-        form_layout.addRow("Description:", self.description_edit)
-
-        main_layout.addLayout(form_layout)
-
-        # Paths section with QListWidget
-        paths_label = QLabel("Paths (one or more):")
-        main_layout.addWidget(paths_label)
-
-        # List widget for paths
-        self.paths_list = QListWidget()
-        self.paths_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        main_layout.addWidget(self.paths_list)
-
-        # Path input controls
-        path_input_layout = QHBoxLayout()
-        self.path_input_edit = QLineEdit()
-        self.path_input_edit.setPlaceholderText("Enter or browse for path...")
-        path_input_layout.addWidget(self.path_input_edit)
-
-        browse_btn = QPushButton("Browse...")
-        browse_btn.clicked.connect(self._on_browse_path)
-        path_input_layout.addWidget(browse_btn)
-
-        add_path_btn = QPushButton("Add Path")
-        add_path_btn.clicked.connect(self._on_add_path)
-        path_input_layout.addWidget(add_path_btn)
-
-        main_layout.addLayout(path_input_layout)
-
-        # Remove path button
-        remove_path_btn = QPushButton("Remove Selected Path(s)")
-        remove_path_btn.clicked.connect(self._on_remove_paths)
-        main_layout.addWidget(remove_path_btn)
-
-        # Enabled checkbox
-        self.enabled_checkbox = QCheckBox("Enable for backup")
-        self.enabled_checkbox.setChecked(True)
-        main_layout.addWidget(self.enabled_checkbox)
+        # Connect signals
+        self._connect_signals()
 
         # Pre-populate fields if in update mode
         if self.is_update_mode and dotfile_data:
@@ -237,13 +188,67 @@ class AddDotfileDialog(QDialog):
             elif "path" in dotfile_data:
                 self.paths_list.addItem(dotfile_data["path"])
 
-        # Add buttons
-        button_box = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
-        )
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
-        main_layout.addWidget(button_box)
+    def _load_ui(self) -> None:
+        """Load UI from Qt Designer .ui file."""
+        ui_file_path = Path(__file__).parent / "designer" / "add_dotfile_dialog.ui"
+
+        ui_file = QFile(str(ui_file_path))
+        if not ui_file.open(QFile.ReadOnly):
+            raise RuntimeError(f"Cannot open UI file: {ui_file_path}")
+
+        loader = QUiLoader()
+        ui_widget = loader.load(ui_file, self)
+        ui_file.close()
+
+        if not isinstance(ui_widget, QDialog):
+            raise RuntimeError("Loaded UI is not a QDialog")
+
+        # Extract layout from loaded dialog and apply to self
+        loaded_layout = ui_widget.layout()
+        if loaded_layout:
+            # Transfer all widgets from loaded layout to self
+            self.setLayout(loaded_layout)
+
+        # Get references to UI widgets by objectName from Qt Designer
+        self.info_label: QLabel = self.findChild(QLabel, "infoLabel")  # type: ignore[assignment]
+        self.category_combo: QComboBox = self.findChild(QComboBox, "categoryCombo")  # type: ignore[assignment]
+        self.application_edit: QLineEdit = self.findChild(QLineEdit, "applicationEdit")  # type: ignore[assignment]
+        self.description_edit: QLineEdit = self.findChild(QLineEdit, "descriptionEdit")  # type: ignore[assignment]
+        self.paths_list: QListWidget = self.findChild(QListWidget, "pathsList")  # type: ignore[assignment]
+        self.path_input_edit: QLineEdit = self.findChild(QLineEdit, "pathInputEdit")  # type: ignore[assignment]
+        self.browse_btn: QPushButton = self.findChild(QPushButton, "browseBtn")  # type: ignore[assignment]
+        self.add_path_btn: QPushButton = self.findChild(QPushButton, "addPathBtn")  # type: ignore[assignment]
+        self.remove_path_btn: QPushButton = self.findChild(QPushButton, "removePathBtn")  # type: ignore[assignment]
+        self.enabled_checkbox: QCheckBox = self.findChild(QCheckBox, "enabledCheckbox")  # type: ignore[assignment]
+        self.button_box: QDialogButtonBox = self.findChild(
+            QDialogButtonBox, "buttonBox"
+        )  # type: ignore[assignment]
+
+        # Validate critical widgets were found
+        if not all(
+            [
+                self.info_label,
+                self.category_combo,
+                self.application_edit,
+                self.description_edit,
+                self.paths_list,
+                self.path_input_edit,
+                self.browse_btn,
+                self.add_path_btn,
+                self.remove_path_btn,
+                self.enabled_checkbox,
+                self.button_box,
+            ]
+        ):
+            raise RuntimeError("Required widgets not found in UI file")
+
+    def _connect_signals(self) -> None:
+        """Connect widget signals to handler methods."""
+        self.browse_btn.clicked.connect(self._on_browse_path)
+        self.add_path_btn.clicked.connect(self._on_add_path)
+        self.remove_path_btn.clicked.connect(self._on_remove_paths)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
 
     def _on_browse_path(self) -> None:
         """Handle browse button click to select file or directory."""
@@ -559,66 +564,82 @@ class MainWindow(QMainWindow):
             raise RuntimeError("Required widget 'tab_widget' not found in UI file")
         self.tab_widget: QTabWidget = found_tab
 
-        # Backup tab widgets
+        # Find widgets for each tab
+        self._find_backup_tab_widgets(ui_widget)
+        self._find_restore_tab_widgets(ui_widget)
+        self._find_config_tab_widgets(ui_widget)
+        self._find_logs_tab_widgets(ui_widget)
+        self._find_status_widgets()
+        self._find_menu_actions(loaded_window)
+
+    def _find_backup_tab_widgets(self, ui_widget: QWidget) -> None:
+        """Find and store references to Backup tab widgets."""
         self.config_path_edit: QLineEdit = ui_widget.findChild(
-            QLineEdit, "config_path_edit"
+            QLineEdit, "configGroupPathEdit"
         )  # type: ignore[assignment]
         self.load_config_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "load_config_btn"
+            QPushButton, "configGroupLoadButton"
         )  # type: ignore[assignment]
         self.dotfile_table: QTableWidget = ui_widget.findChild(
-            QTableWidget, "dotfile_table"
+            QTableWidget, "fileGroupFileTable"
         )  # type: ignore[assignment]
-        self.total_size_label: QLabel = ui_widget.findChild(QLabel, "total_size_label")  # type: ignore[assignment]
+        self.total_size_label: QLabel = ui_widget.findChild(
+            QLabel, "fileGroupTotalSizeLabel"
+        )  # type: ignore[assignment]
         self.add_dotfile_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "add_dotfile_btn"
+            QPushButton, "fileGroupAddFileButton"
         )  # type: ignore[assignment]
         self.update_dotfile_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "update_dotfile_btn"
+            QPushButton, "fileGroupUpdateFileButton"
         )  # type: ignore[assignment]
         self.remove_dotfile_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "remove_dotfile_btn"
+            QPushButton, "fileGroupRemoveFileButton"
         )  # type: ignore[assignment]
         self.toggle_enabled_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "toggle_enabled_btn"
+            QPushButton, "fileGroupToggleEnabledButton"
         )  # type: ignore[assignment]
         self.save_dotfiles_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "save_dotfiles_btn"
+            QPushButton, "fileGroupSaveFilesButton"
         )  # type: ignore[assignment]
         self.mirror_checkbox: QCheckBox = ui_widget.findChild(
-            QCheckBox, "mirror_checkbox"
+            QCheckBox, "mirrorCheckbox"
         )  # type: ignore[assignment]
         self.archive_checkbox: QCheckBox = ui_widget.findChild(
-            QCheckBox, "archive_checkbox"
+            QCheckBox, "archiveCheckbox"
         )  # type: ignore[assignment]
         self.force_full_backup_checkbox: QCheckBox = ui_widget.findChild(
-            QCheckBox, "force_full_backup_checkbox"
+            QCheckBox, "forceBackupCheckbox"
         )  # type: ignore[assignment]
-        self.backup_btn: QPushButton = ui_widget.findChild(QPushButton, "backup_btn")  # type: ignore[assignment]
-        self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "operation_log")  # type: ignore[assignment]
+        self.backup_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "startBackupButton"
+        )  # type: ignore[assignment]
+        self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "logBox")  # type: ignore[assignment]
 
         # Validate critical widgets were found
         if not self.operation_log:
-            raise RuntimeError("operation_log widget not found in UI file!")
+            raise RuntimeError("logBox widget not found in UI file!")
 
-        # Restore tab widgets
+    def _find_restore_tab_widgets(self, ui_widget: QWidget) -> None:
+        """Find and store references to Restore tab widgets."""
         self.restore_source_edit: QLineEdit = ui_widget.findChild(
-            QLineEdit, "restore_source_edit"
+            QLineEdit, "restoreSourceEdit"
         )  # type: ignore[assignment]
         self.browse_restore_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "browse_restore_btn"
+            QPushButton, "restoreSourceBrowseButton"
         )  # type: ignore[assignment]
-        self.restore_btn: QPushButton = ui_widget.findChild(QPushButton, "restore_btn")  # type: ignore[assignment]
-        self.restore_operation_log: QTextEdit = ui_widget.findChild(
-            QTextEdit, "restore_operation_log"
+        self.restore_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "restoreSourceButton"
         )  # type: ignore[assignment]
+        # Note: Restore operation log uses the same logBox widget in the Logs tab
+        self.restore_operation_log: QTextEdit = self.operation_log
 
-        # Configuration tab widgets
+    def _find_config_tab_widgets(self, ui_widget: QWidget) -> None:
+        """Find and store references to Configuration tab widgets."""
         self.config_mirror_path_edit: QLineEdit = ui_widget.findChild(
             QLineEdit, "config_mirror_path_edit"
         )  # type: ignore[assignment]
         self.config_archive_path_edit: QLineEdit = ui_widget.findChild(
-            QLineEdit, "config_archive_path_edit"
+            QLineEdit, "configArchivePathEdit"
         )  # type: ignore[assignment]
         self.config_mirror_checkbox: QCheckBox = ui_widget.findChild(
             QCheckBox, "config_mirror_checkbox"
@@ -642,16 +663,27 @@ class MainWindow(QMainWindow):
             QSpinBox, "config_max_archives_spinbox"
         )  # type: ignore[assignment]
         self.save_config_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "save_config_btn"
+            QPushButton, "saveConfigButton"
         )  # type: ignore[assignment]
 
-        # Status bar and progress bar
+    def _find_logs_tab_widgets(self, ui_widget: QWidget) -> None:
+        """Find and store references to Logs tab widgets."""
+        self.save_log_btn: QPushButton = ui_widget.findChild(QPushButton, "pushButton")  # type: ignore[assignment]
+
+    def _find_status_widgets(self) -> None:
+        """Find and store references to status bar widgets."""
         self.status_bar = self.statusBar()
         self.progress_bar: QProgressBar = self.status_bar.findChild(
             QProgressBar, "progress_bar"
         )  # type: ignore[assignment]
 
-        # Menu actions from menubar (accessed from loaded_window before it goes out of scope)
+    def _find_menu_actions(self, loaded_window: QWidget) -> None:
+        """
+        Find and store references to menu actions.
+
+        Args:
+            loaded_window: Original loaded QMainWindow for finding menu actions
+        """
         self.action_load_config: QAction = loaded_window.findChild(
             QAction, "actionLoadConfig"
         )  # type: ignore[assignment]
@@ -679,7 +711,7 @@ class MainWindow(QMainWindow):
         """Connect UI element signals to handler methods."""
         # Backup tab connections
         browse_config_btn: QPushButton = self.central_widget.findChild(
-            QPushButton, "browse_config_btn"
+            QPushButton, "configGroupBrowseButton"
         )  # type: ignore[assignment]
         browse_config_btn.clicked.connect(self._on_browse_config)
         self.load_config_btn.clicked.connect(self._on_load_config)
@@ -704,7 +736,7 @@ class MainWindow(QMainWindow):
             QPushButton, "browse_mirror_btn"
         )  # type: ignore[assignment]
         browse_archive_btn: QPushButton = self.central_widget.findChild(
-            QPushButton, "browse_archive_btn"
+            QPushButton, "browseArchiveButton"
         )  # type: ignore[assignment]
         browse_mirror_btn.clicked.connect(self._on_browse_mirror_dir)
         browse_archive_btn.clicked.connect(self._on_browse_archive_dir)
@@ -721,6 +753,9 @@ class MainWindow(QMainWindow):
         self.config_rotate_checkbox.stateChanged.connect(self._on_config_changed)
         self.config_max_archives_spinbox.valueChanged.connect(self._on_config_changed)
         self.save_config_btn.clicked.connect(self._on_save_config)
+
+        # Logs tab connections
+        self.save_log_btn.clicked.connect(self._on_save_log)
 
         # Menu action connections
         self.action_load_config.triggered.connect(self._on_browse_config)
@@ -824,6 +859,9 @@ class MainWindow(QMainWindow):
             self.operation_log.clear()
             self.operation_log.append("=== Backup Operation Started ===\n")
 
+            # Switch to Logs tab (index 3)
+            self.tab_widget.setCurrentIndex(3)
+
             # Disable buttons during operation
             self.backup_btn.setEnabled(False)
             self.load_config_btn.setEnabled(False)
@@ -895,6 +933,9 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Clear operation log
             self.restore_operation_log.clear()
+
+            # Switch to Logs tab (index 3)
+            self.tab_widget.setCurrentIndex(3)
 
             # Disable buttons during operation
             self.restore_btn.setEnabled(False)
@@ -975,6 +1016,8 @@ class MainWindow(QMainWindow):
                     f"⊘ Skipped {remaining} unchanged files (total: {self._skipped_count})...\n"
                 )
             self.operation_log.append("\n=== Backup Operation Completed ===\n")
+            # Write summary statistics to log
+            self.operation_log.append(f"\n{summary}\n")
             # Ensure log is scrolled to bottom
             self.operation_log.verticalScrollBar().setValue(
                 self.operation_log.verticalScrollBar().maximum()
@@ -985,12 +1028,11 @@ class MainWindow(QMainWindow):
         ):
             # Restore just completed
             self.restore_operation_log.append("\n=== Restore Operation Completed ===\n")
+            # Write summary statistics to log
+            self.restore_operation_log.append(f"\n{summary}\n")
             self.restore_operation_log.verticalScrollBar().setValue(
                 self.restore_operation_log.verticalScrollBar().maximum()
             )
-
-        # Show completion dialog with statistics
-        QMessageBox.information(self, "Operation Complete", summary)
 
     def _on_error_occurred(self, context: str, error_message: str) -> None:
         """Handle error signal."""
@@ -1100,9 +1142,6 @@ class MainWindow(QMainWindow):
             validation: Validation results mapping index to (exists, is_dir, type_str)
             sizes: Size results mapping index to size in bytes
         """
-        # Save current expansion state (indexed by dotfile_idx, so it's sort-safe)
-        # We'll restore expanded state after populating the table
-
         # Disable sorting while populating table to prevent performance issues
         self.dotfile_table.setSortingEnabled(False)
 
@@ -1122,65 +1161,11 @@ class MainWindow(QMainWindow):
             (exists, _is_dir, _type_str),
             size,
         ) in enumerate(dotfile_data):
-            # Enabled indicator with directory expand icon
-            enabled = dotfile.get("enabled", True)
-
-            # Simple enabled indicator
-            indicator = "✓" if enabled else "✗"
-
-            enabled_item = QTableWidgetItem(indicator)
-            enabled_item.setData(
-                Qt.ItemDataRole.UserRole, original_idx
-            )  # Store original index
-            if enabled:
-                enabled_item.setForeground(QColor(0, 150, 0))  # Green
-            else:
-                enabled_item.setForeground(QColor(128, 128, 128))  # Gray
-            self.dotfile_table.setItem(row_idx, 0, enabled_item)
-
-            # Status indicator (file exists)
-            status_item = QTableWidgetItem("✓" if exists else "✗")
-            if exists:
-                status_item.setForeground(QColor(0, 150, 0))  # Green
-            else:
-                status_item.setForeground(QColor(200, 0, 0))  # Red
-            self.dotfile_table.setItem(row_idx, 1, status_item)
-
-            # Category
-            self.dotfile_table.setItem(
-                row_idx, 2, QTableWidgetItem(dotfile["category"])
-            )
-
-            # Application
-            self.dotfile_table.setItem(
-                row_idx, 3, QTableWidgetItem(dotfile["application"])
-            )
-
-            # Size - format to human readable with custom numeric sorting
-            size_str = self.viewmodel.format_size(size)
-            size_item = NumericTableWidgetItem(size_str)
-            # Store raw size value for proper numeric sorting
-            size_item.setData(Qt.ItemDataRole.UserRole, size)
-            # Right-align the size for better readability
-            size_item.setTextAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-            )
-            self.dotfile_table.setItem(row_idx, 4, size_item)
-
-            # Path - show first path with count indicator if multiple
-            paths = dotfile["paths"]
-            if len(paths) == 1:
-                path_display = paths[0]
-            else:
-                path_display = f"{paths[0]} (+{len(paths) - 1} more)"
-
-            path_item = QTableWidgetItem(path_display)
-            # Tooltip shows description and all paths
-            tooltip_text = f"{dotfile['description']}\n\nPaths:\n{'\n'.join(paths)}"
-            path_item.setToolTip(tooltip_text)
-            self.dotfile_table.setItem(row_idx, 5, path_item)
+            # Create table row items
+            self._create_table_row_items(row_idx, original_idx, dotfile, exists, size)
 
             # Accumulate total size for enabled items
+            enabled = dotfile.get("enabled", True)
             if enabled and exists:
                 total_enabled_size += size
 
@@ -1191,6 +1176,76 @@ class MainWindow(QMainWindow):
 
         # Re-enable sorting after everything is populated
         self.dotfile_table.setSortingEnabled(True)
+
+    def _create_table_row_items(
+        self,
+        row_idx: int,
+        original_idx: int,
+        dotfile: DotFileDict,
+        exists: bool,
+        size: int,
+    ) -> None:
+        """
+        Create and populate table items for a single dotfile row.
+
+        Args:
+            row_idx: Row index in table
+            original_idx: Original index in dotfiles list
+            dotfile: Dotfile dictionary
+            exists: Whether the dotfile exists on filesystem
+            size: Total size in bytes
+        """
+        enabled = dotfile.get("enabled", True)
+
+        # Enabled indicator
+        indicator = "✓" if enabled else "✗"
+        enabled_item = QTableWidgetItem(indicator)
+        enabled_item.setData(
+            Qt.ItemDataRole.UserRole, original_idx
+        )  # Store original index
+        if enabled:
+            enabled_item.setForeground(QColor(0, 150, 0))  # Green
+        else:
+            enabled_item.setForeground(QColor(128, 128, 128))  # Gray
+        self.dotfile_table.setItem(row_idx, 0, enabled_item)
+
+        # Status indicator (file exists)
+        status_item = QTableWidgetItem("✓" if exists else "✗")
+        if exists:
+            status_item.setForeground(QColor(0, 150, 0))  # Green
+        else:
+            status_item.setForeground(QColor(200, 0, 0))  # Red
+        self.dotfile_table.setItem(row_idx, 1, status_item)
+
+        # Category
+        self.dotfile_table.setItem(row_idx, 2, QTableWidgetItem(dotfile["category"]))
+
+        # Application
+        self.dotfile_table.setItem(row_idx, 3, QTableWidgetItem(dotfile["application"]))
+
+        # Size - format to human readable with custom numeric sorting
+        size_str = self.viewmodel.format_size(size)
+        size_item = NumericTableWidgetItem(size_str)
+        # Store raw size value for proper numeric sorting
+        size_item.setData(Qt.ItemDataRole.UserRole, size)
+        # Right-align the size for better readability
+        size_item.setTextAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        self.dotfile_table.setItem(row_idx, 4, size_item)
+
+        # Path - show first path with count indicator if multiple
+        paths = dotfile["paths"]
+        if len(paths) == 1:
+            path_display = paths[0]
+        else:
+            path_display = f"{paths[0]} (+{len(paths) - 1} more)"
+
+        path_item = QTableWidgetItem(path_display)
+        # Tooltip shows description and all paths
+        tooltip_text = f"{dotfile['description']}\n\nPaths:\n{'\n'.join(paths)}"
+        path_item.setToolTip(tooltip_text)
+        self.dotfile_table.setItem(row_idx, 5, path_item)
 
     def _update_options_display(self) -> None:
         """Update the options display with current configuration."""
@@ -1568,6 +1623,46 @@ class MainWindow(QMainWindow):
 
         # Update status bar
         self.status_bar.showMessage(f"Configuration updated: {dotfile_count} dotfiles")
+
+    def _on_save_log(self) -> None:
+        """Handle save log button click."""
+        # Get current log content
+        log_content = self.operation_log.toPlainText()
+
+        # Check if log is empty
+        if not log_content.strip():
+            QMessageBox.information(
+                self,
+                "Empty Log",
+                "The log is currently empty. There is nothing to save.",
+            )
+            return
+
+        # Open file save dialog
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Log File",
+            str(Path.home() / "dfbu_log.txt"),
+            "Text Files (*.txt);;All Files (*)",
+        )
+
+        if file_path:
+            try:
+                # Write log content to file
+                Path(file_path).write_text(log_content, encoding="utf-8")
+
+                # Show success message in status bar (non-blocking)
+                self.status_bar.showMessage(
+                    f"Log saved to {Path(file_path).name}",
+                    STATUS_MESSAGE_TIMEOUT_MS,
+                )
+            except (OSError, PermissionError) as e:
+                # Show error dialog if save fails
+                QMessageBox.critical(
+                    self,
+                    "Save Failed",
+                    f"Failed to save log file:\n{e}",
+                )
 
     def closeEvent(self, event: QCloseEvent) -> None:
         """Handle window close event."""
