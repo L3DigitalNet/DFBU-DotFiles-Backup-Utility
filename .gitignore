@@ -210,14 +210,3 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
-DFBU/core/__pycache__/__init__.cpython-314.pyc
-DFBU/core/__pycache__/common_types.cpython-314.pyc
-DFBU/core/__pycache__/validation.cpython-314.pyc
-DFBU/gui/__pycache__/backup_orchestrator.cpython-314.pyc
-DFBU/gui/__pycache__/config_manager.cpython-314.pyc
-DFBU/gui/__pycache__/constants.cpython-314.pyc
-DFBU/gui/__pycache__/file_operations.cpython-314.pyc
-DFBU/gui/__pycache__/model.cpython-314.pyc
-DFBU/gui/__pycache__/statistics_tracker.cpython-314.pyc
-DFBU/gui/__pycache__/view.cpython-314.pyc
-DFBU/gui/__pycache__/viewmodel.cpython-314.pyc
