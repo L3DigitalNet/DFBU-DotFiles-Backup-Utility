@@ -1730,14 +1730,3 @@ application = "Vuescan"
 description = "Settings"
 enabled = true
 path = "~/.vuescan"
-
-[[dotfile]]
-category = "Applications"
-application = "Ghostwriter"
-description = "Configs"
-enabled = true
-paths = [
-    "~/.config/ghostwriter/ghostwriter.conf",
-    "~/.local/share/ghostwriter/themes",
-    "/usr/share/ghostwriter/themes",
-]
