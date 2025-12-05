@@ -40,6 +40,7 @@ import shutil
 import sys
 import tomllib
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -239,47 +240,80 @@ class ConfigManager:
 
     def _validate_and_fix_paths(self) -> int:
         """
-        Validate and fix path entries in dotfiles configuration.
+        Validate and fix path entries in dotfiles configuration using parallel processing.
 
         Checks for and corrects:
         1. Absolute paths that should use tilde notation (~/...)
         2. Paths not using portable format
+
+        Uses ThreadPoolExecutor for efficient parallel processing of multiple dotfiles.
 
         Returns:
             Number of path entries that were corrected
         """
         corrections_made = 0
 
-        for dotfile in self.dotfiles:
-            paths_list = dotfile.get("paths", [])
-            corrected_paths: list[str] = []
-            paths_changed = False
+        # Process dotfiles in parallel for better performance
+        # Use ThreadPoolExecutor with max_workers=4 for optimal I/O-bound operations
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            # Submit all dotfiles for processing
+            future_to_index = {
+                executor.submit(self._process_dotfile_paths, dotfile): idx
+                for idx, dotfile in enumerate(self.dotfiles)
+            }
 
-            for path_str in paths_list:
-                # Skip empty paths
-                if not path_str:
-                    corrected_paths.append(path_str)
-                    continue
-
-                # Expand the path to check if it's under home directory
-                expanded_path = self.expand_path(path_str)
-
-                # Convert to portable tilde notation if under home directory
-                portable_path = self._path_to_tilde_notation(expanded_path)
-
-                # Check if conversion changed the path
-                if portable_path != path_str:
-                    corrected_paths.append(portable_path)
-                    paths_changed = True
-                    corrections_made += 1
-                else:
-                    corrected_paths.append(path_str)
-
-            # Update the dotfile's paths if any changes were made
-            if paths_changed:
-                dotfile["paths"] = corrected_paths
+            # Collect results as they complete
+            for future in as_completed(future_to_index):
+                idx = future_to_index[future]
+                try:
+                    corrected_paths, path_corrections = future.result()
+                    if path_corrections > 0:
+                        # Update dotfile with corrected paths
+                        self.dotfiles[idx]["paths"] = corrected_paths
+                        corrections_made += path_corrections
+                except Exception:
+                    # Log error but continue processing other dotfiles
+                    # Errors in individual dotfiles shouldn't stop the entire process
+                    pass
 
         return corrections_made
+
+    def _process_dotfile_paths(self, dotfile: DotFileDict) -> tuple[list[str], int]:
+        """
+        Process a single dotfile's paths for validation and correction.
+
+        This method is designed to be called in parallel from _validate_and_fix_paths.
+
+        Args:
+            dotfile: Dotfile dictionary to process
+
+        Returns:
+            Tuple of (corrected_paths_list, number_of_corrections)
+        """
+        paths_list = dotfile.get("paths", [])
+        corrected_paths: list[str] = []
+        corrections = 0
+
+        for path_str in paths_list:
+            # Skip empty paths
+            if not path_str:
+                corrected_paths.append(path_str)
+                continue
+
+            # Expand the path to check if it's under home directory
+            expanded_path = self.expand_path(path_str)
+
+            # Convert to portable tilde notation if under home directory
+            portable_path = self._path_to_tilde_notation(expanded_path)
+
+            # Check if conversion changed the path
+            if portable_path != path_str:
+                corrected_paths.append(portable_path)
+                corrections += 1
+            else:
+                corrected_paths.append(path_str)
+
+        return corrected_paths, corrections
 
     def save_config(self) -> tuple[bool, str]:
         """

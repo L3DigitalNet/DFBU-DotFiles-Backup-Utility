@@ -182,6 +182,15 @@ class DFBUModel:
         self._config_manager.archive_base_dir = path
         self._backup_orchestrator.archive_base_dir = path
 
+    def get_config_manager(self) -> ConfigManager:
+        """
+        Get the ConfigManager instance for worker threads.
+
+        Returns:
+            ConfigManager instance
+        """
+        return self._config_manager
+
     # =========================================================================
     # Configuration Management (Delegate to ConfigManager)
     # =========================================================================

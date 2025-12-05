@@ -47,6 +47,7 @@ from typing import Any, Final
 from core.common_types import DotFileDict, OptionsDict
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
 
+from gui.config_workers import ConfigLoadWorker, ConfigSaveWorker
 from gui.input_validation import InputValidator
 from gui.model import DFBUModel
 
@@ -600,6 +601,8 @@ class DFBUViewModel(QObject):
         model: DFBUModel instance managing state
         backup_worker: Worker thread for backup operations
         restore_worker: Worker thread for restore operations
+        config_load_worker: Worker thread for loading configuration
+        config_save_worker: Worker thread for saving configuration
         settings: QSettings for persistence
         progress_updated: Signal for progress changes
         item_processed: Signal for individual item completion
@@ -660,41 +663,62 @@ class DFBUViewModel(QObject):
         self.model: DFBUModel = model
         self.backup_worker: BackupWorker | None = None
         self.restore_worker: RestoreWorker | None = None
+        self.config_load_worker: ConfigLoadWorker | None = None
+        self.config_save_worker: ConfigSaveWorker | None = None
         self.settings: QSettings = QSettings(self.SETTINGS_ORG, self.SETTINGS_APP)
         self.restore_source_directory: Path | None = None
 
     def command_load_config(self) -> bool:
         """
-        Command to load TOML configuration file.
+        Command to load TOML configuration file asynchronously.
+
+        Uses ConfigLoadWorker to prevent UI blocking during file I/O.
 
         Returns:
-            True if configuration loaded successfully
+            True if load operation started successfully
         """
-        success, error_message = self.model.load_config()
+        # Don't start new load if one is already in progress
+        if self.config_load_worker is not None:
+            return False
 
-        if success:
-            dotfile_count = self.model.get_dotfile_count()
-            self.config_loaded.emit(dotfile_count)
-            self.dotfiles_updated.emit(dotfile_count)
-        else:
-            # Emit specific error message from model
-            self.error_occurred.emit("Configuration", error_message)
+        # Create and configure worker
+        self.config_load_worker = ConfigLoadWorker()
+        self.config_load_worker.set_config_manager(self.model.get_config_manager())
 
-        return success
+        # Connect worker signals
+        self.config_load_worker.progress_updated.connect(self._on_config_progress)
+        self.config_load_worker.load_finished.connect(self._on_config_load_finished)
+        self.config_load_worker.error_occurred.connect(self._on_worker_error)
+
+        # Start worker thread
+        self.config_load_worker.start()
+        return True
 
     def command_save_config(self) -> bool:
         """
-        Command to save configuration changes to TOML file.
+        Command to save configuration changes to TOML file asynchronously.
+
+        Uses ConfigSaveWorker to prevent UI blocking during file I/O.
 
         Returns:
-            True if configuration saved successfully
+            True if save operation started successfully
         """
-        success, error_message = self.model.save_config()
+        # Don't start new save if one is already in progress
+        if self.config_save_worker is not None:
+            return False
 
-        if not success:
-            self.error_occurred.emit("Configuration Save", error_message)
+        # Create and configure worker
+        self.config_save_worker = ConfigSaveWorker()
+        self.config_save_worker.set_config_manager(self.model.get_config_manager())
 
-        return success
+        # Connect worker signals
+        self.config_save_worker.progress_updated.connect(self._on_config_progress)
+        self.config_save_worker.save_finished.connect(self._on_config_save_finished)
+        self.config_save_worker.error_occurred.connect(self._on_worker_error)
+
+        # Start worker thread
+        self.config_save_worker.start()
+        return True
 
     def command_update_option(self, key: str, value: bool | int | str) -> bool:
         """
@@ -1219,3 +1243,65 @@ class DFBUViewModel(QObject):
             error_message: Error message
         """
         self.error_occurred.emit(context, error_message)
+
+    def _on_config_progress(self, value: int) -> None:
+        """
+        Handle config worker progress updates.
+
+        Args:
+            value: Progress percentage
+        """
+        self.progress_updated.emit(value)
+
+    def _on_config_load_finished(
+        self, success: bool, error_message: str, dotfile_count: int
+    ) -> None:
+        """
+        Handle config load completion and cleanup worker.
+
+        Args:
+            success: Whether load was successful
+            error_message: Error message if failed
+            dotfile_count: Number of dotfiles loaded
+        """
+        if success:
+            self.config_loaded.emit(dotfile_count)
+            self.dotfiles_updated.emit(dotfile_count)
+        else:
+            # Emit specific error message from model
+            self.error_occurred.emit("Configuration", error_message)
+
+        # Disconnect signals and cleanup worker
+        if self.config_load_worker:
+            self.config_load_worker.progress_updated.disconnect(
+                self._on_config_progress
+            )
+            self.config_load_worker.load_finished.disconnect(
+                self._on_config_load_finished
+            )
+            self.config_load_worker.error_occurred.disconnect(self._on_worker_error)
+            self.config_load_worker.deleteLater()
+            self.config_load_worker = None
+
+    def _on_config_save_finished(self, success: bool, error_message: str) -> None:
+        """
+        Handle config save completion and cleanup worker.
+
+        Args:
+            success: Whether save was successful
+            error_message: Error message if failed
+        """
+        if not success:
+            self.error_occurred.emit("Configuration Save", error_message)
+
+        # Disconnect signals and cleanup worker
+        if self.config_save_worker:
+            self.config_save_worker.progress_updated.disconnect(
+                self._on_config_progress
+            )
+            self.config_save_worker.save_finished.disconnect(
+                self._on_config_save_finished
+            )
+            self.config_save_worker.error_occurred.disconnect(self._on_worker_error)
+            self.config_save_worker.deleteLater()
+            self.config_save_worker = None
