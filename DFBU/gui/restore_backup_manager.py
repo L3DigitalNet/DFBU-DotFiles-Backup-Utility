@@ -102,3 +102,30 @@ class RestoreBackupManager:
     def max_backups(self, value: int) -> None:
         """Set maximum number of restore backups to retain."""
         self._max_backups = value
+
+    def get_backup_count(self) -> int:
+        """
+        Get number of existing restore backups.
+
+        Returns:
+            Number of backup directories in backup_base_dir
+        """
+        if not self._backup_base_dir.exists():
+            return 0
+        return len([d for d in self._backup_base_dir.iterdir() if d.is_dir()])
+
+    def list_backups(self) -> list[tuple[Path, str]]:
+        """
+        List all restore backups with their timestamps.
+
+        Returns:
+            List of (backup_path, timestamp_str) tuples, newest first
+        """
+        if not self._backup_base_dir.exists():
+            return []
+
+        backup_dirs = [d for d in self._backup_base_dir.iterdir() if d.is_dir()]
+        # Sort by directory name (timestamp format ensures correct ordering)
+        backup_dirs.sort(key=lambda d: d.name, reverse=True)
+
+        return [(d, d.name) for d in backup_dirs]
