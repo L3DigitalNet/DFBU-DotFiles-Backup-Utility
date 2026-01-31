@@ -280,3 +280,72 @@ class TestConfigValidator:
         assert result["mirror"] is True
         assert result["archive"] is False
         assert result["hostname_subdir"] is True
+
+class TestPreRestoreOptions:
+    """Test pre-restore backup options in OptionsDict."""
+
+    def test_options_dict_includes_pre_restore_backup(self) -> None:
+        """Test OptionsDict includes pre_restore_backup field."""
+        # Arrange
+        from core.common_types import OptionsDict
+
+        # Act
+        options: OptionsDict = {
+            "mirror": True,
+            "archive": True,
+            "hostname_subdir": True,
+            "date_subdir": False,
+            "archive_format": "tar.gz",
+            "archive_compression_level": 5,
+            "rotate_archives": True,
+            "max_archives": 5,
+            "pre_restore_backup": True,
+            "max_restore_backups": 5,
+        }
+
+        # Assert
+        assert options["pre_restore_backup"] is True
+        assert options["max_restore_backups"] == 5
+
+
+class TestConfigManagerPreRestoreOptions:
+    """Test ConfigManager handles pre-restore options."""
+
+    def test_load_config_defaults_pre_restore_options(self, tmp_path: Path) -> None:
+        """Test loading config without pre-restore options uses defaults."""
+        # Arrange
+        config_content = """
+[paths]
+mirror_dir = "~/backups/mirror"
+archive_dir = "~/backups/archive"
+
+[options]
+mirror = true
+archive = true
+hostname_subdir = true
+date_subdir = false
+archive_format = "tar.gz"
+archive_compression_level = 5
+rotate_archives = true
+max_archives = 5
+"""
+        config_path = tmp_path / "config.toml"
+        config_path.write_text(config_content)
+
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
+        from config_manager import ConfigManager
+
+        # Simple expand path callback
+        def expand_path(path_str: str) -> Path:
+            return Path(path_str).expanduser()
+
+        manager = ConfigManager(config_path, expand_path_callback=expand_path)
+
+        # Act
+        success, error = manager.load_config()
+
+        # Assert
+        assert success is True
+        assert manager.options["pre_restore_backup"] is True  # Default
+        assert manager.options["max_restore_backups"] == 5  # Default

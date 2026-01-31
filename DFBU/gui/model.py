@@ -44,6 +44,7 @@ from core.common_types import DotFileDict, OptionsDict
 from gui.backup_orchestrator import BackupOrchestrator
 from gui.config_manager import ConfigManager
 from gui.file_operations import FileOperations
+from gui.restore_backup_manager import RestoreBackupManager
 from gui.statistics_tracker import BackupStatistics, StatisticsTracker
 
 
@@ -123,12 +124,16 @@ class DFBUModel:
         # Initialize StatisticsTracker
         self._stats_tracker = StatisticsTracker()
 
-        # Initialize BackupOrchestrator
+        # Initialize pre-restore backup manager
+        self._restore_backup_manager = RestoreBackupManager()
+
+        # Initialize BackupOrchestrator with restore backup manager
         self._backup_orchestrator = BackupOrchestrator(
             file_ops=self._file_ops,
             stats_tracker=self._stats_tracker,
             mirror_base_dir=self._config_manager.mirror_base_dir,
             archive_base_dir=self._config_manager.archive_base_dir,
+            restore_backup_manager=self._restore_backup_manager,
         )
 
     # =========================================================================

@@ -559,3 +559,17 @@ class TestDFBUModelOptionManagement:
 
         # Assert
         assert success is False
+
+
+class TestModelRestoreBackupIntegration:
+    """Test DFBUModel integration with RestoreBackupManager."""
+
+    def test_model_has_restore_backup_manager(self) -> None:
+        """Test DFBUModel creates RestoreBackupManager."""
+        # Arrange & Act
+        from model import DFBUModel
+        model = DFBUModel(Path("/tmp/test_config.toml"))
+
+        # Assert
+        assert hasattr(model, "_restore_backup_manager")
+        assert model._restore_backup_manager is not None

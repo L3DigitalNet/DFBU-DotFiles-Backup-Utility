@@ -29,6 +29,7 @@ Classes:
     - ConfigManagerProtocol: Interface for configuration management
     - StatisticsTrackerProtocol: Interface for statistics tracking
     - BackupOrchestratorProtocol: Interface for backup orchestration
+    - RestoreBackupManagerProtocol: Interface for pre-restore backup management
 
 Functions:
     None
@@ -498,5 +499,78 @@ class BackupOrchestratorProtocol(Protocol):
 
         Returns:
             Dict mapping dotfile index to (exists, is_dir, type_str) tuple
+        """
+        ...
+
+
+# =============================================================================
+# Restore Backup Manager Protocol
+# =============================================================================
+
+
+class RestoreBackupManagerProtocol(Protocol):
+    """
+    Protocol defining interface for pre-restore backup management.
+
+    Implementations must provide backup creation before restore operations,
+    manifest tracking, and retention policy enforcement.
+    """
+
+    @property
+    def backup_base_dir(self) -> Path:
+        """Get base directory for restore backups."""
+        ...
+
+    @property
+    def max_backups(self) -> int:
+        """Get maximum number of restore backups to retain."""
+        ...
+
+    @max_backups.setter
+    def max_backups(self, value: int) -> None:
+        """Set maximum number of restore backups to retain."""
+        ...
+
+    def backup_before_restore(
+        self,
+        files_to_overwrite: list[Path],
+        source_backup_path: str,
+    ) -> tuple[bool, str, Path | None]:
+        """
+        Create backup of files that will be overwritten during restore.
+
+        Args:
+            files_to_overwrite: List of destination paths that will be overwritten
+            source_backup_path: Path to the backup being restored from
+
+        Returns:
+            Tuple of (success, error_message, backup_directory)
+        """
+        ...
+
+    def get_backup_count(self) -> int:
+        """
+        Get number of existing restore backups.
+
+        Returns:
+            Number of backup directories in backup_base_dir
+        """
+        ...
+
+    def cleanup_old_backups(self) -> list[Path]:
+        """
+        Remove oldest backups exceeding max_backups limit.
+
+        Returns:
+            List of removed backup directory paths
+        """
+        ...
+
+    def list_backups(self) -> list[tuple[Path, str]]:
+        """
+        List all restore backups with their timestamps.
+
+        Returns:
+            List of (backup_path, timestamp_str) tuples, newest first
         """
         ...
