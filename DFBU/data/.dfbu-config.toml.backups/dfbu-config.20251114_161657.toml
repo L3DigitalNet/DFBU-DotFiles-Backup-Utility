@@ -14,8 +14,6 @@ archive_format = "tar.gz"
 archive_compression_level = 5
 rotate_archives = true
 max_archives = 5
-pre_restore_backup = true
-max_restore_backups = 5
 
 [[dotfile]]
 category = "Shell configs"
@@ -1202,6 +1200,13 @@ path = "~/.vmware"
 
 [[dotfile]]
 category = "Applications"
+application = "Docker"
+description = "Docker container platform user configuration"
+enabled = true
+path = "~/.docker"
+
+[[dotfile]]
+category = "Applications"
 application = "Podman"
 description = "Podman container engine configuration"
 enabled = true
@@ -1717,230 +1722,4 @@ paths = [
     "~/.steam/steam/config/config.vdf",
     "~/.steam/steam/config/loginusers.vdf",
     "~/.steam/steam/config/libraryfolders.vdf",
-]
-
-[[dotfile]]
-category = "Development"
-application = "Micro"
-description = "Micro terminal-based text editor configuration"
-enabled = true
-path = "~/.config/micro"
-
-[[dotfile]]
-category = "Development"
-application = "Cursor"
-description = "Cursor AI-powered IDE user settings and keybindings"
-enabled = true
-paths = [
-    "~/.config/Cursor/User/settings.json",
-    "~/.config/Cursor/User/keybindings.json",
-]
-
-[[dotfile]]
-category = "Development"
-application = "Visual Studio Code (Extended)"
-description = "VS Code keybindings and MCP configuration"
-enabled = true
-paths = [
-    "~/.config/Code/User/keybindings.json",
-    "~/.config/Code/User/mcp.json",
-]
-
-[[dotfile]]
-category = "Development"
-application = "ripgrep"
-description = "ripgrep search tool configuration"
-enabled = true
-path = "~/.config/rg"
-
-[[dotfile]]
-category = "Shell configs"
-application = "Eza"
-description = "Eza modern ls replacement configuration"
-enabled = true
-path = "~/.config/eza"
-
-[[dotfile]]
-category = "Development"
-application = "GitHub CLI (gh)"
-description = "GitHub CLI configuration and authentication"
-enabled = true
-path = "~/.config/gh"
-
-[[dotfile]]
-category = "Development"
-application = "Docker"
-description = "Docker CLI configuration and credentials"
-enabled = true
-path = "~/.docker/config.json"
-
-[[dotfile]]
-category = "Development"
-application = "Podman"
-description = "Podman rootless container engine configuration"
-enabled = true
-path = "~/.config/containers/podman"
-
-[[dotfile]]
-category = "Development"
-application = "kubectl"
-description = "Kubernetes kubectl configuration and contexts"
-enabled = true
-path = "~/.kube/config"
-
-[[dotfile]]
-category = "Development"
-application = "UV"
-description = "UV Python package and project manager configuration"
-enabled = true
-path = "~/.config/uv"
-
-[[dotfile]]
-category = "Development"
-application = "Python REPL"
-description = "Python interactive shell history"
-enabled = true
-path = "~/.python_history"
-
-[[dotfile]]
-category = "Development"
-application = "npm"
-description = "Node Package Manager configuration and registry settings"
-enabled = true
-path = "~/.npmrc"
-
-[[dotfile]]
-category = "Development"
-application = "NVM"
-description = "Node Version Manager configuration"
-enabled = true
-path = "~/.config/nvm"
-
-[[dotfile]]
-category = "Development"
-application = "Cargo"
-description = "Rust Cargo package manager configuration"
-enabled = true
-paths = [
-    "~/.cargo/config.toml",
-    "~/.cargo/credentials.toml",
-]
-
-[[dotfile]]
-category = "System"
-application = "Borg Backup"
-description = "Borg deduplicating backup program configuration"
-enabled = true
-path = "~/.config/borg"
-
-[[dotfile]]
-category = "Applications"
-application = "Proton"
-description = "Proton services (VPN, Drive) configuration"
-enabled = true
-path = "~/.config/Proton"
-
-[[dotfile]]
-category = "Applications"
-application = "K3b"
-description = "K3b disc burning application configuration"
-enabled = true
-paths = [
-    "~/.config/k3brc",
-    "~/.config/k3b.notifyrc",
-]
-
-[[dotfile]]
-category = "Applications"
-application = "Gnote"
-description = "Gnote desktop note-taking application configuration"
-enabled = true
-path = "~/.config/gnote"
-
-[[dotfile]]
-category = "Applications"
-application = "MyNotex"
-description = "MyNotex free-form database note manager configuration"
-enabled = true
-path = "~/.config/mynotex"
-
-[[dotfile]]
-category = "Desktop Environment"
-application = "Plasma Workspace"
-description = "KDE Plasma workspace configuration and settings"
-enabled = true
-path = "~/.config/plasma-workspace"
-
-[[dotfile]]
-category = "Desktop Environment"
-application = "Akonadi"
-description = "KDE Akonadi PIM storage service configuration"
-enabled = true
-paths = [
-    "~/.config/akonadi",
-    "~/.config/akonadi-firstrunrc",
-    "~/.config/akonadi_contacts_resource_0rc",
-    "~/.config/akonadi_ical_resource_0rc",
-    "~/.config/akonadi_indexing_agentrc",
-    "~/.config/akonadi_maildir_resource_0rc",
-]
-
-[[dotfile]]
-category = "Desktop Environment"
-application = "Kalendar"
-description = "KDE Kalendar calendar application configuration"
-enabled = true
-path = "~/.config/kalendaracrc"
-
-[[dotfile]]
-category = "Development"
-application = "Go"
-description = "Go programming language configuration"
-enabled = true
-path = "~/.config/go"
-
-[[dotfile]]
-category = "Applications"
-application = "Solaar"
-description = "Solaar Logitech device manager configuration"
-enabled = true
-path = "~/.config/solaar"
-
-[[dotfile]]
-category = "Applications"
-application = "Wavemon"
-description = "Wavemon wireless network monitor configuration"
-enabled = true
-path = "~/.config/wavemon"
-
-[[dotfile]]
-category = "Applications"
-application = "GColor3"
-description = "GColor3 color picker configuration"
-enabled = true
-path = "~/.config/gcolor3"
-
-[[dotfile]]
-category = "Applications"
-application = "FreeFileSync"
-description = "FreeFileSync file synchronization tool configuration"
-enabled = true
-path = "~/.config/FreeFileSync"
-
-[[dotfile]]
-category = "Applications"
-application = "Vuescan"
-description = "Settings"
-enabled = true
-path = "~/.vuescan"
-
-[[dotfile]]
-category = "Applications"
-application = "Ghostwriter"
-description = "Configs"
-enabled = true
-paths = [
-    "~/.config/ghostwriter/ghostwriter.conf",
-    "~/.local/share/ghostwriter/themes",
-    "/usr/share/ghostwriter/themes",
 ]
