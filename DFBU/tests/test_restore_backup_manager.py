@@ -361,3 +361,97 @@ class TestBackupBeforeRestore:
         assert error == ""
         assert backup_dir is None
         assert manager.get_backup_count() == 0
+
+    def test_backup_copies_files_preserving_structure(self, tmp_path: Path) -> None:
+        """Test backup copies files preserving relative directory structure."""
+        # Arrange
+        from restore_backup_manager import RestoreBackupManager
+
+        mock_home = tmp_path / "home"
+        mock_home.mkdir()
+        manager = RestoreBackupManager(
+            backup_base_dir=tmp_path / "backups",
+            home_dir=mock_home,
+        )
+
+        # Create source files with nested structure
+        config_dir = mock_home / ".config" / "app"
+        config_dir.mkdir(parents=True)
+        config_file = config_dir / "settings.toml"
+        config_file.write_text("key = 'value'")
+
+        bashrc = mock_home / ".bashrc"
+        bashrc.write_text("export PATH=$PATH")
+
+        # Act
+        success, error, backup_dir = manager.backup_before_restore(
+            files_to_overwrite=[config_file, bashrc],
+            source_backup_path="/backups/mirror/test",
+        )
+
+        # Assert
+        assert success is True
+        assert backup_dir is not None
+
+        # Verify files were copied (structure relative to home)
+        backed_up_config = backup_dir / ".config" / "app" / "settings.toml"
+        backed_up_bashrc = backup_dir / ".bashrc"
+        assert backed_up_config.exists()
+        assert backed_up_bashrc.exists()
+        assert backed_up_config.read_text() == "key = 'value'"
+        assert backed_up_bashrc.read_text() == "export PATH=$PATH"
+
+    def test_backup_skips_nonexistent_files(self, tmp_path: Path) -> None:
+        """Test backup skips files that don't exist."""
+        # Arrange
+        from restore_backup_manager import RestoreBackupManager
+
+        manager = RestoreBackupManager(backup_base_dir=tmp_path / "backups")
+
+        existing = tmp_path / "exists.txt"
+        existing.write_text("I exist")
+        nonexistent = tmp_path / "missing.txt"
+
+        # Act
+        success, error, backup_dir = manager.backup_before_restore(
+            files_to_overwrite=[existing, nonexistent],
+            source_backup_path="/backups/mirror/test",
+        )
+
+        # Assert
+        assert success is True
+        # Only the existing file should be backed up
+        backed_up = backup_dir / "exists.txt"
+        assert backed_up.exists()
+        assert not (backup_dir / "missing.txt").exists()
+
+    def test_backup_handles_directories(self, tmp_path: Path) -> None:
+        """Test backup handles directories by copying all contents."""
+        # Arrange
+        from restore_backup_manager import RestoreBackupManager
+
+        mock_home = tmp_path / "home"
+        mock_home.mkdir()
+        manager = RestoreBackupManager(
+            backup_base_dir=tmp_path / "backups",
+            home_dir=mock_home,
+        )
+
+        source_dir = mock_home / ".config" / "nvim"
+        source_dir.mkdir(parents=True)
+        (source_dir / "init.lua").write_text("vim.opt.number = true")
+        (source_dir / "lua").mkdir()
+        (source_dir / "lua" / "plugins.lua").write_text("return {}")
+
+        # Act
+        success, error, backup_dir = manager.backup_before_restore(
+            files_to_overwrite=[source_dir],
+            source_backup_path="/backups/mirror/test",
+        )
+
+        # Assert
+        assert success is True
+        backed_up_dir = backup_dir / ".config" / "nvim"
+        assert backed_up_dir.is_dir()
+        assert (backed_up_dir / "init.lua").read_text() == "vim.opt.number = true"
+        assert (backed_up_dir / "lua" / "plugins.lua").read_text() == "return {}"

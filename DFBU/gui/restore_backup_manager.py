@@ -80,6 +80,7 @@ class RestoreBackupManager:
         self,
         backup_base_dir: Path | None = None,
         max_backups: int = DEFAULT_MAX_BACKUPS,
+        home_dir: Path | None = None,
     ) -> None:
         """
         Initialize RestoreBackupManager.
@@ -87,9 +88,11 @@ class RestoreBackupManager:
         Args:
             backup_base_dir: Base directory for backups (default: ~/.local/share/dfbu/restore-backups)
             max_backups: Maximum backups to retain (default: 5)
+            home_dir: Home directory for relative path calculation (default: Path.home())
         """
         self._backup_base_dir = backup_base_dir or DEFAULT_BACKUP_DIR
         self._max_backups = max_backups
+        self._home_dir = home_dir or Path.home()
 
     @property
     def backup_base_dir(self) -> Path:
@@ -178,9 +181,9 @@ class RestoreBackupManager:
         if not files_to_overwrite:
             return True, "", None
 
-        # Filter to only existing files
-        existing_files = [f for f in files_to_overwrite if f.exists()]
-        if not existing_files:
+        # Filter to only existing files/directories
+        existing_paths = [f for f in files_to_overwrite if f.exists()]
+        if not existing_paths:
             return True, "", None
 
         # Create timestamped backup directory
@@ -190,7 +193,7 @@ class RestoreBackupManager:
         try:
             backup_dir.mkdir(parents=True, exist_ok=False)
         except FileExistsError:
-            # Extremely unlikely - add milliseconds to make unique
+            # Extremely unlikely - add microseconds to make unique
             timestamp = f"{timestamp}_{datetime.now(UTC).microsecond:06d}"
             backup_dir = self._backup_base_dir / timestamp
             backup_dir.mkdir(parents=True)
@@ -198,4 +201,39 @@ class RestoreBackupManager:
             return False, f"Failed to create backup directory: {e}", None
 
         logger.info(f"Created pre-restore backup directory: {backup_dir}")
+
+        # Copy each file/directory preserving structure relative to home
+        backed_up_files: list[dict[str, str | int]] = []
+
+        for src_path in existing_paths:
+            try:
+                # Calculate relative path from home directory
+                try:
+                    rel_path = src_path.relative_to(self._home_dir)
+                except ValueError:
+                    # Path not under home - use just the name
+                    rel_path = Path(src_path.name)
+
+                dest_path = backup_dir / rel_path
+
+                if src_path.is_dir():
+                    # Copy directory recursively
+                    shutil.copytree(src_path, dest_path)
+                    logger.debug(f"Backed up directory: {src_path} -> {dest_path}")
+                else:
+                    # Create parent directories and copy file
+                    dest_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src_path, dest_path)
+                    logger.debug(f"Backed up file: {src_path} -> {dest_path}")
+
+                backed_up_files.append({
+                    "original_path": str(src_path),
+                    "backup_path": str(rel_path),
+                    "size_bytes": src_path.stat().st_size if src_path.is_file() else 0,
+                })
+
+            except OSError as e:
+                logger.error(f"Failed to backup {src_path}: {e}")
+                # Continue with other files even if one fails
+
         return True, "", backup_dir
