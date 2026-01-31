@@ -63,3 +63,5 @@ class OptionsDict(TypedDict):
     archive_compression_level: int
     rotate_archives: bool
     max_archives: int
+    pre_restore_backup: bool
+    max_restore_backups: int

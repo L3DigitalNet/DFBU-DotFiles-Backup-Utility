@@ -280,3 +280,29 @@ class TestConfigValidator:
         assert result["mirror"] is True
         assert result["archive"] is False
         assert result["hostname_subdir"] is True
+
+class TestPreRestoreOptions:
+    """Test pre-restore backup options in OptionsDict."""
+
+    def test_options_dict_includes_pre_restore_backup(self) -> None:
+        """Test OptionsDict includes pre_restore_backup field."""
+        # Arrange
+        from core.common_types import OptionsDict
+
+        # Act
+        options: OptionsDict = {
+            "mirror": True,
+            "archive": True,
+            "hostname_subdir": True,
+            "date_subdir": False,
+            "archive_format": "tar.gz",
+            "archive_compression_level": 5,
+            "rotate_archives": True,
+            "max_archives": 5,
+            "pre_restore_backup": True,
+            "max_restore_backups": 5,
+        }
+
+        # Assert
+        assert options["pre_restore_backup"] is True
+        assert options["max_restore_backups"] == 5
