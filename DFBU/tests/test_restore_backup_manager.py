@@ -207,3 +207,83 @@ class TestBackupListing:
         assert len(backups) == 1
         assert backups[0][0].name == "2026-01-31_100000"
         assert backups[0][1] == "2026-01-31_100000"
+
+
+# =============================================================================
+# Cleanup Old Backups Tests
+# =============================================================================
+
+
+class TestCleanupOldBackups:
+    """Test backup cleanup and retention policy."""
+
+    def test_cleanup_no_action_under_limit(self, tmp_path: Path) -> None:
+        """Test cleanup does nothing when under max_backups limit."""
+        # Arrange
+        from restore_backup_manager import RestoreBackupManager
+
+        manager = RestoreBackupManager(backup_base_dir=tmp_path, max_backups=5)
+        (tmp_path / "2026-01-31_100000").mkdir()
+        (tmp_path / "2026-01-31_110000").mkdir()
+
+        # Act
+        removed = manager.cleanup_old_backups()
+
+        # Assert
+        assert removed == []
+        assert manager.get_backup_count() == 2
+
+    def test_cleanup_removes_oldest_over_limit(self, tmp_path: Path) -> None:
+        """Test cleanup removes oldest backups when over limit."""
+        # Arrange
+        from restore_backup_manager import RestoreBackupManager
+
+        manager = RestoreBackupManager(backup_base_dir=tmp_path, max_backups=2)
+        dir1 = tmp_path / "2026-01-29_100000"
+        dir2 = tmp_path / "2026-01-30_100000"
+        dir3 = tmp_path / "2026-01-31_100000"
+        dir1.mkdir()
+        dir2.mkdir()
+        dir3.mkdir()
+
+        # Act
+        removed = manager.cleanup_old_backups()
+
+        # Assert
+        assert len(removed) == 1
+        assert removed[0] == dir1
+        assert not dir1.exists()
+        assert dir2.exists()
+        assert dir3.exists()
+
+    def test_cleanup_removes_multiple_oldest(self, tmp_path: Path) -> None:
+        """Test cleanup removes multiple backups when far over limit."""
+        # Arrange
+        from restore_backup_manager import RestoreBackupManager
+
+        manager = RestoreBackupManager(backup_base_dir=tmp_path, max_backups=1)
+        for i in range(5):
+            (tmp_path / f"2026-01-{25+i:02d}_100000").mkdir()
+
+        # Act
+        removed = manager.cleanup_old_backups()
+
+        # Assert
+        assert len(removed) == 4
+        assert manager.get_backup_count() == 1
+        # Newest should remain
+        assert (tmp_path / "2026-01-29_100000").exists()
+
+    def test_cleanup_handles_nonexistent_dir(self, tmp_path: Path) -> None:
+        """Test cleanup handles nonexistent backup directory gracefully."""
+        # Arrange
+        from restore_backup_manager import RestoreBackupManager
+
+        nonexistent = tmp_path / "does_not_exist"
+        manager = RestoreBackupManager(backup_base_dir=nonexistent)
+
+        # Act
+        removed = manager.cleanup_old_backups()
+
+        # Assert
+        assert removed == []

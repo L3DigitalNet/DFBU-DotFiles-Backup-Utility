@@ -31,6 +31,7 @@ Classes:
 """
 
 import logging
+import shutil
 from pathlib import Path
 from typing import Final
 
@@ -129,3 +130,29 @@ class RestoreBackupManager:
         backup_dirs.sort(key=lambda d: d.name, reverse=True)
 
         return [(d, d.name) for d in backup_dirs]
+
+    def cleanup_old_backups(self) -> list[Path]:
+        """
+        Remove oldest backups exceeding max_backups limit.
+
+        Returns:
+            List of removed backup directory paths
+        """
+        if not self._backup_base_dir.exists():
+            return []
+
+        # Get all backup directories sorted oldest first
+        backup_dirs = [d for d in self._backup_base_dir.iterdir() if d.is_dir()]
+        backup_dirs.sort(key=lambda d: d.name)  # Oldest first
+
+        removed: list[Path] = []
+        while len(backup_dirs) > self._max_backups:
+            oldest = backup_dirs.pop(0)
+            try:
+                shutil.rmtree(oldest)
+                removed.append(oldest)
+                logger.info(f"Removed old restore backup: {oldest}")
+            except OSError as e:
+                logger.error(f"Failed to remove backup {oldest}: {e}")
+
+        return removed
