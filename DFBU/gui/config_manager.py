@@ -201,6 +201,12 @@ class ConfigManager:
             # Validate and extract configuration
             self.options, self.dotfiles = self._validate_config(config_data)
 
+            # Apply defaults for pre-restore backup options (v0.6.0)
+            if "pre_restore_backup" not in self.options:
+                self.options["pre_restore_backup"] = True
+            if "max_restore_backups" not in self.options:
+                self.options["max_restore_backups"] = 5
+
             # Set base directories from first dotfile
             if self.dotfiles:
                 self.mirror_base_dir = self.expand_path(
@@ -519,6 +525,10 @@ class ConfigManager:
                 self.options["rotate_archives"] = bool(value)
             elif key == "max_archives":
                 self.options["max_archives"] = int(value)
+            elif key == "pre_restore_backup":
+                self.options["pre_restore_backup"] = bool(value)
+            elif key == "max_restore_backups":
+                self.options["max_restore_backups"] = int(value)
             return True
         return False
 
@@ -634,6 +644,8 @@ class ConfigManager:
             "archive_compression_level": 9,
             "rotate_archives": False,
             "max_archives": 5,
+            "pre_restore_backup": True,
+            "max_restore_backups": 5,
         }
 
     def _path_to_tilde_notation(self, path: Path) -> str:
