@@ -241,13 +241,149 @@ When errors occur during backup/restore:
 
 ---
 
-## New Components Summary
+## P3: File Size Management (v0.9.0)
+
+### Problem
+
+DFBU is designed for backing up dotfiles and configuration files, typically small text files suitable for Git storage. However, some applications create large configuration directories with caches, databases, profiles, and binary data that can quickly exceed Git repository size limits (typically 1-5 GB):
+
+- Browser profiles (Firefox, Chrome) can be hundreds of MB to several GB
+- IDE settings with cached indexes (VS Code, Cursor)
+- Application data directories (Flatpak, Docker Desktop)
+- Databases (Akonadi, KWallet)
+- Cache directories mixed with actual config files
+
+### Solution: File Size Monitoring and Warnings
+
+Implement size checks during backup operations with user warnings and optional exclusion patterns.
+
+### Size Thresholds
+
+| Level | Size | Action |
+|-------|------|--------|
+| **Info** | < 10 MB | No warning, log only |
+| **Warning** | 10-100 MB | Yellow warning in UI, continue |
+| **Alert** | 100 MB - 1 GB | Orange alert, recommend exclusion |
+| **Critical** | > 1 GB | Red alert, block by default with override option |
+
+### Size Check Points
+
+1. **Pre-backup scan** - Analyze total size before starting
+2. **Per-file check** - Warn during backup if individual file exceeds threshold
+3. **Directory size** - Calculate directory totals before backing up
+4. **Post-backup report** - Summary of total backup size and largest items
+
+### Size Report Example
+
+```toml
+[size_analysis]
+timestamp = "2026-01-31T16:00:00"
+total_files = 245
+total_size_bytes = 524288000  # 500 MB
+largest_items = [
+    { path = "~/.mozilla/firefox/profile", size = 450000000, type = "dir" },
+    { path = "~/.config/Code/CachedData", size = 35000000, type = "dir" },
+    { path = "~/.local/share/akonadi", size = 28000000, type = "dir" }
+]
+
+[warnings]
+items_over_100mb = 1
+items_over_10mb = 3
+items_over_1gb = 0
+```
+
+### Exclusion Patterns
+
+Add `.dfbuignore` support (similar to `.gitignore`):
+
+```
+# Exclude cache directories
+**/Cache/
+**/CachedData/
+**/.cache/
+
+# Exclude large browser data
+**/.mozilla/firefox/*/cache2/
+**/.config/google-chrome/*/Cache/
+
+# Exclude databases
+**/*.sqlite-shm
+**/*.sqlite-wal
+```
+
+### UI Integration
+
+Pre-backup size warning dialog:
+
+```
+┌─ Large Files Detected ────────────────────────────┐
+│                                                   │
+│  ⚠️  Your backup contains large files:            │
+│                                                   │
+│  ~/.mozilla/firefox/profile      450 MB          │
+│  ~/.config/Code/CachedData       35 MB           │
+│  ~/.local/share/akonadi          28 MB           │
+│                                                   │
+│  Total backup size: 500 MB                        │
+│  Recommended for Git: < 100 MB                    │
+│                                                   │
+│  Recommendation: Exclude cache/data directories   │
+│                                                   │
+│  [ Create Exclusions ]  [ Continue Anyway ]       │
+│                                                   │
+└───────────────────────────────────────────────────┘
+```
+
+### Config Options
+
+```toml
+[options]
+# Size checking (v0.9)
+size_check_enabled = true
+size_warning_threshold_mb = 10
+size_alert_threshold_mb = 100
+size_critical_threshold_mb = 1024
+auto_exclude_cache = true        # Automatically skip **/cache/** directories
+```
+
+### Smart Exclusion Suggestions
+
+Analyze common patterns and suggest exclusions:
+
+```python
+COMMON_EXCLUDES = {
+    "cache": ["**/cache/", "**/.cache/", "**/Cache/"],
+    "logs": ["**/logs/", "**/*.log"],
+    "temp": ["**/tmp/", "**/temp/", "**/.tmp/"],
+    "binary": ["**/*.so", "**/*.dll", "**/*.exe"],
+    "databases": ["**/*.db-wal", "**/*.db-shm", "**/cache2/"],
+}
+```
+
+### Implementation Steps
+
+1. Create `SizeAnalyzer` component + `SizeAnalyzerProtocol`
+2. Implement directory/file size calculation with progress
+3. Define size thresholds and warning levels
+4. Create size report generation
+5. Add `.dfbuignore` parser and pattern matching
+6. Build warning dialog UI (`.ui` file)
+7. Add "Create Exclusions" helper to auto-generate `.dfbuignore`
+8. Integration with pre-backup workflow
+9. Config options in UI
+10. Comprehensive tests
+11. Documentation updates
+
+---
+
+## Components Overview
 
 | Component | File | Protocol | Purpose |
 |-----------|------|----------|---------|
 | `RestoreBackupManager` | `restore_backup_manager.py` | `RestoreBackupManagerProtocol` | Pre-restore backups, retention, manifest I/O |
 | `VerificationManager` | `verification_manager.py` | `VerificationManagerProtocol` | Hash comparison, size checks, report generation |
 | `ErrorHandler` | `error_handler.py` | `ErrorHandlerProtocol` | Error categorization, message formatting, recovery coordination |
+| `SizeAnalyzer` | `size_analyzer.py` | `SizeAnalyzerProtocol` | File/directory size analysis, exclusion patterns, size reports |
 
 All components follow the existing patterns:
 - Pure Python in model layer (no Qt imports)
@@ -257,7 +393,7 @@ All components follow the existing patterns:
 
 ---
 
-## Configuration Additions
+## Configuration Summary
 
 ```toml
 [options]
@@ -270,6 +406,13 @@ verify_after_backup = true
 hash_verification = false
 
 # Error handling (v0.8) - no config options, always enabled
+
+# File size management (v0.9)
+size_check_enabled = true
+size_warning_threshold_mb = 10
+size_alert_threshold_mb = 100
+size_critical_threshold_mb = 1024
+auto_exclude_cache = true
 ```
 
 ---
@@ -308,9 +451,24 @@ hash_verification = false
 - [ ] Comprehensive tests
 - [ ] Documentation updates
 
+### v0.9.0 - File Size Management
+- [ ] `SizeAnalyzer` component
+- [ ] `SizeAnalyzerProtocol` interface
+- [ ] Directory/file size calculation
+- [ ] Size threshold warnings
+- [ ] `.dfbuignore` parser
+- [ ] Warning dialog UI
+- [ ] Smart exclusion suggestions
+- [ ] Pre-backup size scan
+- [ ] Size report generation
+- [ ] Config options in UI
+- [ ] Comprehensive tests
+- [ ] Documentation updates
+
 ### v1.0.0 - Production Ready
-- [ ] All reliability features complete
-- [ ] Full test coverage
+
+- [ ] All reliability features complete (v0.6-v0.9)
+- [ ] Full test coverage across all components
 - [ ] Documentation complete
 - [ ] Release notes
 - [ ] Version bump and tag
