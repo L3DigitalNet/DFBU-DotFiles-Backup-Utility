@@ -32,9 +32,12 @@ Classes:
 
 import logging
 import shutil
+import socket
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Final
+
+import tomli_w
 
 
 # Setup logger for this module
@@ -235,5 +238,25 @@ class RestoreBackupManager:
             except OSError as e:
                 logger.error(f"Failed to backup {src_path}: {e}")
                 # Continue with other files even if one fails
+
+        # Create manifest.toml documenting the backup
+        manifest = {
+            "restore_operation": {
+                "timestamp": datetime.now(UTC).isoformat(),
+                "source_backup": source_backup_path,
+                "hostname": socket.gethostname(),
+                "file_count": len(backed_up_files),
+            },
+            "backed_up_files": backed_up_files,
+        }
+
+        manifest_path = backup_dir / "manifest.toml"
+        try:
+            with open(manifest_path, "wb") as f:
+                tomli_w.dump(manifest, f)
+            logger.info(f"Created backup manifest: {manifest_path}")
+        except OSError as e:
+            logger.error(f"Failed to write manifest: {e}")
+            # Backup still succeeded even if manifest failed
 
         return True, "", backup_dir

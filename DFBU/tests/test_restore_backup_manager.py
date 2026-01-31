@@ -455,3 +455,76 @@ class TestBackupBeforeRestore:
         assert backed_up_dir.is_dir()
         assert (backed_up_dir / "init.lua").read_text() == "vim.opt.number = true"
         assert (backed_up_dir / "lua" / "plugins.lua").read_text() == "return {}"
+
+
+# =============================================================================
+# Manifest Creation Tests
+# =============================================================================
+
+
+class TestManifestCreation:
+    """Test manifest.toml creation."""
+
+    def test_backup_creates_manifest(self, tmp_path: Path) -> None:
+        """Test backup creates manifest.toml with metadata."""
+        # Arrange
+        import tomllib
+
+        from restore_backup_manager import RestoreBackupManager
+
+        manager = RestoreBackupManager(backup_base_dir=tmp_path / "backups")
+
+        test_file = tmp_path / "home" / ".bashrc"
+        test_file.parent.mkdir(parents=True)
+        test_file.write_text("# bash config")
+
+        # Act
+        success, error, backup_dir = manager.backup_before_restore(
+            files_to_overwrite=[test_file],
+            source_backup_path="/backups/mirror/2026-01-28",
+        )
+
+        # Assert
+        manifest_path = backup_dir / "manifest.toml"
+        assert manifest_path.exists()
+
+        with open(manifest_path, "rb") as f:
+            manifest = tomllib.load(f)
+
+        assert "restore_operation" in manifest
+        assert manifest["restore_operation"]["source_backup"] == "/backups/mirror/2026-01-28"
+        assert manifest["restore_operation"]["file_count"] == 1
+        assert "timestamp" in manifest["restore_operation"]
+        assert "hostname" in manifest["restore_operation"]
+
+    def test_manifest_includes_backed_up_files(self, tmp_path: Path) -> None:
+        """Test manifest lists all backed up files."""
+        # Arrange
+        import tomllib
+
+        from restore_backup_manager import RestoreBackupManager
+
+        manager = RestoreBackupManager(backup_base_dir=tmp_path / "backups")
+
+        file1 = tmp_path / "home" / ".bashrc"
+        file2 = tmp_path / "home" / ".zshrc"
+        file1.parent.mkdir(parents=True)
+        file1.write_text("bash")
+        file2.write_text("zsh")
+
+        # Act
+        success, error, backup_dir = manager.backup_before_restore(
+            files_to_overwrite=[file1, file2],
+            source_backup_path="/backups/test",
+        )
+
+        # Assert
+        with open(backup_dir / "manifest.toml", "rb") as f:
+            manifest = tomllib.load(f)
+
+        assert "backed_up_files" in manifest
+        assert len(manifest["backed_up_files"]) == 2
+
+        paths = [f["original_path"] for f in manifest["backed_up_files"]]
+        assert str(file1) in paths
+        assert str(file2) in paths
