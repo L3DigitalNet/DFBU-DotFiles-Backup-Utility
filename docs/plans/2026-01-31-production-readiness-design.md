@@ -1,0 +1,316 @@
+# Production Readiness Design
+
+**Date:** 2026-01-31
+**Status:** Approved
+**Versions:** v0.6.0, v0.7.0, v0.8.0 → v1.0.0
+
+## Overview
+
+DFBU currently has solid architecture and performance, but lacks the safety guarantees needed for production use. This design defines a comprehensive reliability layer built in **risk-first order**.
+
+### Priority Order
+
+| Priority | Feature | Risk Mitigated | Version |
+|----------|---------|----------------|---------|
+| **P0** | Pre-restore safety | Data loss - overwriting files with no way back | v0.6.0 |
+| **P1** | Backup verification | Silent failures - thinking backups succeeded when they didn't | v0.7.0 |
+| **P2** | Error handling | Confusion & partial states - unclear what went wrong or how to fix it | v0.8.0 |
+
+### Design Principles
+
+1. **Non-breaking** - All features additive; existing workflows unchanged
+2. **Opt-out not opt-in** - Safety features enabled by default
+3. **Transparent** - Users can see exactly what safety measures happened
+4. **Testable** - Each feature gets comprehensive test coverage before merge
+
+---
+
+## P0: Pre-Restore Safety (v0.6.0)
+
+### Problem
+
+When restoring dotfiles, DFBU overwrites existing files without any backup. If the restore goes wrong (wrong version, corrupted backup, user error), the original files are gone forever.
+
+### Solution: Automatic Pre-Restore Backup
+
+Before any restore operation, copy all files that will be overwritten to a timestamped backup location.
+
+### Storage Location
+
+```
+~/.local/share/dfbu/restore-backups/
+└── 2026-01-31_143052/           # Timestamp of restore operation
+    ├── manifest.toml            # What was backed up and why
+    ├── .bashrc                  # Flat file backup
+    ├── .config/
+    │   └── konsole/
+    │       └── konsolerc        # Preserves directory structure
+    └── ...
+```
+
+### Manifest Format
+
+```toml
+[restore_operation]
+timestamp = "2026-01-31T14:30:52"
+source_backup = "/backups/mirror/hostname/2026-01-28/"
+hostname = "workstation"
+file_count = 12
+
+[[backed_up_files]]
+original_path = "~/.bashrc"
+backup_path = ".bashrc"
+size_bytes = 4096
+modified = "2026-01-15T09:22:11"
+```
+
+### Retention Policy
+
+- Keep last **5 restore backups** by default (configurable)
+- Automatic cleanup of oldest when limit exceeded
+- Never delete during a restore operation (cleanup happens at start of next restore)
+
+### Integration Points
+
+- `BackupOrchestrator.restore()` - Add pre-backup step before any file operations
+- New `RestoreBackupManager` component following existing Protocol pattern
+- Config option: `[options] pre_restore_backup = true` (default: true)
+- Config option: `[options] max_restore_backups = 5`
+
+### Implementation Steps
+
+1. Create `RestoreBackupManager` component + `RestoreBackupManagerProtocol`
+2. Add manifest TOML read/write
+3. Integrate into `BackupOrchestrator.restore()`
+4. Add retention/cleanup logic
+5. Wire config options to UI (Configuration tab)
+6. Comprehensive tests
+
+---
+
+## P1: Backup Verification (v0.7.0)
+
+### Problem
+
+Currently, backups can fail silently. A file copy might succeed but produce a corrupted result, or a tar archive might be incomplete. Users have no way to know if their backups are trustworthy.
+
+### Solution: Multi-Level Verification
+
+Three verification checks, each catching different failure modes:
+
+| Check | What It Catches | When |
+|-------|-----------------|------|
+| **Existence** | Missing files, failed writes | After each file/archive |
+| **Size match** | Truncated copies, incomplete writes | After each file/archive |
+| **Hash comparison** | Bit-level corruption, subtle errors | Optional, per-operation or scheduled |
+
+### Verification Flow (Mirror Backup)
+
+```
+For each dotfile:
+  1. Copy file to destination
+  2. Verify destination exists
+  3. Compare source size == destination size
+  4. If hash_verify enabled: compare SHA-256 hashes
+  5. Record result in verification report
+```
+
+### Verification Report
+
+After each backup, generate a verification summary:
+
+```toml
+[verification]
+timestamp = "2026-01-31T15:00:00"
+backup_type = "mirror"
+total_files = 24
+verified_ok = 23
+verified_failed = 1
+hash_verified = true
+
+[[results]]
+path = "~/.bashrc"
+status = "ok"
+size_match = true
+hash_match = true
+
+[[results]]
+path = "~/.config/nvim/init.lua"
+status = "failed"
+error = "size_mismatch"
+expected_size = 8192
+actual_size = 4096
+```
+
+### UI Integration
+
+- Progress bar shows verification step: "Verifying... (23/24)"
+- Summary in log panel: "✓ 23 files verified, ✗ 1 failed"
+- Failed verifications highlighted in red with details
+- New "Verify Existing Backup" button to check previous backups on-demand
+
+### Config Options
+
+```toml
+[options]
+verify_after_backup = true      # Always verify (default: true)
+hash_verification = false       # SHA-256 check (default: false, slower)
+```
+
+### Implementation Steps
+
+1. Create `VerificationManager` component + `VerificationManagerProtocol`
+2. Implement size/hash verification functions
+3. Integrate into backup workflow (mirror + archive)
+4. Add verification report generation
+5. Add "Verify Backup" UI button
+6. Progress/status UI updates
+7. Comprehensive tests
+
+---
+
+## P2: Error Handling & Recovery (v0.8.0)
+
+### Problem
+
+Current error handling is basic - operations stop on first error with limited context. Users can't tell what succeeded, what failed, or how to fix it. Partial backups leave the system in unclear states.
+
+### Solution: Structured Error Handling with Recovery Options
+
+### Error Categories
+
+| Category | Examples | Handling |
+|----------|----------|----------|
+| **Recoverable** | Permission denied, disk full, file locked | Retry option, skip option, continue with others |
+| **Non-recoverable** | Source missing, config corrupt | Clear message, safe abort, preserve completed work |
+| **Warnings** | Symlink followed, empty directory | Log and continue, summarize at end |
+
+### Operation Result Model
+
+Every operation returns a structured result, not just success/fail:
+
+```python
+@dataclass
+class OperationResult:
+    status: Literal["success", "partial", "failed"]
+    completed: list[PathResult]      # What succeeded
+    failed: list[PathResult]         # What failed and why
+    skipped: list[PathResult]        # What was skipped and why
+    warnings: list[str]              # Non-fatal issues
+    can_retry: list[Path]            # Failed items that might succeed on retry
+```
+
+### User-Facing Error Messages
+
+Replace technical errors with actionable messages:
+
+| Before | After |
+|--------|-------|
+| `PermissionError: [Errno 13]` | "Cannot read ~/.ssh/config - permission denied. Run with elevated permissions or skip this file?" |
+| `FileNotFoundError` | "Source file ~/.bashrc no longer exists. It may have been deleted since the config was loaded." |
+| `OSError: No space left` | "Backup drive is full (needs 2.4 MB, only 1.1 MB free). Free space or choose a different destination." |
+
+### Recovery UI
+
+When errors occur during backup/restore:
+
+```
+┌─ Backup Interrupted ──────────────────────────────┐
+│                                                   │
+│  ✓ 18 files backed up successfully                │
+│  ✗ 2 files failed                                 │
+│                                                   │
+│  Failed:                                          │
+│    ~/.ssh/config - Permission denied              │
+│    ~/.gnupg/pubring.kbx - File locked             │
+│                                                   │
+│  [ Retry Failed ]  [ Skip & Continue ]  [ Abort ] │
+│                                                   │
+└───────────────────────────────────────────────────┘
+```
+
+### Implementation Steps
+
+1. Create `ErrorHandler` component + `ErrorHandlerProtocol`
+2. Define `OperationResult` dataclass in `common_types.py`
+3. Wrap file operations with structured error handling
+4. Create recovery dialog UI (`.ui` file)
+5. Add retry/skip/continue logic
+6. Update all operations to return structured results
+7. Comprehensive tests
+
+---
+
+## New Components Summary
+
+| Component | File | Protocol | Purpose |
+|-----------|------|----------|---------|
+| `RestoreBackupManager` | `restore_backup_manager.py` | `RestoreBackupManagerProtocol` | Pre-restore backups, retention, manifest I/O |
+| `VerificationManager` | `verification_manager.py` | `VerificationManagerProtocol` | Hash comparison, size checks, report generation |
+| `ErrorHandler` | `error_handler.py` | `ErrorHandlerProtocol` | Error categorization, message formatting, recovery coordination |
+
+All components follow the existing patterns:
+- Pure Python in model layer (no Qt imports)
+- Protocol-based dependency injection
+- Integration through `DFBUModel` facade
+- Worker threads for long operations
+
+---
+
+## Configuration Additions
+
+```toml
+[options]
+# Pre-restore safety (v0.6)
+pre_restore_backup = true
+max_restore_backups = 5
+
+# Verification (v0.7)
+verify_after_backup = true
+hash_verification = false
+
+# Error handling (v0.8) - no config options, always enabled
+```
+
+---
+
+## Release Milestones
+
+### v0.6.0 - Pre-Restore Safety
+- [ ] `RestoreBackupManager` component
+- [ ] `RestoreBackupManagerProtocol` interface
+- [ ] Manifest TOML read/write
+- [ ] Integration with `BackupOrchestrator.restore()`
+- [ ] Retention/cleanup logic
+- [ ] Config options in UI
+- [ ] Comprehensive tests
+- [ ] Documentation updates
+
+### v0.7.0 - Backup Verification
+- [ ] `VerificationManager` component
+- [ ] `VerificationManagerProtocol` interface
+- [ ] Size verification
+- [ ] Hash verification (SHA-256)
+- [ ] Verification report generation
+- [ ] "Verify Backup" UI button
+- [ ] Progress/status UI updates
+- [ ] Comprehensive tests
+- [ ] Documentation updates
+
+### v0.8.0 - Error Handling & Recovery
+- [ ] `ErrorHandler` component
+- [ ] `ErrorHandlerProtocol` interface
+- [ ] `OperationResult` dataclass
+- [ ] Error categorization logic
+- [ ] User-friendly error messages
+- [ ] Recovery dialog UI
+- [ ] Retry/skip/continue logic
+- [ ] Comprehensive tests
+- [ ] Documentation updates
+
+### v1.0.0 - Production Ready
+- [ ] All reliability features complete
+- [ ] Full test coverage
+- [ ] Documentation complete
+- [ ] Release notes
+- [ ] Version bump and tag
