@@ -35,11 +35,16 @@ Functions:
     None
 """
 
+import logging
 import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+
+# Setup logger for this module
+logger = logging.getLogger(__name__)
 
 
 # Local imports
@@ -51,6 +56,7 @@ from core.common_types import DotFileDict, OptionsDict
 if TYPE_CHECKING:
     from file_operations import FileOperations
     from statistics_tracker import StatisticsTracker
+    from restore_backup_manager import RestoreBackupManager
 
 
 # =============================================================================
@@ -89,6 +95,7 @@ class BackupOrchestrator:
         stats_tracker: StatisticsTracker,
         mirror_base_dir: Path,
         archive_base_dir: Path,
+        restore_backup_manager: RestoreBackupManager | None = None,
     ) -> None:
         """
         Initialize BackupOrchestrator.
@@ -98,11 +105,13 @@ class BackupOrchestrator:
             stats_tracker: StatisticsTracker instance
             mirror_base_dir: Base directory for mirror backups
             archive_base_dir: Base directory for archive backups
+            restore_backup_manager: Optional RestoreBackupManager for pre-restore backups
         """
         self.file_ops = file_ops
         self.stats_tracker = stats_tracker
         self.mirror_base_dir = mirror_base_dir
         self.archive_base_dir = archive_base_dir
+        self._restore_backup_manager = restore_backup_manager
 
     def validate_dotfile_paths(
         self, dotfiles: list[DotFileDict]
@@ -323,6 +332,17 @@ class BackupOrchestrator:
 
         # Reconstruct original filesystem paths from backup structure
         restore_paths = self.file_ops.reconstruct_restore_paths(src_files)
+
+        # Pre-restore backup: backup files that will be overwritten
+        if self._restore_backup_manager is not None:
+            dest_paths = [dest for _, dest in restore_paths if dest is not None]
+            success, error, _ = self._restore_backup_manager.backup_before_restore(
+                files_to_overwrite=dest_paths,
+                source_backup_path=str(src_dir),
+            )
+            if not success:
+                logger.error(f"Pre-restore backup failed: {error}")
+                return 0, total_items
 
         # Initialize counter for successful restore operations
         processed_count = 0

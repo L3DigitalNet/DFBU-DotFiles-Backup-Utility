@@ -706,3 +706,96 @@ class TestProcessDirectoryBackup:
         assert count == 1  # Only one file actually copied
         processed_callback.assert_called_once()
         skipped_callback.assert_called_once()
+
+
+class TestRestoreWithPreBackup:
+    """Test restore operation with pre-restore backup."""
+
+    def test_restore_calls_pre_backup(self, tmp_path: Path) -> None:
+        """Test restore calls RestoreBackupManager before restoring."""
+        # Arrange
+        file_ops = Mock(spec=FileOperations)
+        stats_tracker = Mock(spec=StatisticsTracker)
+        restore_backup_mgr = Mock()
+        restore_backup_mgr.backup_before_restore.return_value = (True, "", tmp_path / "backup")
+
+        # Setup source files
+        src_dir = tmp_path / "backup"
+        src_dir.mkdir()
+        (src_dir / "test.txt").write_text("content")
+
+        file_ops.discover_restore_files.return_value = [src_dir / "test.txt"]
+        file_ops.reconstruct_restore_paths.return_value = [
+            (src_dir / "test.txt", Path.home() / ".test.txt")
+        ]
+        file_ops.copy_file.return_value = True
+
+        orchestrator = BackupOrchestrator(
+            file_ops, stats_tracker, tmp_path, tmp_path,
+            restore_backup_manager=restore_backup_mgr,
+        )
+
+        # Act
+        orchestrator.execute_restore(src_dir)
+
+        # Assert
+        restore_backup_mgr.backup_before_restore.assert_called_once()
+
+    def test_restore_aborts_if_pre_backup_fails(self, tmp_path: Path) -> None:
+        """Test restore aborts if pre-backup fails."""
+        # Arrange
+        file_ops = Mock(spec=FileOperations)
+        stats_tracker = Mock(spec=StatisticsTracker)
+        restore_backup_mgr = Mock()
+        restore_backup_mgr.backup_before_restore.return_value = (
+            False, "Disk full", None
+        )
+
+        src_dir = tmp_path / "backup"
+        src_dir.mkdir()
+        (src_dir / "test.txt").write_text("content")
+
+        file_ops.discover_restore_files.return_value = [src_dir / "test.txt"]
+        file_ops.reconstruct_restore_paths.return_value = [
+            (src_dir / "test.txt", Path.home() / ".test.txt")
+        ]
+
+        orchestrator = BackupOrchestrator(
+            file_ops, stats_tracker, tmp_path, tmp_path,
+            restore_backup_manager=restore_backup_mgr,
+        )
+
+        # Act
+        processed, total = orchestrator.execute_restore(src_dir)
+
+        # Assert
+        assert processed == 0
+        file_ops.copy_file.assert_not_called()
+
+    def test_restore_works_without_backup_manager(self, tmp_path: Path) -> None:
+        """Test restore still works when no backup manager provided."""
+        # Arrange
+        file_ops = Mock(spec=FileOperations)
+        stats_tracker = Mock(spec=StatisticsTracker)
+
+        src_dir = tmp_path / "backup"
+        src_dir.mkdir()
+        (src_dir / "test.txt").write_text("content")
+
+        file_ops.discover_restore_files.return_value = [src_dir / "test.txt"]
+        file_ops.reconstruct_restore_paths.return_value = [
+            (src_dir / "test.txt", tmp_path / ".test.txt")
+        ]
+        file_ops.copy_file.return_value = True
+
+        # No restore_backup_manager provided
+        orchestrator = BackupOrchestrator(
+            file_ops, stats_tracker, tmp_path, tmp_path
+        )
+
+        # Act
+        processed, total = orchestrator.execute_restore(src_dir)
+
+        # Assert
+        assert processed == 1
+        file_ops.copy_file.assert_called_once()
