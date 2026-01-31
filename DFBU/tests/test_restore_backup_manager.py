@@ -287,3 +287,77 @@ class TestCleanupOldBackups:
 
         # Assert
         assert removed == []
+
+
+# =============================================================================
+# Backup Before Restore Tests
+# =============================================================================
+
+
+class TestBackupBeforeRestore:
+    """Test backup_before_restore functionality."""
+
+    def test_backup_creates_timestamped_directory(self, tmp_path: Path) -> None:
+        """Test backup creates directory with timestamp name."""
+        # Arrange
+        import re
+
+        from restore_backup_manager import RestoreBackupManager
+
+        manager = RestoreBackupManager(backup_base_dir=tmp_path)
+        file_to_backup = tmp_path / "original" / "test.txt"
+        file_to_backup.parent.mkdir()
+        file_to_backup.write_text("original content")
+
+        # Act
+        success, error, backup_dir = manager.backup_before_restore(
+            files_to_overwrite=[file_to_backup],
+            source_backup_path="/backups/mirror/2026-01-28",
+        )
+
+        # Assert
+        assert success is True
+        assert error == ""
+        assert backup_dir is not None
+        assert backup_dir.exists()
+        # Verify timestamp format: YYYY-MM-DD_HHMMSS
+        assert re.match(r"\d{4}-\d{2}-\d{2}_\d{6}", backup_dir.name)
+
+    def test_backup_creates_base_directory_if_missing(self, tmp_path: Path) -> None:
+        """Test backup creates base directory if it doesn't exist."""
+        # Arrange
+        from restore_backup_manager import RestoreBackupManager
+
+        backup_base = tmp_path / "new" / "nested" / "backup"
+        manager = RestoreBackupManager(backup_base_dir=backup_base)
+        file_to_backup = tmp_path / "test.txt"
+        file_to_backup.write_text("content")
+
+        # Act
+        success, error, backup_dir = manager.backup_before_restore(
+            files_to_overwrite=[file_to_backup],
+            source_backup_path="/backups/mirror/test",
+        )
+
+        # Assert
+        assert success is True
+        assert backup_base.exists()
+
+    def test_backup_empty_list_succeeds(self, tmp_path: Path) -> None:
+        """Test backup with empty file list succeeds with no backup created."""
+        # Arrange
+        from restore_backup_manager import RestoreBackupManager
+
+        manager = RestoreBackupManager(backup_base_dir=tmp_path)
+
+        # Act
+        success, error, backup_dir = manager.backup_before_restore(
+            files_to_overwrite=[],
+            source_backup_path="/backups/mirror/test",
+        )
+
+        # Assert
+        assert success is True
+        assert error == ""
+        assert backup_dir is None
+        assert manager.get_backup_count() == 0

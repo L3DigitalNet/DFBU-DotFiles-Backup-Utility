@@ -32,6 +32,7 @@ Classes:
 
 import logging
 import shutil
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Final
 
@@ -48,6 +49,7 @@ DEFAULT_BACKUP_DIR: Final[Path] = (
     Path.home() / ".local" / "share" / "dfbu" / "restore-backups"
 )
 DEFAULT_MAX_BACKUPS: Final[int] = 5
+BACKUP_TIMESTAMP_FORMAT: Final[str] = "%Y-%m-%d_%H%M%S"
 
 
 # =============================================================================
@@ -156,3 +158,44 @@ class RestoreBackupManager:
                 logger.error(f"Failed to remove backup {oldest}: {e}")
 
         return removed
+
+    def backup_before_restore(
+        self,
+        files_to_overwrite: list[Path],
+        source_backup_path: str,
+    ) -> tuple[bool, str, Path | None]:
+        """
+        Create backup of files that will be overwritten during restore.
+
+        Args:
+            files_to_overwrite: List of destination paths that will be overwritten
+            source_backup_path: Path to the backup being restored from
+
+        Returns:
+            Tuple of (success, error_message, backup_directory)
+        """
+        # Early return if no files to backup
+        if not files_to_overwrite:
+            return True, "", None
+
+        # Filter to only existing files
+        existing_files = [f for f in files_to_overwrite if f.exists()]
+        if not existing_files:
+            return True, "", None
+
+        # Create timestamped backup directory
+        timestamp = datetime.now(UTC).strftime(BACKUP_TIMESTAMP_FORMAT)
+        backup_dir = self._backup_base_dir / timestamp
+
+        try:
+            backup_dir.mkdir(parents=True, exist_ok=False)
+        except FileExistsError:
+            # Extremely unlikely - add milliseconds to make unique
+            timestamp = f"{timestamp}_{datetime.now(UTC).microsecond:06d}"
+            backup_dir = self._backup_base_dir / timestamp
+            backup_dir.mkdir(parents=True)
+        except OSError as e:
+            return False, f"Failed to create backup directory: {e}", None
+
+        logger.info(f"Created pre-restore backup directory: {backup_dir}")
+        return True, "", backup_dir
