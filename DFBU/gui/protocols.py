@@ -244,11 +244,6 @@ class ConfigManagerProtocol(Protocol):
         """Get current configuration file path."""
         ...
 
-    @config_path.setter
-    def config_path(self, path: Path) -> None:
-        """Set configuration file path."""
-        ...
-
     @property
     def options(self) -> OptionsDict:
         """Get current options configuration."""

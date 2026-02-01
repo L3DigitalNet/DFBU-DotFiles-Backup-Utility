@@ -149,11 +149,6 @@ class DFBUModel:
         """Get current configuration file path."""
         return self._config_manager.config_path
 
-    @config_path.setter
-    def config_path(self, path: Path) -> None:
-        """Set configuration file path."""
-        self._config_manager.config_path = path
-
     @property
     def options(self) -> OptionsDict:
         """Get current options configuration."""
