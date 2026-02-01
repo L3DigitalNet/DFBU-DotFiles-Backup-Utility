@@ -662,6 +662,19 @@ class MainWindow(QMainWindow):
         self.config_max_archives_spinbox: QSpinBox = ui_widget.findChild(
             QSpinBox, "config_max_archives_spinbox"
         )  # type: ignore[assignment]
+        # Pre-restore safety widgets (v0.6.0)
+        self.config_pre_restore_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "config_pre_restore_checkbox"
+        )  # type: ignore[assignment]
+        self.config_max_restore_spinbox: QSpinBox = ui_widget.findChild(
+            QSpinBox, "config_max_restore_spinbox"
+        )  # type: ignore[assignment]
+        self.config_restore_path_edit: QLineEdit = ui_widget.findChild(
+            QLineEdit, "config_restore_path_edit"
+        )  # type: ignore[assignment]
+        self.browse_restore_backup_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "browse_restore_btn"
+        )  # type: ignore[assignment]
         self.save_config_btn: QPushButton = ui_widget.findChild(
             QPushButton, "saveConfigButton"
         )  # type: ignore[assignment]
@@ -752,6 +765,14 @@ class MainWindow(QMainWindow):
         )
         self.config_rotate_checkbox.stateChanged.connect(self._on_config_changed)
         self.config_max_archives_spinbox.valueChanged.connect(self._on_config_changed)
+        # Pre-restore safety signal connections (v0.6.0)
+        self.config_pre_restore_checkbox.stateChanged.connect(
+            self._on_pre_restore_checkbox_changed
+        )
+        self.config_pre_restore_checkbox.stateChanged.connect(self._on_config_changed)
+        self.config_max_restore_spinbox.valueChanged.connect(self._on_config_changed)
+        self.config_restore_path_edit.textChanged.connect(self._on_config_changed)
+        self.browse_restore_backup_btn.clicked.connect(self._on_browse_restore_backup_dir)
         self.save_config_btn.clicked.connect(self._on_save_config)
 
         # Logs tab connections
@@ -1263,11 +1284,19 @@ class MainWindow(QMainWindow):
         # Update path displays
         mirror_path = str(self.viewmodel.model.mirror_base_dir)
         archive_path = str(self.viewmodel.model.archive_base_dir)
+        restore_backup_path = str(self.viewmodel.model.restore_backup_dir)
         self.config_mirror_path_edit.setText(mirror_path)
         self.config_archive_path_edit.setText(archive_path)
+        self.config_restore_path_edit.setText(restore_backup_path)
 
         # Enable max archives spinbox only if rotation is enabled
         self.config_max_archives_spinbox.setEnabled(options["rotate_archives"])
+
+        # Pre-restore safety options (v0.6.0)
+        self.config_pre_restore_checkbox.setChecked(options["pre_restore_backup"])
+        self.config_max_restore_spinbox.setValue(options["max_restore_backups"])
+        # Enable max restore backups spinbox only if pre-restore backup is enabled
+        self.config_max_restore_spinbox.setEnabled(options["pre_restore_backup"])
 
         # Enable save button since config is loaded
         self.save_config_btn.setEnabled(True)
@@ -1326,6 +1355,20 @@ class MainWindow(QMainWindow):
         # Enable/disable max archives spinbox based on rotation checkbox
         self.config_max_archives_spinbox.setEnabled(bool(state))
 
+    def _on_pre_restore_checkbox_changed(self, state: int) -> None:
+        """Handle pre-restore backup checkbox state change."""
+        # Enable/disable max restore backups spinbox based on pre-restore checkbox
+        self.config_max_restore_spinbox.setEnabled(bool(state))
+
+    def _on_browse_restore_backup_dir(self) -> None:
+        """Handle browse restore backup directory button click."""
+        directory = QFileDialog.getExistingDirectory(
+            self, "Select Pre-Restore Backup Directory", str(Path.home())
+        )
+
+        if directory:
+            self.config_restore_path_edit.setText(directory)
+
     def _on_save_config(self) -> None:
         """Handle save configuration button click."""
         # Confirm save operation
@@ -1359,6 +1402,12 @@ class MainWindow(QMainWindow):
             self.viewmodel.command_update_option(
                 "max_archives", self.config_max_archives_spinbox.value()
             )
+            self.viewmodel.command_update_option(
+                "pre_restore_backup", self.config_pre_restore_checkbox.isChecked()
+            )
+            self.viewmodel.command_update_option(
+                "max_restore_backups", self.config_max_restore_spinbox.value()
+            )
 
             # Update paths
             self.viewmodel.command_update_path(
@@ -1366,6 +1415,9 @@ class MainWindow(QMainWindow):
             )
             self.viewmodel.command_update_path(
                 "archive_dir", self.config_archive_path_edit.text()
+            )
+            self.viewmodel.command_update_path(
+                "restore_backup_dir", self.config_restore_path_edit.text()
             )
 
             # Save to file

@@ -308,6 +308,7 @@ class BackupOrchestrator:
     def execute_restore(
         self,
         src_dir: Path,
+        pre_restore_enabled: bool = True,
         progress_callback: Callable[[int], None] | None = None,
         item_processed_callback: Callable[[str, str], None] | None = None,
     ) -> tuple[int, int]:
@@ -316,6 +317,7 @@ class BackupOrchestrator:
 
         Args:
             src_dir: Source backup directory
+            pre_restore_enabled: Whether to create pre-restore backup (default: True)
             progress_callback: Optional callback for progress updates (percent)
             item_processed_callback: Optional callback for processed items (src, dest)
 
@@ -334,7 +336,7 @@ class BackupOrchestrator:
         restore_paths = self.file_ops.reconstruct_restore_paths(src_files)
 
         # Pre-restore backup: backup files that will be overwritten
-        if self._restore_backup_manager is not None:
+        if pre_restore_enabled and self._restore_backup_manager is not None:
             dest_paths = [dest for _, dest in restore_paths if dest is not None]
             success, error, _ = self._restore_backup_manager.backup_before_restore(
                 files_to_overwrite=dest_paths,
@@ -343,6 +345,9 @@ class BackupOrchestrator:
             if not success:
                 logger.error(f"Pre-restore backup failed: {error}")
                 return 0, total_items
+
+            # Cleanup old backups to enforce retention policy
+            self._restore_backup_manager.cleanup_old_backups()
 
         # Initialize counter for successful restore operations
         processed_count = 0

@@ -384,10 +384,10 @@ class ConfigManagerProtocol(Protocol):
 
     def update_path(self, path_type: str, value: str) -> bool:
         """
-        Update mirror_dir or archive_dir path.
+        Update mirror_dir, archive_dir, or restore_backup_dir path.
 
         Args:
-            path_type: Either "mirror_dir" or "archive_dir"
+            path_type: One of "mirror_dir", "archive_dir", or "restore_backup_dir"
             value: New path value
 
         Returns:

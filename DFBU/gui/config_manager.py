@@ -55,6 +55,7 @@ from core.common_types import DotFileDict, OptionsDict
 from core.validation import ConfigValidator
 
 from gui.input_validation import InputValidator
+from gui.restore_backup_manager import DEFAULT_BACKUP_DIR
 
 
 # =============================================================================
@@ -182,6 +183,8 @@ class ConfigManager:
         # Base directories (set from first dotfile after config load)
         self.mirror_base_dir: Path = Path.home() / "DFBU_Mirror"
         self.archive_base_dir: Path = Path.home() / "DFBU_Archives"
+        # Pre-restore backup directory (v0.6.0)
+        self.restore_backup_dir: Path = DEFAULT_BACKUP_DIR
 
     def load_config(self) -> tuple[bool, str]:
         """
@@ -207,14 +210,28 @@ class ConfigManager:
             if "max_restore_backups" not in self.options:
                 self.options["max_restore_backups"] = 5
 
-            # Set base directories from first dotfile
+            # Set base directories from paths section or first dotfile
+            paths_section = config_data.get("paths", {})
             if self.dotfiles:
                 self.mirror_base_dir = self.expand_path(
-                    self.dotfiles[0].get("mirror_dir", "~/DFBU_Mirror")
+                    paths_section.get(
+                        "mirror_dir",
+                        self.dotfiles[0].get("mirror_dir", "~/DFBU_Mirror"),
+                    )
                 )
                 self.archive_base_dir = self.expand_path(
-                    self.dotfiles[0].get("archive_dir", "~/DFBU_Archives")
+                    paths_section.get(
+                        "archive_dir",
+                        self.dotfiles[0].get("archive_dir", "~/DFBU_Archives"),
+                    )
                 )
+            # Set restore backup directory (v0.6.0)
+            self.restore_backup_dir = self.expand_path(
+                paths_section.get(
+                    "restore_backup_dir",
+                    "~/.local/share/dfbu/restore-backups",
+                )
+            )
 
             # Check for and fix any corrupted or non-portable path entries
             corruptions_fixed = self._validate_and_fix_paths()
@@ -352,6 +369,9 @@ class ConfigManager:
                 "paths": {
                     "mirror_dir": self._path_to_tilde_notation(self.mirror_base_dir),
                     "archive_dir": self._path_to_tilde_notation(self.archive_base_dir),
+                    "restore_backup_dir": self._path_to_tilde_notation(
+                        self.restore_backup_dir
+                    ),
                 },
                 "options": dict(self.options),
                 "dotfile": [],
@@ -534,10 +554,10 @@ class ConfigManager:
 
     def update_path(self, path_type: str, value: str) -> bool:
         """
-        Update mirror_dir or archive_dir path with validation.
+        Update mirror_dir, archive_dir, or restore_backup_dir path with validation.
 
         Args:
-            path_type: Either "mirror_dir" or "archive_dir"
+            path_type: One of "mirror_dir", "archive_dir", or "restore_backup_dir"
             value: New path value
 
         Returns:
@@ -555,6 +575,9 @@ class ConfigManager:
             return True
         if path_type == "archive_dir":
             self.archive_base_dir = expanded_path
+            return True
+        if path_type == "restore_backup_dir":
+            self.restore_backup_dir = expanded_path
             return True
 
         return False

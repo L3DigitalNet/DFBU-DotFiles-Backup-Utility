@@ -532,58 +532,21 @@ class RestoreWorker(QThread):
         # Reset statistics from any previous restore operation
         self.model.reset_statistics()
 
-        # Discover all files in source directory recursively
-        # Returns list of Path objects for all files found
-        src_files = self.model.discover_restore_files(self.source_directory)
+        # Execute restore via BackupOrchestrator (includes pre-restore backup if enabled)
+        # Callbacks emit signals for progress and item processing
+        processed, total = self.model.execute_restore(
+            src_dir=self.source_directory,
+            progress_callback=lambda pct: self.progress_updated.emit(pct),
+            item_processed_callback=lambda src, dest: self.item_processed.emit(src, dest),
+        )
 
-        # No files found in backup directory - emit error and exit
-        if not src_files:
+        # Handle error cases
+        if total == 0:
             self.error_occurred.emit("Restore", "No files found in source directory")
             return
-
-        # Reconstruct original destination paths from backup directory structure
-        # Parses hostname/home or hostname/root structure to rebuild original paths
-        # Returns list of (src_path, dest_path) tuples where dest_path may be None on failure
-        restore_paths = self.model.reconstruct_restore_paths(src_files)
-
-        # Filter out paths where reconstruction failed (dest_path is None)
-        # Only process files where we successfully determined the original location
-        valid_paths = [(src, dest) for src, dest in restore_paths if dest is not None]
-
-        # Could not reconstruct any valid paths - emit error and exit
-        if not valid_paths:
-            self.error_occurred.emit(
-                "Restore", "Could not reconstruct any original paths"
-            )
+        if processed == 0 and total > 0:
+            self.error_occurred.emit("Restore", "Restore operation failed")
             return
-
-        # Track total files for progress calculation
-        total_files = len(valid_paths)
-
-        # Copy each file back to its original location
-        for i, (src_path, dest_path) in enumerate(valid_paths):
-            # Start timing for individual file processing
-            file_start = time.perf_counter()
-
-            # Copy file with metadata preservation and parent directory creation
-            # Will overwrite existing files at destination
-            success = self.model.copy_file(src_path, dest_path, create_parent=True)
-
-            if success:
-                # File restored successfully - record timing and emit success signal
-                elapsed = time.perf_counter() - file_start
-                self.model.record_item_processed(elapsed)
-                self.item_processed.emit(str(src_path), str(dest_path))
-            else:
-                # File restoration failed - record failure and emit error signal
-                self.model.record_item_failed()
-                self.error_occurred.emit(str(src_path), "Failed to restore file")
-
-            # Update progress bar with percentage complete
-            # i+1 because enumerate is zero-based but we want 1-indexed progress
-            if total_files > 0:
-                progress = int((i + 1) / total_files * 100)
-                self.progress_updated.emit(progress)
 
         # Calculate and record total elapsed time for statistics
         end_time = time.perf_counter()
@@ -741,6 +704,8 @@ class DFBUViewModel(QObject):
             "archive_compression_level": int,
             "rotate_archives": bool,
             "max_archives": int,
+            "pre_restore_backup": bool,
+            "max_restore_backups": int,
         }
 
         # Validate key exists
@@ -756,10 +721,10 @@ class DFBUViewModel(QObject):
 
     def command_update_path(self, path_type: str, value: str) -> bool:
         """
-        Command to update mirror_dir or archive_dir path.
+        Command to update mirror_dir, archive_dir, or restore_backup_dir path.
 
         Args:
-            path_type: Either "mirror_dir" or "archive_dir"
+            path_type: One of "mirror_dir", "archive_dir", or "restore_backup_dir"
             value: New path value
 
         Returns:
