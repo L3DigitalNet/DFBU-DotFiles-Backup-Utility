@@ -5,13 +5,13 @@
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
 **GitHub:** <https://github.com/L3DigitalNet>
-**Version:** 0.5.6
+**Version:** 0.6.1
 **Date Created:** 10-18-2025
-**Date Changed:** 11-01-2025
+**Date Changed:** 02-01-2026
 
 ## Overview
 
-DFBU GUI is a modern desktop application built with Python 3.14+ and PySide6, implementing a clean MVVM (Model-View-ViewModel) architectural pattern for managing Linux system configuration file backups. The application provides an intuitive graphical interface with threaded operations, real-time progress tracking, interactive dotfile management with enable/disable functionality, incremental mirror backups with file change detection, automatic config backup rotation, and comprehensive error handling.
+DFBU GUI is a modern desktop application built with Python 3.14+ and PySide6, implementing a clean MVVM (Model-View-ViewModel) architectural pattern for managing Linux system configuration file backups. The application provides an intuitive graphical interface with threaded operations, real-time progress tracking, exclusion-based dotfile selection, incremental mirror backups with file change detection, automatic config backup rotation, and comprehensive error handling.
 
 The Model layer has been refactored (v0.4.0+) to follow SOLID principles, with DFBUModel acting as a facade coordinating four focused components: ConfigManager, FileOperations, BackupOrchestrator, and StatisticsTracker.
 
@@ -44,10 +44,10 @@ The Model layer uses a facade pattern with specialized components:
 - **Lines**: 555
 - **Responsibilities**:
   - Configuration file I/O (load, save with rotating backups)
-  - TOML parsing and serialization
-  - Dotfile CRUD operations (add, update, remove, toggle)
+  - YAML parsing and serialization (ruamel.yaml)
+  - Dotfile CRUD operations (add, update, remove)
   - Configuration validation integration
-  - GUI-specific enabled field handling
+  - Exclusion-based selection management (session.yaml)
 
 #### FileOperations
 

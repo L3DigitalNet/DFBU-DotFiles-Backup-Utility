@@ -16,7 +16,7 @@ Modern Python 3.14+ desktop application for comprehensive Linux configuration fi
 ### Core Capabilities
 
 - **Desktop GUI**: Modern PySide6 interface with MVVM architecture
-- **TOML Configuration**: Structured config with Category/Subcategory/Application organization
+- **YAML Configuration**: Split config files (settings, dotfiles, session) for easy manual editing
 - **Hostname-based Backups**: Automatic directory organization by hostname and date
 - **Dual Backup Modes**:
   - Mirror backups with incremental file change detection
@@ -30,7 +30,7 @@ Modern Python 3.14+ desktop application for comprehensive Linux configuration fi
 ### Advanced Features
 
 - **Pre-Restore Safety**: Automatic backup of files before restore operations
-- **Enable/Disable Dotfiles**: Toggle individual files in configuration
+- **Exclusion-Based Selection**: All dotfiles included by default; exclude what you don't want
 - **Real-time Progress**: Visual progress bars and status updates
 - **Configuration Backups**: Automatic config backup rotation before saves
 - **Input Validation**: Comprehensive validation framework for all user inputs
@@ -64,22 +64,37 @@ python DFBU/dfbu-gui.py
 
 ### Configuration
 
-Edit `DFBU/data/dfbu-config.toml`:
+Configuration is split across three YAML files in `DFBU/data/`:
 
-```toml
-[options]
-hostname = "myhost"
-mirror_base_dir = "~/backups/mirror"
-archive_base_dir = "~/backups/archives"
-compression_level = 9
-max_archives = 5
+**settings.yaml** - Application settings:
 
-[[dotfiles]]
-category = "Shell"
-subcategory = "Bash"
-application = "bashrc"
-source_path = "~/.bashrc"
-enabled = true
+```yaml
+paths:
+  mirror_dir: ~/backups/mirror
+  archive_dir: ~/backups/archives
+
+options:
+  mirror: true
+  archive: true
+  archive_compression_level: 9
+  max_archives: 5
+```
+
+**dotfiles.yaml** - Dotfile library (compact format):
+
+```yaml
+Bash:
+  description: Bash shell configuration
+  paths: ~/.bashrc
+  tags: shell, terminal
+```
+
+**session.yaml** - Runtime exclusions:
+
+```yaml
+excluded:
+  - Firefox
+  - Steam
 ```
 
 ---
@@ -92,7 +107,9 @@ DFBU-DotFiles-Backup-Utility/
 │   ├── dfbu-gui.py                 # GUI application entry point
 │   ├── requirements.txt            # Python dependencies
 │   ├── data/
-│   │   └── dfbu-config.toml        # Default configuration file
+│   │   ├── settings.yaml           # Application settings
+│   │   ├── dotfiles.yaml           # Dotfile library
+│   │   └── session.yaml            # Session exclusions
 │   ├── gui/                        # GUI components (MVVM)
 │   │   ├── model.py                # Business logic and state (facade)
 │   │   ├── viewmodel.py            # Presentation logic
@@ -174,8 +191,9 @@ Components:
 **ConfigManager (555 lines)**
 
 - Configuration file I/O with rotating backups
-- TOML parsing and serialization
+- YAML parsing and serialization (ruamel.yaml)
 - Dotfile CRUD operations
+- Exclusion-based selection management
 - Configuration validation integration
 
 **FileOperations (620 lines)**
@@ -253,7 +271,7 @@ See [DFBU/tests/README.md](DFBU/tests/README.md) for detailed testing documentat
 - `pathlib`: Modern path handling
 - `shutil`: File operations fallback
 - `tarfile`: Archive creation
-- `tomllib`: TOML parsing (Python 3.11+)
+- `ruamel.yaml`: YAML parsing with comment preservation
 - `socket`: Hostname detection
 - `datetime`: Timestamp generation
 
@@ -267,28 +285,31 @@ See [DFBU/tests/README.md](DFBU/tests/README.md) for detailed testing documentat
 
 ---
 
-## Configuration
+## Configuration Details
 
-### Options
+### Settings (settings.yaml)
 
-```toml
-[options]
-hostname = "myhost"              # Auto-detected if empty
-mirror_base_dir = "~/backups"    # Mirror backup destination
-archive_base_dir = "~/archives"  # Archive backup destination
-compression_level = 9            # 0-9 (0=no compression, 9=maximum)
-max_archives = 5                 # Number of archives to retain
+```yaml
+paths:
+  mirror_dir: ~/backups          # Mirror backup destination
+  archive_dir: ~/archives        # Archive backup destination
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
+
+options:
+  mirror: true                   # Enable mirror backups
+  archive: true                  # Enable archive backups
+  hostname_subdir: true          # Organize by hostname
+  archive_compression_level: 9   # 0-9 (0=none, 9=maximum)
+  max_archives: 5                # Number of archives to retain
 ```
 
-### Dotfiles
+### Dotfiles (dotfiles.yaml)
 
-```toml
-[[dotfiles]]
-category = "Shell"               # Top-level category
-subcategory = "Bash"             # Sub-category
-application = "bashrc"           # Application name
-source_path = "~/.bashrc"        # Source file path
-enabled = true                   # Enable/disable in GUI
+```yaml
+Bash:                            # Application name (key)
+  description: Bash shell config # Brief description
+  paths: ~/.bashrc               # Single path or list
+  tags: shell, terminal          # Optional comma-separated tags
 ```
 
 ### Backup Structure
@@ -435,4 +456,4 @@ GitHub: [@L3DigitalNet](https://github.com/L3DigitalNet)
 
 ---
 
-**Last Updated**: January 31, 2026
+**Last Updated**: February 1, 2026

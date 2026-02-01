@@ -48,7 +48,7 @@ ViewModel (DFBUViewModel, viewmodel.py)
 Model (DFBUModel, model.py - Facade)
     ↕ delegates to
 Components (implement Protocol interfaces):
-    ├── ConfigManager (config_manager.py)   # Config I/O, TOML, CRUD
+    ├── ConfigManager (config_manager.py)   # Config I/O, YAML, CRUD
     ├── FileOperations (file_operations.py) # Path handling, copying, archives
     ├── BackupOrchestrator (backup_orchestrator.py) # Backup/restore coordination
     └── StatisticsTracker (statistics_tracker.py)   # Operation metrics
@@ -59,7 +59,7 @@ Components (implement Protocol interfaces):
 **Model Layer** - Pure Python only, no Qt imports:
 
 - Business logic, data validation, file operations
-- ConfigManager handles TOML configuration with rotating backups
+- ConfigManager handles YAML configuration with rotating backups
 - FileOperations uses Python 3.14 `Path.copy()` for metadata preservation
 - Components implement Protocol interfaces (`DFBU/gui/protocols.py`) for dependency injection
 
@@ -79,7 +79,7 @@ Components (implement Protocol interfaces):
 
 `DFBU/core/common_types.py` defines `TypedDict` classes used across the application:
 
-- `DotFileDict`: Dotfile entry (category, application, description, paths, enabled)
+- `DotFileDict`: Dotfile entry (application, description, paths, tags)
 - `OptionsDict`: Backup settings (mirror, archive, hostname_subdir, date_subdir, compression)
 
 ## Code Standards
@@ -117,35 +117,51 @@ class ConfigLoadWorker(QThread):
 
 ### Configuration
 
-TOML config at `DFBU/data/dfbu-config.toml`:
+YAML config split across three files in `DFBU/data/`:
 
-```toml
-[paths]
-mirror_dir = "~/backups/mirror"
-archive_dir = "~/backups/archives"
+**settings.yaml** - Application settings:
 
-[options]
-mirror = true
-archive = true
-hostname_subdir = true
-date_subdir = false
+```yaml
+paths:
+  mirror_dir: ~/backups/mirror
+  archive_dir: ~/backups/archives
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
 
-[[dotfile]]
-category = "Shell"
-application = "Bash"
-description = "Bash shell configuration"
-path = "~/.bashrc"          # Single path
-enabled = true
+options:
+  mirror: true
+  archive: true
+  hostname_subdir: true
+  date_subdir: false
+  archive_format: tar.gz
+  archive_compression_level: 9
+  rotate_archives: true
+  max_archives: 5
+  pre_restore_backup: true
+  max_restore_backups: 5
+```
 
-[[dotfile]]
-category = "Terminal"
-application = "Konsole"
-description = "Konsole terminal"
-paths = [                    # Multiple paths supported
-    "~/.config/konsolerc",
-    "~/.local/share/konsole/Bash.profile",
-]
-enabled = true
+**dotfiles.yaml** - Dotfile library:
+
+```yaml
+Bash:
+  description: Bash shell configuration
+  paths: ~/.bashrc
+  tags: shell, terminal
+
+Konsole:
+  description: KDE terminal emulator
+  paths:
+    - ~/.config/konsolerc
+    - ~/.local/share/konsole/Bash.profile
+  tags: kde, terminal
+```
+
+**session.yaml** - Runtime exclusions (files excluded from backup):
+
+```yaml
+excluded:
+  - Firefox
+  - Steam
 ```
 
 ## Testing Patterns

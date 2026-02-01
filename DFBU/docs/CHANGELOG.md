@@ -12,9 +12,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PATCH**: Bug fixes and code refactoring
 - **Development Stages**: `.dev`, `.a` (alpha), `.b` (beta), `.rc` (release candidate)
 
-## [Unreleased]
+## [0.6.1] - 2026-02-01
 
 ### Added
+
+- **YAML Configuration Format**: Complete migration from TOML to YAML for easier manual editing
+  - Split configuration into three files: `settings.yaml`, `dotfiles.yaml`, `session.yaml`
+  - 53% file size reduction (1,941 lines TOML → 906 lines YAML)
+  - Compact dotfile format with application name as key
+  - Optional comma-separated tags on single line
+  - Uses `ruamel.yaml` for comment preservation and round-trip editing
+- **Exclusion-Based Selection**: New selection model replacing enabled/disabled toggles
+  - All dotfiles included by default
+  - Session exclusions persisted in `session.yaml`
+  - Filter by application name, tags, or path in UI
+- **Migration Script**: Automatic TOML to YAML migration with duplicate consolidation
+  - Added `core/migration.py` for one-time migration
+  - Consolidated duplicate entries (Firefox ×3, Steam ×2, etc.)
+  - Cleaned up redundant description prefixes
+
+### Changed
+
+- **ConfigManager Refactoring**: Updated for YAML format and exclusion model
+  - YAML loading/saving with `YAMLConfigLoader`
+  - Exclusion management methods (`add_exclusion`, `remove_exclusion`, `is_excluded`)
+  - Backward compatibility via `_to_legacy_format()` for existing consumers
+- **ViewModel Updates**: Added `exclusions_changed` signal for UI synchronization
+- **View Updates**: Updated table columns (Enabled→Included, Category→Tags)
+  - Added filter input for application name, tags, or path search
+- **TypedDict Definitions**: Updated for new format
+  - `DotFileDict`: Removed `category`, `enabled`; added `tags`
+  - Added `SessionDict` for exclusion persistence
+  - Added `LegacyDotFileDict` for migration support
+
+### Removed
+
+- **CLI Application**: Removed `dfbu.py` command-line interface
+  - CLI superseded by GUI application
+  - Removed `tests/test_dfbu_cli.py` and `tests/test_dotfile_class.py`
+- **TOML Configuration**: Replaced by YAML format
+  - Removed `dfbu-config.toml`
+  - Removed `tomllib` dependency
+
+### Fixed
+
+- **Test Coverage**: 376 tests passing after migration (84% coverage)
+- **Documentation**: Updated all docs to reflect YAML format and exclusion model
+
 - **AddDotfileDialog UI File**: Created Qt Designer .ui file for AddDotfileDialog with standardized naming
   - Added `gui/designer/add_dotfile_dialog.ui` for dialog interface
   - Added `gui/designer/main_window_complete.ui` with updated widget references
