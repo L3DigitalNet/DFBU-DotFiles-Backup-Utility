@@ -213,3 +213,8 @@ __marimo__/
 
 # Git worktrees
 .worktrees/
+
+# DFBU config backups and migration artifacts
+DFBU/data/.dfbu-config.toml.backups/
+*.pre-migration
+*.bak.*
