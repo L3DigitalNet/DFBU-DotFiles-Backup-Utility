@@ -170,7 +170,7 @@
                  <bool>true</bool>
                 </property>
                 <property name="placeholderText">
-                 <string>Path to dfbu-config.toml</string>
+                 <string>Path to config directory (settings.yaml, dotfiles.yaml, session.yaml)</string>
                 </property>
                </widget>
               </item>

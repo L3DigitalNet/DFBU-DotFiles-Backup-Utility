@@ -576,8 +576,8 @@ class DFBUViewModel(QObject):
         dotfiles_updated: Signal when dotfile list changes
 
     Public methods:
-        command_load_config: Load TOML configuration file
-        command_save_config: Save configuration changes to TOML file
+        command_load_config: Load YAML configuration directory
+        command_save_config: Save configuration changes to YAML files
         command_update_option: Update a configuration option
         command_update_path: Update mirror_dir or archive_dir path
         command_add_dotfile: Add a new dotfile entry to configuration
@@ -634,7 +634,7 @@ class DFBUViewModel(QObject):
 
     def command_load_config(self) -> bool:
         """
-        Command to load TOML configuration file asynchronously.
+        Command to load YAML configuration directory asynchronously.
 
         Uses ConfigLoadWorker to prevent UI blocking during file I/O.
 
@@ -660,7 +660,7 @@ class DFBUViewModel(QObject):
 
     def command_save_config(self) -> bool:
         """
-        Command to save configuration changes to TOML file asynchronously.
+        Command to save configuration changes to YAML files asynchronously.
 
         Uses ConfigSaveWorker to prevent UI blocking during file I/O.
 

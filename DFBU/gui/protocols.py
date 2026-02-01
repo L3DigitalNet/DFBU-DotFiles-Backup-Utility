@@ -281,7 +281,7 @@ class ConfigManagerProtocol(Protocol):
 
     def load_config(self) -> tuple[bool, str]:
         """
-        Load and validate TOML configuration file.
+        Load and validate YAML configuration files.
 
         Returns:
             Tuple of (success, error_message). error_message is empty on success.
@@ -290,7 +290,7 @@ class ConfigManagerProtocol(Protocol):
 
     def save_config(self) -> tuple[bool, str]:
         """
-        Save current configuration back to TOML file with automatic rotating backups.
+        Save current configuration back to YAML files with automatic rotating backups.
 
         Returns:
             Tuple of (success, error_message). error_message is empty on success.

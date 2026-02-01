@@ -3,7 +3,7 @@ DFBU ConfigWorkers - Worker Threads for Configuration Operations
 
 Description:
     Worker threads for non-blocking configuration load/save operations.
-    Prevents UI freezing during TOML file I/O, backup rotation, and path validation.
+    Prevents UI freezing during YAML file I/O, backup rotation, and path validation.
     Provides progress feedback for large configurations.
 
 Author: Chris Purcell
@@ -75,14 +75,14 @@ class ConfigLoadWorker(QThread):
         """
         Main thread execution method for loading configuration.
 
-        Loads TOML configuration, validates, and emits progress signals.
+        Loads YAML configuration, validates, and emits progress signals.
         """
         if not self.config_manager:
             self.error_occurred.emit("Configuration Load", "Config manager not set")
             return
 
         try:
-            # Phase 1: Read TOML file (30% of progress)
+            # Phase 1: Read YAML files (30% of progress)
             self.progress_updated.emit(10)
 
             success, error_message = self.config_manager.load_config()
@@ -137,7 +137,7 @@ class ConfigSaveWorker(QThread):
         """
         Main thread execution method for saving configuration.
 
-        Creates rotating backup, builds TOML structure, and writes file.
+        Creates rotating backup, builds YAML structure, and writes files.
         """
         if not self.config_manager:
             self.error_occurred.emit("Configuration Save", "Config manager not set")
@@ -147,7 +147,7 @@ class ConfigSaveWorker(QThread):
             # Phase 1: Create rotating backup (30% of progress)
             self.progress_updated.emit(10)
 
-            # Phase 2: Build and save TOML (70% of progress)
+            # Phase 2: Build and save YAML (70% of progress)
             self.progress_updated.emit(40)
 
             success, error_message = self.config_manager.save_config()

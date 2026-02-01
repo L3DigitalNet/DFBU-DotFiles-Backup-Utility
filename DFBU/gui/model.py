@@ -63,7 +63,7 @@ class DFBUModel:
     by exposing the same public API.
 
     Attributes:
-        config_path: Path to TOML configuration file
+        config_path: Path to YAML configuration directory
         options: Backup operation options from configuration
         dotfiles: List of dotfile metadata from configuration
         statistics: Backup/restore operation statistics
@@ -72,8 +72,8 @@ class DFBUModel:
         archive_base_dir: Base directory for archive backups
 
     Public methods:
-        load_config: Load and validate TOML configuration
-        save_config: Save configuration changes back to TOML file
+        load_config: Load and validate YAML configuration
+        save_config: Save configuration changes back to YAML files
         add_dotfile: Add a new dotfile entry to configuration
         update_dotfile: Update an existing dotfile entry in configuration
         remove_dotfile: Remove a dotfile entry from configuration by index
@@ -110,7 +110,7 @@ class DFBUModel:
         Initialize DFBUModel facade with all components.
 
         Args:
-            config_path: Path to TOML configuration file
+            config_path: Path to YAML configuration directory
         """
         self.hostname: str = gethostname()
 
@@ -217,7 +217,7 @@ class DFBUModel:
 
     def load_config(self) -> tuple[bool, str]:
         """
-        Load and validate TOML configuration file.
+        Load and validate YAML configuration files.
 
         Returns:
             Tuple of (success, error_message). error_message is empty on success.
@@ -244,7 +244,7 @@ class DFBUModel:
 
     def save_config(self) -> tuple[bool, str]:
         """
-        Save current configuration back to TOML file with automatic rotating backups.
+        Save current configuration back to YAML files with automatic rotating backups.
 
         Returns:
             Tuple of (success, error_message). error_message is empty on success.

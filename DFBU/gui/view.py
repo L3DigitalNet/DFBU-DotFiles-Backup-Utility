@@ -847,23 +847,23 @@ class MainWindow(QMainWindow):
             self.restore_btn.setEnabled(True)
 
     def _on_browse_config(self) -> None:
-        """Handle browse config button click."""
-        file_path, _ = QFileDialog.getOpenFileName(
+        """Handle browse config directory selection."""
+        dir_path = QFileDialog.getExistingDirectory(
             self,
-            "Select Configuration File",
+            "Select Configuration Directory",
             str(Path.home()),
-            "TOML Files (*.toml);;All Files (*)",
+            QFileDialog.Option.ShowDirsOnly,
         )
 
-        if file_path:
-            self.config_path_edit.setText(file_path)
-            self.viewmodel.model.config_path = Path(file_path)
+        if dir_path:
+            self.config_path_edit.setText(dir_path)
+            self.viewmodel.model.config_path = Path(dir_path)
 
     def _on_load_config(self) -> None:
         """Handle load configuration button click."""
         if not self.config_path_edit.text():
             QMessageBox.warning(
-                self, "No Configuration", "Please select a configuration file first."
+                self, "No Configuration", "Please select a configuration directory first."
             )
             return
 
@@ -873,7 +873,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(
                 self,
                 "Configuration Error",
-                "Failed to load configuration file. Please check the file path and format.",
+                "Failed to load configuration. Please check the directory path and YAML files.",
             )
 
     def _on_start_backup(self) -> None:
