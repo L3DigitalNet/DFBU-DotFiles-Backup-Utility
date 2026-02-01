@@ -86,7 +86,7 @@ setup_default_logging()
 logger = get_logger(__name__)
 
 # Application version
-__version__: Final[str] = "0.9.0"
+__version__: Final[str] = "0.9.1"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
 # Use relative path for portability - resolve to absolute at runtime
