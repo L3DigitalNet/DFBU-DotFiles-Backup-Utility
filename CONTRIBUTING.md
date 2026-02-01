@@ -48,7 +48,7 @@ This project follows strict architectural principles:
 The Model layer uses a **Facade pattern** to coordinate specialized components:
 
 - **DFBUModel**: Facade providing unified API to ViewModel
-- **ConfigManager**: Configuration file I/O and TOML management
+- **ConfigManager**: Configuration file I/O and YAML management
 - **FileOperations**: File system operations and path handling
 - **BackupOrchestrator**: Backup/restore coordination with progress tracking
 - **StatisticsTracker**: Operation metrics and statistics collection
@@ -304,10 +304,6 @@ pylint DFBU/
 # Run GUI application
 cd DFBU
 python dfbu-gui.py
-
-# Run CLI application
-cd DFBU
-python dfbu.py
 ```
 
 ## Directory Structure
@@ -316,10 +312,11 @@ python dfbu.py
 DFBU-DotFiles-Backup-Utility/
 ├── DFBU/                           # Main application directory
 │   ├── dfbu-gui.py                 # GUI application entry point
-│   ├── dfbu.py                     # CLI application entry point
 │   ├── requirements.txt            # Python dependencies
 │   ├── data/
-│   │   └── dfbu-config.toml        # Default configuration
+│   │   ├── settings.yaml           # Application settings
+│   │   ├── dotfiles.yaml           # Dotfile library
+│   │   └── session.yaml            # Session exclusions
 │   ├── gui/                        # GUI components (MVVM)
 │   │   ├── model.py                # Model facade
 │   │   ├── viewmodel.py            # Presentation logic

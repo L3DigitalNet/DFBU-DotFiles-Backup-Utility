@@ -25,12 +25,11 @@
 
 ## Overview
 
-DFBU implements a clean, modern architecture based on established design patterns and SOLID principles. The application has two modes:
+DFBU implements a clean, modern architecture based on established design patterns and SOLID principles.
 
-- **CLI Mode** (`dfbu.py`): Command-line interface with confident design philosophy
-- **GUI Mode** (`dfbu-gui.py`): Desktop application using MVVM pattern
+- **GUI Application** (`dfbu-gui.py`): Desktop application using MVVM pattern with PySide6
 
-This document focuses primarily on the GUI architecture, which represents the more complex architectural design.
+This document covers the GUI architecture.
 
 ### Architecture Goals
 

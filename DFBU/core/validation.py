@@ -19,7 +19,7 @@ Features:
     - Backward compatibility for legacy path format (path → paths)
     - Range validation for numeric values
     - Default values for missing configuration
-    - Shared by CLI (dfbu.py) and GUI (gui/model.py)
+    - Used by GUI (gui/model.py) and core modules
 
 Requirements:
     - Python 3.14+ for latest language features
