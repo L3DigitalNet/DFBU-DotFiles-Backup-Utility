@@ -819,44 +819,10 @@ class MainWindow(QMainWindow):
         if settings.get("window_state"):
             self.restoreState(settings["window_state"])
 
-        # Display config path if loaded
-        if settings.get("config_path"):
-            self.config_path_edit.setText(settings["config_path"])
-
         # Display restore source if loaded
         if settings.get("restore_source"):
             self.restore_source_edit.setText(settings["restore_source"])
             self.restore_btn.setEnabled(True)
-
-    def _on_browse_config(self) -> None:
-        """Handle browse config directory selection."""
-        dir_path = QFileDialog.getExistingDirectory(
-            self,
-            "Select Configuration Directory",
-            str(Path.home()),
-            QFileDialog.Option.ShowDirsOnly,
-        )
-
-        if dir_path:
-            self.config_path_edit.setText(dir_path)
-            self.viewmodel.model.config_path = Path(dir_path)
-
-    def _on_load_config(self) -> None:
-        """Handle load configuration button click."""
-        if not self.config_path_edit.text():
-            QMessageBox.warning(
-                self, "No Configuration", "Please select a configuration directory first."
-            )
-            return
-
-        success = self.viewmodel.command_load_config()
-
-        if not success:
-            QMessageBox.critical(
-                self,
-                "Configuration Error",
-                "Failed to load configuration. Please check the directory path and YAML files.",
-            )
 
     def _on_start_backup(self) -> None:
         """Handle start backup button click."""
@@ -888,7 +854,6 @@ class MainWindow(QMainWindow):
 
             # Disable buttons during operation
             self.backup_btn.setEnabled(False)
-            self.load_config_btn.setEnabled(False)
 
             # Show progress bar
             self.progress_bar.setVisible(True)
@@ -913,7 +878,6 @@ class MainWindow(QMainWindow):
             if not success:
                 # Re-enable buttons if backup failed to start
                 self.backup_btn.setEnabled(True)
-                self.load_config_btn.setEnabled(True)
                 self.progress_bar.setVisible(False)
                 self.operation_log.append("✗ Failed to start backup operation\n")
 
@@ -1023,7 +987,6 @@ class MainWindow(QMainWindow):
 
         # Re-enable buttons
         self.backup_btn.setEnabled(True)
-        self.load_config_btn.setEnabled(True)
         self.restore_btn.setEnabled(True)
         self.browse_restore_btn.setEnabled(True)
 
@@ -1079,7 +1042,6 @@ class MainWindow(QMainWindow):
 
         # Re-enable buttons after error
         self.backup_btn.setEnabled(True)
-        self.load_config_btn.setEnabled(True)
         self.restore_btn.setEnabled(True)
         self.browse_restore_btn.setEnabled(True)
 
