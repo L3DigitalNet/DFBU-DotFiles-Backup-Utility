@@ -1116,26 +1116,13 @@ class DFBUViewModel(QObject):
         Returns:
             Dictionary of loaded settings (safe/validated values only)
         """
-        config_path_str: str = str(self.settings.value("configPath", ""))
         restore_source_str: str = str(self.settings.value("restoreSource", ""))
 
         settings_dict: dict[str, Any] = {
-            "config_path": config_path_str,
             "restore_source": restore_source_str,
             "geometry": self.settings.value("geometry"),
             "window_state": self.settings.value("windowState"),
         }
-
-        # Validate and apply loaded config path if exists
-        if config_path_str:
-            validation_result = InputValidator.validate_path(
-                config_path_str, must_exist=True
-            )
-            if validation_result.success:
-                config_path = Path(config_path_str)
-                if config_path.exists():
-                    self.model.config_path = config_path
-            # Silently ignore invalid paths (settings may be from old session)
 
         # Validate and apply restore source if exists
         if restore_source_str:
@@ -1162,8 +1149,6 @@ class DFBUViewModel(QObject):
             self.settings.setValue("geometry", geometry)
         if window_state:
             self.settings.setValue("windowState", window_state)
-
-        self.settings.setValue("configPath", str(self.model.config_path))
 
         if self.restore_source_directory:
             self.settings.setValue("restoreSource", str(self.restore_source_directory))
