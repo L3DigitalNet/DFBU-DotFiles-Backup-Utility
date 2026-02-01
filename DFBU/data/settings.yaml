@@ -1,0 +1,15 @@
+paths:
+  mirror_dir: ~/GitHub/dotfiles
+  archive_dir: ~/pCloudDrive/Backups/Dotfiles
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
+options:
+  mirror: true
+  archive: true
+  hostname_subdir: true
+  date_subdir: false
+  archive_format: tar.gz
+  archive_compression_level: 5
+  rotate_archives: true
+  max_archives: 5
+  pre_restore_backup: true
+  max_restore_backups: 5

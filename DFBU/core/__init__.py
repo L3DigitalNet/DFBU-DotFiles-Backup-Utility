@@ -17,8 +17,8 @@ Modules:
     - validation: Configuration validation logic
 """
 
-from core.common_types import DotFileDict, OptionsDict
-from core.validation import ConfigValidator
+from DFBU.core.common_types import DotFileDict, OptionsDict
+from DFBU.core.validation import ConfigValidator
 
 
 __all__ = ["ConfigValidator", "DotFileDict", "OptionsDict"]
