@@ -1337,20 +1337,24 @@ class MainWindow(QMainWindow):
         Args:
             result: Operation result with failures
         """
-        dialog = RecoveryDialog(result, parent=self)
-        dialog.exec()
+        try:
+            dialog = RecoveryDialog(result, parent=self)
+            dialog.exec()
+        except RuntimeError as e:
+            self.operation_log.append(f"✗ Recovery dialog error: {e}\n")
+            return
 
         if dialog.action == "retry":
             # Get retryable paths and trigger retry
             paths_to_retry = dialog.get_retryable_paths()
             self.operation_log.append(
-                f"Retrying {len(paths_to_retry)} failed items...\n"
+                f"↻ Retrying {len(paths_to_retry)} failed item(s)...\n"
             )
             # TODO: Implement retry logic in v0.9.1
         elif dialog.action == "continue":
-            self.operation_log.append("Skipping failed items, operation complete.\n")
+            self.operation_log.append("⊘ Skipping failed items, operation complete.\n")
         else:  # abort
-            self.operation_log.append("Operation aborted by user.\n")
+            self.operation_log.append("✗ Operation aborted by user.\n")
 
     def _on_browse_mirror_dir(self) -> None:
         """Handle browse mirror directory button click."""
