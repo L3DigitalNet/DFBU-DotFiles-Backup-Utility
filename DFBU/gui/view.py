@@ -42,7 +42,7 @@ from pathlib import Path
 from typing import Any, Final
 
 # Local imports
-from core.common_types import DotFileDict
+from core.common_types import DotFileDict, OperationResultDict
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtGui import QAction, QCloseEvent, QColor, QTextCursor
 from PySide6.QtUiTools import QUiLoader
@@ -70,6 +70,7 @@ from PySide6.QtWidgets import (
 
 from gui.constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
 from gui.help_dialog import HelpDialog
+from gui.recovery_dialog import RecoveryDialog
 from gui.input_validation import InputValidator
 from gui.tooltip_manager import TooltipManager
 from gui.viewmodel import DFBUViewModel
@@ -1328,6 +1329,19 @@ class MainWindow(QMainWindow):
         """Show user guide help dialog."""
         dialog = HelpDialog(self)
         dialog.exec()
+
+    def _show_recovery_dialog(self, result: OperationResultDict) -> str:
+        """Show recovery dialog when operation has failures.
+
+        Args:
+            result: Operation result with failures
+
+        Returns:
+            User's chosen action: "retry", "continue", or "abort"
+        """
+        dialog = RecoveryDialog(result, parent=self)
+        dialog.exec()
+        return dialog.action
 
     def _on_browse_mirror_dir(self) -> None:
         """Handle browse mirror directory button click."""
