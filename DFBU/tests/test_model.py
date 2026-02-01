@@ -84,27 +84,44 @@ class TestDFBUModelConfigManagement:
 
     def test_load_config_valid_minimal(self, tmp_path: Path) -> None:
         """Test loading minimal valid config succeeds."""
-        # Arrange
-        config_path = tmp_path / "minimal.toml"
-        config_path.write_text(
-            """
-[paths]
-mirror_dir = "~/test_mirror"
-archive_dir = "~/test_archive"
+        # Arrange - create YAML config directory structure
+        config_dir = tmp_path / "config"
+        config_dir.mkdir()
 
-[options]
-mirror = true
-archive = false
+        # settings.yaml
+        (config_dir / "settings.yaml").write_text("""
+paths:
+  mirror_dir: ~/test_mirror
+  archive_dir: ~/test_archive
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
 
-[[dotfile]]
-category = "Test"
-application = "TestApp"
-description = "Test file"
-path = "~/test.txt"
-enabled = true
-"""
-        )
-        model = DFBUModel(config_path)
+options:
+  mirror: true
+  archive: false
+  hostname_subdir: true
+  date_subdir: false
+  archive_format: tar.gz
+  archive_compression_level: 9
+  rotate_archives: true
+  max_archives: 5
+  pre_restore_backup: true
+  max_restore_backups: 5
+""")
+
+        # dotfiles.yaml
+        (config_dir / "dotfiles.yaml").write_text("""
+TestApp:
+  description: Test file
+  path: ~/test.txt
+  tags: Test
+""")
+
+        # session.yaml
+        (config_dir / "session.yaml").write_text("""
+excluded: []
+""")
+
+        model = DFBUModel(config_dir)
 
         # Act
         success, error_message = model.load_config()
@@ -116,10 +133,11 @@ enabled = true
         assert model.dotfiles[0]["application"] == "TestApp"
 
     def test_save_config_creates_file(self, tmp_path: Path) -> None:
-        """Test saving config creates valid TOML file."""
-        # Arrange
-        config_path = tmp_path / "new_config.toml"
-        model = DFBUModel(config_path)
+        """Test saving config creates valid YAML files."""
+        # Arrange - create config directory
+        config_dir = tmp_path / "new_config"
+        config_dir.mkdir()
+        model = DFBUModel(config_dir)
         model.add_dotfile(
             category="Shell",
             application="Bash",
@@ -134,10 +152,12 @@ enabled = true
         # Assert
         assert success is True
         assert error_message == ""
-        assert config_path.exists()
-        content = config_path.read_text()
-        assert "category" in content
+        # Check dotfiles.yaml was created
+        dotfiles_path = config_dir / "dotfiles.yaml"
+        assert dotfiles_path.exists()
+        content = dotfiles_path.read_text()
         assert "Bash" in content
+        assert "Bash config" in content
 
 
 class TestDFBUModelDotfileManagement:

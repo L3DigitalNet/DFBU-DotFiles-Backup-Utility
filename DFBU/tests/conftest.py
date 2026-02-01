@@ -170,9 +170,71 @@ def temp_dotfile_dir(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
+def yaml_config_dir(tmp_path: Path) -> Path:
+    """
+    Create a temporary directory with valid YAML configuration files.
+
+    This fixture creates the three YAML files needed by ConfigManager:
+    - settings.yaml (paths and options)
+    - dotfiles.yaml (dotfile definitions)
+    - session.yaml (exclusions)
+
+    Args:
+        tmp_path: pytest built-in temporary directory fixture
+
+    Returns:
+        Path: Directory containing YAML configuration files
+
+    Example:
+        def test_config(yaml_config_dir):
+            manager = ConfigManager(yaml_config_dir, expand_path_callback=...)
+            success, error = manager.load_config()
+    """
+    # Create settings.yaml
+    settings_file = tmp_path / "settings.yaml"
+    settings_file.write_text("""
+paths:
+  mirror_dir: ~/test_mirror
+  archive_dir: ~/test_archive
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
+
+options:
+  mirror: true
+  archive: false
+  hostname_subdir: true
+  date_subdir: false
+  archive_format: tar.gz
+  archive_compression_level: 9
+  rotate_archives: true
+  max_archives: 5
+  pre_restore_backup: true
+  max_restore_backups: 5
+""")
+
+    # Create dotfiles.yaml
+    dotfiles_file = tmp_path / "dotfiles.yaml"
+    dotfiles_file.write_text("""
+TestApp:
+  description: Test dotfile
+  path: ~/test.txt
+""")
+
+    # Create session.yaml
+    session_file = tmp_path / "session.yaml"
+    session_file.write_text("""
+excluded: []
+""")
+
+    return tmp_path
+
+
+@pytest.fixture
 def minimal_config_content() -> str:
     """
-    Provide minimal valid TOML configuration content.
+    Provide minimal valid TOML configuration content (legacy).
+
+    NOTE: This is kept for backward compatibility with some tests.
+    New tests should use yaml_config_dir fixture instead.
 
     Returns:
         str: Minimal valid TOML configuration

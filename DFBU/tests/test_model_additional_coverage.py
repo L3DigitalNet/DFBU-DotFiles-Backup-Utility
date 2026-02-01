@@ -464,9 +464,9 @@ class TestModelValidation:
         test_file2 = tmp_path / "test2.txt"
         test_file2.write_text("content2")
 
-        model.add_dotfile("Test1", "Test", "Test", [str(test_file1)], True)
-
-        model.add_dotfile("Test2", "Test", "Test", [str(test_file2)], True)
+        # Use different application names since they are used as dictionary keys
+        model.add_dotfile("Test", "App1", "Test file 1", [str(test_file1)], True)
+        model.add_dotfile("Test", "App2", "Test file 2", [str(test_file2)], True)
 
         # Act
         results = model.validate_dotfile_paths()

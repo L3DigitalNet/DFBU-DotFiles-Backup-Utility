@@ -439,6 +439,13 @@ class ConfigManager:
 
         # Add to dotfiles dict using application name as key
         self._dotfiles[application] = new_dotfile
+
+        # Handle enabled state via exclusions
+        if not enabled:
+            # Add to exclusions if disabled
+            if application not in self._exclusions:
+                self._exclusions.append(application)
+
         return True
 
     def update_dotfile(
@@ -469,8 +476,11 @@ class ConfigManager:
         if 0 <= index < len(app_names):
             old_app_name = app_names[index]
 
-            # If application name changed, remove old entry
+            # If application name changed, update exclusions list
             if old_app_name != application:
+                # Remove old app name from exclusions if present
+                if old_app_name in self._exclusions:
+                    self._exclusions.remove(old_app_name)
                 del self._dotfiles[old_app_name]
 
             # Create updated entry
@@ -479,6 +489,17 @@ class ConfigManager:
                 "paths": paths,
                 "tags": category,
             }
+
+            # Handle enabled state via exclusions
+            if enabled:
+                # Remove from exclusions if present
+                if application in self._exclusions:
+                    self._exclusions.remove(application)
+            else:
+                # Add to exclusions if not present
+                if application not in self._exclusions:
+                    self._exclusions.append(application)
+
             return True
         return False
 

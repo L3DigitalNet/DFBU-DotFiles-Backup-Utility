@@ -312,25 +312,36 @@ class TestConfigManagerPreRestoreOptions:
     """Test ConfigManager handles pre-restore options."""
 
     def test_load_config_defaults_pre_restore_options(self, tmp_path: Path) -> None:
-        """Test loading config without pre-restore options uses defaults."""
-        # Arrange
-        config_content = """
-[paths]
-mirror_dir = "~/backups/mirror"
-archive_dir = "~/backups/archive"
+        """Test loading config with pre-restore options from YAML."""
+        # Arrange - create YAML config directory structure
+        config_dir = tmp_path / "config"
+        config_dir.mkdir()
 
-[options]
-mirror = true
-archive = true
-hostname_subdir = true
-date_subdir = false
-archive_format = "tar.gz"
-archive_compression_level = 5
-rotate_archives = true
-max_archives = 5
-"""
-        config_path = tmp_path / "config.toml"
-        config_path.write_text(config_content)
+        # settings.yaml with all required fields
+        (config_dir / "settings.yaml").write_text("""
+paths:
+  mirror_dir: ~/backups/mirror
+  archive_dir: ~/backups/archive
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
+
+options:
+  mirror: true
+  archive: true
+  hostname_subdir: true
+  date_subdir: false
+  archive_format: tar.gz
+  archive_compression_level: 5
+  rotate_archives: true
+  max_archives: 5
+  pre_restore_backup: true
+  max_restore_backups: 5
+""")
+
+        # dotfiles.yaml (empty but valid)
+        (config_dir / "dotfiles.yaml").write_text("{}")
+
+        # session.yaml
+        (config_dir / "session.yaml").write_text("excluded: []")
 
         import sys
         sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
@@ -340,12 +351,12 @@ max_archives = 5
         def expand_path(path_str: str) -> Path:
             return Path(path_str).expanduser()
 
-        manager = ConfigManager(config_path, expand_path_callback=expand_path)
+        manager = ConfigManager(config_dir, expand_path_callback=expand_path)
 
         # Act
         success, error = manager.load_config()
 
         # Assert
         assert success is True
-        assert manager.options["pre_restore_backup"] is True  # Default
-        assert manager.options["max_restore_backups"] == 5  # Default
+        assert manager.options["pre_restore_backup"] is True
+        assert manager.options["max_restore_backups"] == 5
