@@ -1,14 +1,10 @@
 """Tests for YAML configuration loading and saving."""
 
-import sys
 from pathlib import Path
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "core"))
 
 import pytest
 
-from yaml_config import YAMLConfigLoader
+from core.yaml_config import YAMLConfigLoader
 
 
 class TestYAMLConfigLoader:
@@ -129,3 +125,121 @@ excluded:
         content = (tmp_path / "session.yaml").read_text()
         assert "Wine" in content
         assert "MAME" in content
+
+    @pytest.mark.unit
+    def test_save_dotfiles(self, tmp_path: Path) -> None:
+        """Save dotfiles library to YAML file."""
+        loader = YAMLConfigLoader(tmp_path)
+        dotfiles = {
+            "Bash": {
+                "description": "Shell configuration",
+                "path": "~/.bashrc",
+            },
+            "Konsole": {
+                "description": "Terminal emulator",
+                "paths": ["~/.config/konsolerc", "~/.local/share/konsole/"],
+                "tags": "kde, terminal",
+            },
+        }
+        loader.save_dotfiles(dotfiles)
+
+        content = (tmp_path / "dotfiles.yaml").read_text()
+        assert "Bash" in content
+        assert "Shell configuration" in content
+        assert "~/.bashrc" in content
+        assert "Konsole" in content
+        assert "Terminal emulator" in content
+
+    @pytest.mark.unit
+    def test_load_settings_file_not_found(self, tmp_path: Path) -> None:
+        """Raise FileNotFoundError when settings.yaml is missing."""
+        loader = YAMLConfigLoader(tmp_path)
+
+        with pytest.raises(FileNotFoundError) as exc_info:
+            loader.load_settings()
+
+        assert "Settings file not found" in str(exc_info.value)
+
+    @pytest.mark.unit
+    def test_load_settings_empty_file(self, tmp_path: Path) -> None:
+        """Raise ValueError when settings.yaml is empty."""
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("")
+        loader = YAMLConfigLoader(tmp_path)
+
+        with pytest.raises(ValueError) as exc_info:
+            loader.load_settings()
+
+        assert "Settings file is empty" in str(exc_info.value)
+
+    @pytest.mark.unit
+    def test_load_settings_missing_paths_section(self, tmp_path: Path) -> None:
+        """Raise ValueError when paths section is missing."""
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("""
+options:
+  mirror: true
+""")
+        loader = YAMLConfigLoader(tmp_path)
+
+        with pytest.raises(ValueError) as exc_info:
+            loader.load_settings()
+
+        assert "Settings missing required 'paths' section" in str(exc_info.value)
+
+    @pytest.mark.unit
+    def test_load_settings_missing_options_section(self, tmp_path: Path) -> None:
+        """Raise ValueError when options section is missing."""
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("""
+paths:
+  mirror_dir: ~/backups/mirror
+  archive_dir: ~/backups/archives
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
+""")
+        loader = YAMLConfigLoader(tmp_path)
+
+        with pytest.raises(ValueError) as exc_info:
+            loader.load_settings()
+
+        assert "Settings missing required 'options' section" in str(exc_info.value)
+
+    @pytest.mark.unit
+    def test_load_dotfiles_file_not_found(self, tmp_path: Path) -> None:
+        """Raise FileNotFoundError when dotfiles.yaml is missing."""
+        loader = YAMLConfigLoader(tmp_path)
+
+        with pytest.raises(FileNotFoundError) as exc_info:
+            loader.load_dotfiles()
+
+        assert "Dotfiles file not found" in str(exc_info.value)
+
+    @pytest.mark.unit
+    def test_validate_dotfile_missing_description(self, tmp_path: Path) -> None:
+        """Raise ValueError when dotfile is missing description."""
+        dotfiles_file = tmp_path / "dotfiles.yaml"
+        dotfiles_file.write_text("""
+Bash:
+  path: ~/.bashrc
+""")
+        loader = YAMLConfigLoader(tmp_path)
+
+        with pytest.raises(ValueError) as exc_info:
+            loader.load_dotfiles()
+
+        assert "missing required 'description'" in str(exc_info.value)
+
+    @pytest.mark.unit
+    def test_validate_dotfile_missing_path_and_paths(self, tmp_path: Path) -> None:
+        """Raise ValueError when dotfile is missing both path and paths."""
+        dotfiles_file = tmp_path / "dotfiles.yaml"
+        dotfiles_file.write_text("""
+Bash:
+  description: Shell configuration
+""")
+        loader = YAMLConfigLoader(tmp_path)
+
+        with pytest.raises(ValueError) as exc_info:
+            loader.load_dotfiles()
+
+        assert "must have either 'path' or 'paths'" in str(exc_info.value)
