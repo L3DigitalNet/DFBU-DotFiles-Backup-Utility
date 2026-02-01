@@ -16,20 +16,20 @@ Starship:
 CachyOS Fish:
   description: CachyOS Fish configuration for command completion notifications
   paths:
-    - /usr/share/cachyos-fish-config/conf.d/done.fish
-    - /usr/share/cachyos-fish-config/cachyos-config.fish
+  - /usr/share/cachyos-fish-config/conf.d/done.fish
+  - /usr/share/cachyos-fish-config/cachyos-config.fish
 kdiff3:
   description: KDiff3 configuration and settings
   paths:
-    - ~/.config/kdiff3rc
-    - ~/.kde/share/config/kdiff3rc
-    - ~/.local/share/kdiff3
+  - ~/.config/kdiff3rc
+  - ~/.kde/share/config/kdiff3rc
+  - ~/.local/share/kdiff3
 QT Design Studio:
   description: QT Design Studio configuration and settings
   paths:
-    - ~/.config/QtProject/qtdesignstudio.conf
-    - ~/.config/QtProject
-    - ~/.config/QtDesignStudio
+  - ~/.config/QtProject/qtdesignstudio.conf
+  - ~/.config/QtProject
+  - ~/.config/QtDesignStudio
 Git:
   description: Git version control system global configuration
   path: ~/.gitconfig
@@ -51,9 +51,9 @@ Featherpad:
 Konsole:
   description: Konsole terminal emulator configuration
   paths:
-    - ~/.config/konsolerc
-    - ~/.local/share/konsole/Bash.profile
-    - ~/.local/share/konsole/Fish.profile
+  - ~/.config/konsolerc
+  - ~/.local/share/konsole/Bash.profile
+  - ~/.local/share/konsole/Fish.profile
 Yakuake:
   description: Yakuake drop-down terminal configuration
   path: ~/.config/yakuakerc
@@ -84,53 +84,53 @@ Dolphin:
 Krusader:
   description: Krusader file manager configuration
   paths:
-    - ~/.config/krusaderrc
-    - ~/.local/share/kxmlgui5/krusader/krusaderui.rc
-    - /usr/share/krusader/foo.keymap
-    - /usr/share/kxmlgui5/krusader/krusaderui.rc
-    - ~/.local/share/krusader/krbookmarks.xml
-    - ~/.local/share/krusader/useractions.xml
-    - /usr/share/krusader/foo.color
+  - ~/.config/krusaderrc
+  - ~/.local/share/kxmlgui5/krusader/krusaderui.rc
+  - /usr/share/krusader/foo.keymap
+  - /usr/share/kxmlgui5/krusader/krusaderui.rc
+  - ~/.local/share/krusader/krbookmarks.xml
+  - ~/.local/share/krusader/useractions.xml
+  - /usr/share/krusader/foo.color
 Nautilus:
   description: Nautilus file manager preferences (stored in dconf)
   path: ~/.config/dconf/user
 Thunar:
   description: Thunar file manager main configuration
   paths:
-    - ~/.config/Thunar/thunarrc
-    - ~/.config/Thunar/uca.xml
-    - ~/.config/Thunar/accels.scm
+  - ~/.config/Thunar/thunarrc
+  - ~/.config/Thunar/uca.xml
+  - ~/.config/Thunar/accels.scm
 AppImageLauncher:
   description: AppImageLauncher configuration for managing AppImage applications
   path: ~/.config/appimagelauncher.cfg
 Systemd User:
   description: User systemd default target
   paths:
-    - ~/.config/systemd/user/default.target
-    - ~/.config/systemd/user.conf
+  - ~/.config/systemd/user/default.target
+  - ~/.config/systemd/user.conf
 Cron User:
   description: User crontab file
   path: ~/.crontab
 PulseAudio:
   description: PulseAudio daemon configuration
   paths:
-    - ~/.config/pulse/daemon.conf
-    - ~/.config/pulse/default.pa
-    - ~/.config/pulse/client.conf
+  - ~/.config/pulse/daemon.conf
+  - ~/.config/pulse/default.pa
+  - ~/.config/pulse/client.conf
 PipeWire:
   description: PipeWire main configuration
   paths:
-    - ~/.config/pipewire/pipewire.conf
-    - ~/.config/pipewire/pipewire-pulse.conf
-    - ~/.config/pipewire/media-session.d/media-session.conf
+  - ~/.config/pipewire/pipewire.conf
+  - ~/.config/pipewire/pipewire-pulse.conf
+  - ~/.config/pipewire/media-session.d/media-session.conf
 ALSA:
   description: Advanced Linux Sound Architecture user configuration
   path: ~/.asoundrc
 NetworkManager:
   description: NetworkManager main configuration
   paths:
-    - /etc/NetworkManager/NetworkManager.conf
-    - /etc/NetworkManager/system-connections/*.nmconnection
+  - /etc/NetworkManager/NetworkManager.conf
+  - /etc/NetworkManager/system-connections/*.nmconnection
 Hosts File:
   description: System hosts file for name resolution
   path: /etc/hosts
@@ -140,8 +140,8 @@ GRUB:
 GRUB Custom:
   description: GRUB custom menu entries
   paths:
-    - /etc/grub.d/40_custom
-    - /etc/grub.d/30_os-prober
+  - /etc/grub.d/40_custom
+  - /etc/grub.d/30_os-prober
 System Locale:
   description: System locale configuration
   path: /etc/locale.conf
@@ -151,24 +151,24 @@ Timezone:
 Firewall (UFW):
   description: UFW main configuration
   paths:
-    - /etc/ufw/ufw.conf
-    - /etc/default/ufw
-    - /etc/ufw/user.rules
-    - /etc/ufw/user6.rules
+  - /etc/ufw/ufw.conf
+  - /etc/default/ufw
+  - /etc/ufw/user.rules
+  - /etc/ufw/user6.rules
 Firewall (firewalld):
   description: Firewalld main configuration
   paths:
-    - /etc/firewalld/firewalld.conf
-    - /etc/firewalld/direct.xml
+  - /etc/firewalld/firewalld.conf
+  - /etc/firewalld/direct.xml
 SELinux:
   description: SELinux security policy configuration
   path: /etc/selinux/config
 LibreOffice:
   description: LibreOffice registry modifications and main settings
   paths:
-    - ~/.config/libreoffice/4/user/registrymodifications.xcu
-    - ~/.config/libreoffice/4/user/config/soffice.cfg/modules/swriter/ui/config.xml
-    - ~/.config/libreoffice/4/user/wordbook/standard.dic
+  - ~/.config/libreoffice/4/user/registrymodifications.xcu
+  - ~/.config/libreoffice/4/user/config/soffice.cfg/modules/swriter/ui/config.xml
+  - ~/.config/libreoffice/4/user/wordbook/standard.dic
 ONLYOFFICE Desktop Editors:
   description: ONLYOFFICE Desktop Editors native/repo/AppImage configuration
   path: ~/.config/onlyoffice/DesktopEditors.conf
@@ -179,8 +179,8 @@ ONLYOFFICE Desktop Editors (Flatpak):
 Vivaldi:
   description: Vivaldi web browser user preferences and settings
   paths:
-    - ~/.config/vivaldi/System Profile/Preferences
-    - ~/.config/vivaldi/System Profile/Secure Preferences
+  - ~/.config/vivaldi/System Profile/Preferences
+  - ~/.config/vivaldi/System Profile/Secure Preferences
 qView:
   description: qView minimal image viewer configuration
   path: ~/.config/qView/qView.conf
@@ -190,12 +190,12 @@ Gwenview:
 XnViewMP:
   description: XnViewMP image viewer main configuration
   paths:
-    - ~/.config/xnviewmp/xnview.ini
-    - ~/.config/xnviewmp/default.bar
-    - ~/.config/xnviewmp/EfficientBrowserBar.bar
-    - ~/.config/xnviewmp/EfficientViewerBar.bar
-    - ~/.config/xnviewmp/default.cmenu
-    - ~/.config/xnviewmp/default.keys
+  - ~/.config/xnviewmp/xnview.ini
+  - ~/.config/xnviewmp/default.bar
+  - ~/.config/xnviewmp/EfficientBrowserBar.bar
+  - ~/.config/xnviewmp/EfficientViewerBar.bar
+  - ~/.config/xnviewmp/default.cmenu
+  - ~/.config/xnviewmp/default.keys
 Eye of GNOME (eog):
   description: Eye of GNOME image viewer preferences (stored in dconf binary DB)
   path: ~/.config/dconf/user
@@ -205,32 +205,32 @@ Ristretto:
 Geeqie:
   description: Geeqie image viewer main configuration and preferences
   paths:
-    - ~/.config/geeqie/geeqierc.xml
-    - ~/.local/share/geeqie/collections
-    - ~/.config/geeqie/history
-    - ~/.config/geeqie/accels
+  - ~/.config/geeqie/geeqierc.xml
+  - ~/.local/share/geeqie/collections
+  - ~/.config/geeqie/history
+  - ~/.config/geeqie/accels
 feh:
   description: feh image viewer themes configuration (preset option groups)
   paths:
-    - ~/.config/feh/themes
-    - ~/.config/feh/keys
-    - ~/.config/feh/buttons
-    - ~/.fehbg
+  - ~/.config/feh/themes
+  - ~/.config/feh/keys
+  - ~/.config/feh/buttons
+  - ~/.fehbg
 mpv:
   description: mpv video player global configuration and playback defaults
   paths:
-    - ~/.config/mpv/mpv.conf
-    - ~/.config/mpv/input.conf
-    - ~/.config/mpv/scripts.conf
-    - ~/.local/state/mpv/watch_later.conf
+  - ~/.config/mpv/mpv.conf
+  - ~/.config/mpv/input.conf
+  - ~/.config/mpv/scripts.conf
+  - ~/.local/state/mpv/watch_later.conf
 VLC:
   description: VLC media player master configuration file
   path: ~/.config/vlc/vlcrc
 Rhythmbox:
   description: Rhythmbox music player database
   paths:
-    - ~/.local/share/rhythmbox/rhythmdb.xml
-    - ~/.local/share/rhythmbox/playlists.xml
+  - ~/.local/share/rhythmbox/rhythmdb.xml
+  - ~/.local/share/rhythmbox/playlists.xml
 Amarok:
   description: Amarok music player configuration
   path: ~/.config/amarokrc
@@ -246,8 +246,8 @@ Audacious:
 cmus:
   description: cmus console music player configuration
   paths:
-    - ~/.config/cmus/autosave
-    - ~/.config/cmus/lib.pl
+  - ~/.config/cmus/autosave
+  - ~/.config/cmus/lib.pl
 Spotify:
   description: Spotify music streaming service preferences
   path: ~/.config/spotify/prefs
@@ -257,29 +257,29 @@ Spotify (Flatpak):
 ncmpcpp:
   description: ncmpcpp MPD client configuration
   paths:
-    - ~/.config/ncmpcpp/config
-    - ~/.config/ncmpcpp/bindings
+  - ~/.config/ncmpcpp/config
+  - ~/.config/ncmpcpp/bindings
 MPD:
   description: Music Player Daemon configuration
   path: ~/.config/mpd/mpd.conf
 Calibre:
   description: Calibre ebook management configuration
   paths:
-    - ~/.config/calibre/gui.json
-    - ~/.config/calibre/global.py
+  - ~/.config/calibre/gui.json
+  - ~/.config/calibre/global.py
 FBReader:
   description: FBReader ebook reader configuration
   path: ~/.FBReader/config.xml
 Zotero:
   description: Zotero reference manager profiles
   paths:
-    - ~/.zotero/profiles.ini
-    - ~/.zotero/zotero/prefs.js
+  - ~/.zotero/profiles.ini
+  - ~/.zotero/zotero/prefs.js
 RedNotebook:
   description: RedNotebook journal application configuration
   paths:
-    - ~/.rednotebook/config
-    - ~/.rednotebook/data/2025.txt
+  - ~/.rednotebook/config
+  - ~/.rednotebook/data/2025.txt
 QOwnNotes:
   description: QOwnNotes note-taking application configuration
   path: ~/.config/PBE/QOwnNotes.conf
@@ -298,8 +298,8 @@ Remmina:
 OpenVPN:
   description: OpenVPN client configuration files
   paths:
-    - ~/.config/openvpn/*.conf
-    - ~/.config/openvpn/*.crt
+  - ~/.config/openvpn/*.conf
+  - ~/.config/openvpn/*.crt
 WireGuard:
   description: WireGuard VPN configuration files
   path: /etc/wireguard/*.conf
@@ -354,56 +354,56 @@ Avogadro:
 Okular:
   description: Okular document viewer main configuration
   paths:
-    - ~/.config/okularrc
-    - ~/.config/okularpartrc
-    - ~/.local/share/kxmlgui5/okular/shell.rc
-    - ~/.local/share/okular/docdata
+  - ~/.config/okularrc
+  - ~/.config/okularpartrc
+  - ~/.local/share/kxmlgui5/okular/shell.rc
+  - ~/.local/share/okular/docdata
 Firefox:
   description: Firefox browser profiles configuration
   paths:
-    - ~/.mozilla/firefox/profiles.ini
-    - ~/.mozilla/firefox/*/prefs.js
-    - ~/.mozilla/firefox/0u2cfm04.default-release/prefs.js
-    - /usr/lib64/firefox/defaults/pref
+  - ~/.mozilla/firefox/profiles.ini
+  - ~/.mozilla/firefox/*/prefs.js
+  - ~/.mozilla/firefox/0u2cfm04.default-release/prefs.js
+  - /usr/lib64/firefox/defaults/pref
 Firefox (Flatpak):
   description: Firefox browser Flatpak profiles configuration
   paths:
-    - ~/.var/app/org.mozilla.firefox/.mozilla/firefox/profiles.ini
-    - ~/.var/app/org.mozilla.firefox/.mozilla/firefox/*/prefs.js
+  - ~/.var/app/org.mozilla.firefox/.mozilla/firefox/profiles.ini
+  - ~/.var/app/org.mozilla.firefox/.mozilla/firefox/*/prefs.js
 Google Chrome:
   description: Chrome browser preferences
   paths:
-    - ~/.config/google-chrome/Default/Preferences
-    - ~/.config/google-chrome/Default/Bookmarks
+  - ~/.config/google-chrome/Default/Preferences
+  - ~/.config/google-chrome/Default/Bookmarks
 Chromium:
   description: Chromium browser preferences
   paths:
-    - ~/.config/chromium/Default/Preferences
-    - ~/.config/chromium/Default/Bookmarks
+  - ~/.config/chromium/Default/Preferences
+  - ~/.config/chromium/Default/Bookmarks
 Microsoft Edge:
   description: Edge browser preferences
   paths:
-    - ~/.config/microsoft-edge/Default/Preferences
-    - ~/.config/microsoft-edge/Default/Bookmarks
+  - ~/.config/microsoft-edge/Default/Preferences
+  - ~/.config/microsoft-edge/Default/Bookmarks
 Opera:
   description: Opera browser preferences
   paths:
-    - ~/.config/opera/Preferences
-    - ~/.config/opera/Bookmarks
+  - ~/.config/opera/Preferences
+  - ~/.config/opera/Bookmarks
 Brave:
   description: Brave browser preferences
   paths:
-    - ~/.config/BraveSoftware/Brave-Browser/Default/Preferences
-    - ~/.config/BraveSoftware/Brave-Browser/Default/Bookmarks
+  - ~/.config/BraveSoftware/Brave-Browser/Default/Preferences
+  - ~/.config/BraveSoftware/Brave-Browser/Default/Bookmarks
 Recoll:
   description: Recoll desktop search configuration
   paths:
-    - ~/.config/recoll
-    - ~/.recoll/recoll.conf
-    - /usr/share/recoll/recoll.conf
-    - /usr/share/recoll/fields
-    - ~/.config/Recoll.org
-    - /usr/share/recoll/mimeconf
+  - ~/.config/recoll
+  - ~/.recoll/recoll.conf
+  - /usr/share/recoll/recoll.conf
+  - /usr/share/recoll/fields
+  - ~/.config/Recoll.org
+  - /usr/share/recoll/mimeconf
 Discord:
   description: Discord chat application settings
   path: ~/.config/discord/settings.json
@@ -434,23 +434,23 @@ Hexchat:
 Steam:
   description: Steam gaming platform configuration
   paths:
-    - ~/.steam/steam/config/config.vdf
-    - ~/.steam/steam/userdata/*/config/localconfig.vdf
-    - ~/.steam/steam/config/loginusers.vdf
-    - ~/.steam/steam/config/libraryfolders.vdf
+  - ~/.steam/steam/config/config.vdf
+  - ~/.steam/steam/userdata/*/config/localconfig.vdf
+  - ~/.steam/steam/config/loginusers.vdf
+  - ~/.steam/steam/config/libraryfolders.vdf
 Steam (Local Share):
   description: Steam local application registry
   paths:
-    - ~/.local/share/Steam/registry.vdf
-    - ~/.local/share/Steam/config/config.vdf
+  - ~/.local/share/Steam/registry.vdf
+  - ~/.local/share/Steam/config/config.vdf
 Steam (Flatpak):
   description: Steam gaming platform Flatpak configuration
   path: ~/.var/app/com.valvesoftware.Steam
 Lutris:
   description: Lutris gaming platform configuration
   paths:
-    - ~/.config/lutris/lutris.conf
-    - ~/.config/lutris/system.yml
+  - ~/.config/lutris/lutris.conf
+  - ~/.config/lutris/system.yml
 RetroArch:
   description: RetroArch emulation frontend configuration
   path: ~/.config/retroarch
@@ -496,8 +496,8 @@ Syncthing:
 Ulauncher:
   description: Ulauncher application launcher settings
   paths:
-    - ~/.config/ulauncher/settings.json
-    - ~/.config/ulauncher/shortcuts.json
+  - ~/.config/ulauncher/settings.json
+  - ~/.config/ulauncher/shortcuts.json
 Albert:
   description: Albert desktop agnostic launcher configuration
   path: ~/.config/albert/albert.conf
@@ -555,17 +555,17 @@ VMware Workstation:
 Podman:
   description: Podman container engine configuration
   paths:
-    - ~/.config/containers
-    - ~/.config/containers/podman
+  - ~/.config/containers
+  - ~/.config/containers/podman
 KDE Plasma:
   description: global configuration settings and theme preferences
   path: ~/.config/kdeglobals
 Plasma:
   description: Plasma desktop environment core configuration
   paths:
-    - ~/.config/plasmarc
-    - ~/.config/plasmashellrc
-    - ~/.config/plasma-org.kde.plasma.desktop-appletsrc
+  - ~/.config/plasmarc
+  - ~/.config/plasmashellrc
+  - ~/.config/plasma-org.kde.plasma.desktop-appletsrc
 Plasma Shell:
   description: Plasma locale and format settings (per-user locale independent of
     system)
@@ -612,10 +612,10 @@ Baloo:
 Activity Manager:
   description: Activities metadata and current activity configuration
   paths:
-    - ~/.config/kactivitymanagerdrc
-    - ~/.config/kactivitymanagerd-switcher
-    - ~/.config/kactivitymanagerd-statsrc
-    - ~/.config/kactivitymanagerd-pluginsrc
+  - ~/.config/kactivitymanagerdrc
+  - ~/.config/kactivitymanagerd-switcher
+  - ~/.config/kactivitymanagerd-statsrc
+  - ~/.config/kactivitymanagerd-pluginsrc
 Session Manager:
   description: Session restore behavior and saved client applications
   path: ~/.config/ksmserverrc
@@ -625,19 +625,19 @@ KScreenLocker:
 PowerDevil:
   description: PowerDevil power management settings
   paths:
-    - ~/.config/powerdevilrc
-    - ~/.config/powermanagementprofilesrc
+  - ~/.config/powerdevilrc
+  - ~/.config/powermanagementprofilesrc
 BlueDevil:
   description: Bluetooth daemon state and auto-enable preferences
   path: ~/.config/bluedevilglobalrc
 GTK:
   description: GTK theme and appearance settings configuration
   paths:
-    - ~/.config/gtkrc
-    - ~/.gtkrc-2.0
-    - ~/.config/gtkrc-2.0
-    - ~/.config/gtk-3.0/settings.ini
-    - ~/.config/gtk-4.0/settings.ini
+  - ~/.config/gtkrc
+  - ~/.gtkrc-2.0
+  - ~/.config/gtkrc-2.0
+  - ~/.config/gtk-3.0/settings.ini
+  - ~/.config/gtk-4.0/settings.ini
 xsettingsd:
   description: X11 settings daemon configuration for desktop theme settings
   path: ~/.config/xsettingsd/xsettingsd.conf
@@ -756,50 +756,50 @@ System Monitor:
 DFBU - Dotfiles Backup Utility:
   description: Backup and restore dotfiles and other critical configs/data.
   paths:
-    - ~/.config/bin/pythonScripts/requirements.txt
-    - ~/.config/bin/pythonScripts/DFBU
+  - ~/.config/bin/pythonScripts/requirements.txt
+  - ~/.config/bin/pythonScripts/DFBU
 ExportScripts:
   description: Moves scripts from local GitHub repos to ~/.config/bin
   path: ~/.config/bin/pythonScripts/ExportScripts
 Qt Widget Designer:
   description: Qt GUI application design tool
   paths:
-    - ~/.config/QtProject/Designer.conf
-    - ~/.config/QtProject/QtDesignStudio.ini
-    - ~/.config/QtProject/UserFeedback.QtCreator.conf
-    - ~/.config/QtProject/UserFeedback.QtTools.conf
+  - ~/.config/QtProject/Designer.conf
+  - ~/.config/QtProject/QtDesignStudio.ini
+  - ~/.config/QtProject/UserFeedback.QtCreator.conf
+  - ~/.config/QtProject/UserFeedback.QtTools.conf
 Librewolf:
   description: Browser configs
   paths:
-    - ~/.librewolf/profiles.ini
-    - ~/.librewolf/26900oaf.default-default/prefs.js
-    - ~/.librewolf/26900oaf.default-default/logins.json
-    - ~/.librewolf/26900oaf.default-default/cert9.db
-    - ~/.librewolf/26900oaf.default-default/signedInUser.json
-    - ~/.librewolf/26900oaf.default-default/times.json
-    - ~/.librewolf/26900oaf.default-default/logins-backup.json
-    - ~/.librewolf/26900oaf.default-default/extension-settings.json
-    - ~/.librewolf/26900oaf.default-default/extensions.json
-    - ~/.librewolf/26900oaf.default-default/extension-preferences.json
-    - ~/.librewolf/26900oaf.default-default/autofill-profiles.json
-    - ~/.librewolf/26900oaf.default-default/addons.json
-    - ~/.librewolf/26900oaf.default-default/settings/data.safe.bin
-    - ~/.librewolf/26900oaf.default-default/sessionstore-backups/previous.jsonlz4
-    - ~/.librewolf/26900oaf.default-default/extension-store-menus/data.safe.bin
-    - ~/.librewolf/26900oaf.default-default/bookmarkbackups/bookmarks-2025-11-04_5_Pj-NhTiWgeDRSHpeVGXvyj-Ig9ZAZUYv65_h26vL7Wg=.jsonlz4
+  - ~/.librewolf/profiles.ini
+  - ~/.librewolf/26900oaf.default-default/prefs.js
+  - ~/.librewolf/26900oaf.default-default/logins.json
+  - ~/.librewolf/26900oaf.default-default/cert9.db
+  - ~/.librewolf/26900oaf.default-default/signedInUser.json
+  - ~/.librewolf/26900oaf.default-default/times.json
+  - ~/.librewolf/26900oaf.default-default/logins-backup.json
+  - ~/.librewolf/26900oaf.default-default/extension-settings.json
+  - ~/.librewolf/26900oaf.default-default/extensions.json
+  - ~/.librewolf/26900oaf.default-default/extension-preferences.json
+  - ~/.librewolf/26900oaf.default-default/autofill-profiles.json
+  - ~/.librewolf/26900oaf.default-default/addons.json
+  - ~/.librewolf/26900oaf.default-default/settings/data.safe.bin
+  - ~/.librewolf/26900oaf.default-default/sessionstore-backups/previous.jsonlz4
+  - ~/.librewolf/26900oaf.default-default/extension-store-menus/data.safe.bin
+  - ~/.librewolf/26900oaf.default-default/bookmarkbackups/bookmarks-2025-11-04_5_Pj-NhTiWgeDRSHpeVGXvyj-Ig9ZAZUYv65_h26vL7Wg=.jsonlz4
 Micro:
   description: Micro terminal-based text editor configuration
   path: ~/.config/micro
 Cursor:
   description: Cursor AI-powered IDE user settings and keybindings
   paths:
-    - ~/.config/Cursor/User/settings.json
-    - ~/.config/Cursor/User/keybindings.json
+  - ~/.config/Cursor/User/settings.json
+  - ~/.config/Cursor/User/keybindings.json
 Visual Studio Code (Extended):
   description: VS Code keybindings and MCP configuration
   paths:
-    - ~/.config/Code/User/keybindings.json
-    - ~/.config/Code/User/mcp.json
+  - ~/.config/Code/User/keybindings.json
+  - ~/.config/Code/User/mcp.json
 ripgrep:
   description: ripgrep search tool configuration
   path: ~/.config/rg
@@ -830,8 +830,8 @@ NVM:
 Cargo:
   description: Rust Cargo package manager configuration
   paths:
-    - ~/.cargo/config.toml
-    - ~/.cargo/credentials.toml
+  - ~/.cargo/config.toml
+  - ~/.cargo/credentials.toml
 Borg Backup:
   description: Borg deduplicating backup program configuration
   path: ~/.config/borg
@@ -841,8 +841,8 @@ Proton:
 K3b:
   description: K3b disc burning application configuration
   paths:
-    - ~/.config/k3brc
-    - ~/.config/k3b.notifyrc
+  - ~/.config/k3brc
+  - ~/.config/k3b.notifyrc
 Gnote:
   description: Gnote desktop note-taking application configuration
   path: ~/.config/gnote
@@ -855,12 +855,12 @@ Plasma Workspace:
 Akonadi:
   description: Akonadi PIM storage service configuration
   paths:
-    - ~/.config/akonadi
-    - ~/.config/akonadi-firstrunrc
-    - ~/.config/akonadi_contacts_resource_0rc
-    - ~/.config/akonadi_ical_resource_0rc
-    - ~/.config/akonadi_indexing_agentrc
-    - ~/.config/akonadi_maildir_resource_0rc
+  - ~/.config/akonadi
+  - ~/.config/akonadi-firstrunrc
+  - ~/.config/akonadi_contacts_resource_0rc
+  - ~/.config/akonadi_ical_resource_0rc
+  - ~/.config/akonadi_indexing_agentrc
+  - ~/.config/akonadi_maildir_resource_0rc
 Kalendar:
   description: Kalendar calendar application configuration
   path: ~/.config/kalendaracrc
@@ -885,6 +885,6 @@ Vuescan:
 Ghostwriter:
   description: Configs
   paths:
-    - ~/.config/ghostwriter/ghostwriter.conf
-    - ~/.local/share/ghostwriter/themes
-    - /usr/share/ghostwriter/themes
+  - ~/.config/ghostwriter/ghostwriter.conf
+  - ~/.local/share/ghostwriter/themes
+  - /usr/share/ghostwriter/themes
