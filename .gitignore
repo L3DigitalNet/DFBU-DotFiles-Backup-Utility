@@ -218,3 +218,6 @@ __marimo__/
 DFBU/data/.dfbu-config.toml.backups/
 *.pre-migration
 *.bak.*
+
+# Claude Code local overrides (personal settings, not shared)
+.claude.local.md

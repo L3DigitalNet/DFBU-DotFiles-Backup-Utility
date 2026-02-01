@@ -680,6 +680,7 @@ class MainWindow(QMainWindow):
 
     def _find_logs_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to Logs tab widgets."""
+        self.verify_backup_btn: QPushButton = ui_widget.findChild(QPushButton, "verifyBackupButton")  # type: ignore[assignment]
         self.save_log_btn: QPushButton = ui_widget.findChild(QPushButton, "pushButton")  # type: ignore[assignment]
 
     def _find_status_widgets(self) -> None:
@@ -703,6 +704,9 @@ class MainWindow(QMainWindow):
         self.action_start_restore: QAction = loaded_window.findChild(
             QAction, "actionStartRestore"
         )  # type: ignore[assignment]
+        self.action_verify_backup: QAction = loaded_window.findChild(
+            QAction, "actionVerifyBackup"
+        )  # type: ignore[assignment]
         self.action_about: QAction = loaded_window.findChild(QAction, "actionAbout")  # type: ignore[assignment]
 
         # Fix Qt object ownership: Reparent actions to prevent deletion
@@ -710,6 +714,7 @@ class MainWindow(QMainWindow):
             self.action_exit,
             self.action_start_backup,
             self.action_start_restore,
+            self.action_verify_backup,
             self.action_about,
         ]:
             if action:
@@ -770,12 +775,14 @@ class MainWindow(QMainWindow):
         self.save_config_btn.clicked.connect(self._on_save_config)
 
         # Logs tab connections
+        self.verify_backup_btn.clicked.connect(self._on_verify_backup)
         self.save_log_btn.clicked.connect(self._on_save_log)
 
         # Menu action connections
         self.action_exit.triggered.connect(self.close)
         self.action_start_backup.triggered.connect(self._on_start_backup)
         self.action_start_restore.triggered.connect(self._on_start_restore)
+        self.action_verify_backup.triggered.connect(self._on_verify_backup)
         self.action_about.triggered.connect(self._show_about)
 
     def _configure_table_widget(self) -> None:
@@ -1704,6 +1711,36 @@ class MainWindow(QMainWindow):
                 matches = text in app_text or text in tags_text or text in path_text
 
             self.dotfile_table.setRowHidden(row, not matches)
+
+    def _on_verify_backup(self) -> None:
+        """Handle verify backup button/menu action click."""
+        # Get verification report from viewmodel
+        report = self.viewmodel.command_verify_backup()
+
+        if report is None:
+            QMessageBox.information(
+                self,
+                "No Backup to Verify",
+                "No backup has been performed yet in this session.\n\n"
+                "Run a backup operation first, then verify.",
+            )
+            return
+
+        # Switch to Logs tab (index 3)
+        self.tab_widget.setCurrentIndex(3)
+
+        # Append verification report to log
+        self.operation_log.append("\n")
+        self.operation_log.append(report)
+        self.operation_log.verticalScrollBar().setValue(
+            self.operation_log.verticalScrollBar().maximum()
+        )
+
+        # Show status message
+        self.status_bar.showMessage(
+            "Verification complete - see log for details",
+            STATUS_MESSAGE_TIMEOUT_MS,
+        )
 
     def _on_save_log(self) -> None:
         """Handle save log button click."""

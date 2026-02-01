@@ -1,20 +1,27 @@
 # Production Readiness Design
 
 **Date:** 2026-01-31
-**Status:** Approved
-**Versions:** v0.6.0, v0.7.0, v0.8.0 → v1.0.0
+**Status:** In Progress
+**Last Updated:** 2026-02-01
 
 ## Overview
 
 DFBU currently has solid architecture and performance, but lacks the safety guarantees needed for production use. This design defines a comprehensive reliability layer built in **risk-first order**.
 
-### Priority Order
+### Version History
+
+| Version | Release Date | Features |
+|---------|--------------|----------|
+| v0.6.0 | (untagged) | P0: Pre-restore safety |
+| v0.7.0 | 2026-02-01 | YAML config migration, CLI removal, config directory removal |
+
+### Remaining Roadmap
 
 | Priority | Feature | Risk Mitigated | Version |
 |----------|---------|----------------|---------|
-| **P0** | Pre-restore safety | Data loss - overwriting files with no way back | v0.6.0 |
-| **P1** | Backup verification | Silent failures - thinking backups succeeded when they didn't | v0.7.0 |
-| **P2** | Error handling | Confusion & partial states - unclear what went wrong or how to fix it | v0.8.0 |
+| **P0** | Pre-restore safety | Data loss - overwriting files with no way back | ✅ Done |
+| **P1** | Backup verification | Silent failures - thinking backups succeeded when they didn't | v0.8.0 |
+| **P2** | Error handling | Confusion & partial states - unclear what went wrong or how to fix it | v0.9.0 |
 
 ### Design Principles
 
@@ -25,7 +32,7 @@ DFBU currently has solid architecture and performance, but lacks the safety guar
 
 ---
 
-## P0: Pre-Restore Safety (v0.6.0)
+## P0: Pre-Restore Safety ✅ COMPLETE
 
 ### Problem
 
@@ -88,7 +95,7 @@ modified = "2026-01-15T09:22:11"
 
 ---
 
-## P1: Backup Verification (v0.7.0)
+## P1: Backup Verification (v0.8.0)
 
 ### Problem
 
@@ -169,7 +176,7 @@ hash_verification = false       # SHA-256 check (default: false, slower)
 
 ---
 
-## P2: Error Handling & Recovery (v0.8.0)
+## P2: Error Handling & Recovery (v0.9.0)
 
 ### Problem
 
@@ -241,7 +248,7 @@ When errors occur during backup/restore:
 
 ---
 
-## P3: File Size Management (v0.9.0)
+## P3: File Size Management (v1.0.0)
 
 ### Problem
 
@@ -397,17 +404,17 @@ All components follow the existing patterns:
 
 ```toml
 [options]
-# Pre-restore safety (v0.6)
+# Pre-restore safety (v0.6) ✅
 pre_restore_backup = true
 max_restore_backups = 5
 
-# Verification (v0.7)
+# Verification (v0.8)
 verify_after_backup = true
 hash_verification = false
 
-# Error handling (v0.8) - no config options, always enabled
+# Error handling (v0.9) - no config options, always enabled
 
-# File size management (v0.9)
+# File size management (v1.0)
 size_check_enabled = true
 size_warning_threshold_mb = 10
 size_alert_threshold_mb = 100
@@ -419,28 +426,35 @@ auto_exclude_cache = true
 
 ## Release Milestones
 
-### v0.6.0 - Pre-Restore Safety
-- [ ] `RestoreBackupManager` component
-- [ ] `RestoreBackupManagerProtocol` interface
-- [ ] Manifest TOML read/write
-- [ ] Integration with `BackupOrchestrator.restore()`
-- [ ] Retention/cleanup logic
-- [ ] Config options in UI
-- [ ] Comprehensive tests
-- [ ] Documentation updates
+### v0.6.0 - Pre-Restore Safety ✅ COMPLETE
 
-### v0.7.0 - Backup Verification
-- [ ] `VerificationManager` component
-- [ ] `VerificationManagerProtocol` interface
-- [ ] Size verification
-- [ ] Hash verification (SHA-256)
-- [ ] Verification report generation
-- [ ] "Verify Backup" UI button
-- [ ] Progress/status UI updates
-- [ ] Comprehensive tests
-- [ ] Documentation updates
+- [x] `RestoreBackupManager` component
+- [x] `RestoreBackupManagerProtocol` interface
+- [x] Manifest TOML read/write
+- [x] Integration with `BackupOrchestrator.restore()`
+- [x] Retention/cleanup logic
+- [x] Config options in UI
+- [x] Comprehensive tests
+- [x] Documentation updates
 
-### v0.8.0 - Error Handling & Recovery
+### v0.7.0 - Infrastructure Updates ✅ COMPLETE
+
+- [x] YAML config format migration (from TOML)
+- [x] CLI removal (GUI-only application)
+- [x] Config directory selection removal (fixed path)
+
+### v0.8.0 - Backup Verification
+- [x] `VerificationManager` component
+- [x] `VerificationManagerProtocol` interface
+- [x] Size verification
+- [x] Hash verification (SHA-256)
+- [x] Verification report generation
+- [x] "Verify Backup" UI button
+- [x] Config options (`verify_after_backup`, `hash_verification`)
+- [x] Comprehensive tests (30 test cases)
+- [x] Documentation updates
+
+### v0.9.0 - Error Handling & Recovery
 - [ ] `ErrorHandler` component
 - [ ] `ErrorHandlerProtocol` interface
 - [ ] `OperationResult` dataclass
@@ -451,7 +465,7 @@ auto_exclude_cache = true
 - [ ] Comprehensive tests
 - [ ] Documentation updates
 
-### v0.9.0 - File Size Management
+### v1.0.0 - File Size Management
 - [ ] `SizeAnalyzer` component
 - [ ] `SizeAnalyzerProtocol` interface
 - [ ] Directory/file size calculation
@@ -465,9 +479,9 @@ auto_exclude_cache = true
 - [ ] Comprehensive tests
 - [ ] Documentation updates
 
-### v1.0.0 - Production Ready
+### v1.1.0 - Production Ready
 
-- [ ] All reliability features complete (v0.6-v0.9)
+- [ ] All reliability features complete (P0-P3)
 - [ ] Full test coverage across all components
 - [ ] Documentation complete
 - [ ] Release notes

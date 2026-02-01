@@ -1575,6 +1575,22 @@ WARNING: This will overwrite existing files at destination paths.</string>
             </widget>
            </item>
            <item>
+            <widget class="QPushButton" name="verifyBackupButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="toolTip">
+              <string>Verify integrity of the last backup operation</string>
+             </property>
+             <property name="text">
+              <string>Verify Backup</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QPushButton" name="pushButton">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
@@ -1655,6 +1671,8 @@ WARNING: This will overwrite existing files at destination paths.</string>
     </property>
     <addaction name="actionStartBackup"/>
     <addaction name="actionStartRestore"/>
+    <addaction name="separator"/>
+    <addaction name="actionVerifyBackup"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1711,6 +1729,14 @@ WARNING: This will overwrite existing files at destination paths.</string>
   <action name="actionAbout">
    <property name="text">
     <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="actionVerifyBackup">
+   <property name="text">
+    <string>&amp;Verify Backup</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
    </property>
   </action>
  </widget>

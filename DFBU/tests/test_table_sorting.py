@@ -55,6 +55,8 @@ options:
   max_archives: 5
   pre_restore_backup: true
   max_restore_backups: 5
+  verify_after_backup: false
+  hash_verification: false
 """)
 
     # dotfiles.yaml

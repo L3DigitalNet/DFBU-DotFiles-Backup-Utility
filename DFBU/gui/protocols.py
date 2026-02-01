@@ -30,6 +30,8 @@ Classes:
     - StatisticsTrackerProtocol: Interface for statistics tracking
     - BackupOrchestratorProtocol: Interface for backup orchestration
     - RestoreBackupManagerProtocol: Interface for pre-restore backup management
+    - VerificationManagerProtocol: Interface for backup verification
+    - ErrorHandlerProtocol: Interface for structured error handling
 
 Functions:
     None
@@ -41,7 +43,13 @@ from typing import Protocol
 
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from core.common_types import DotFileDict, OptionsDict
+from core.common_types import (
+    DotFileDict,
+    OperationResultDict,
+    OptionsDict,
+    PathResultDict,
+    VerificationReportDict,
+)
 
 from gui.statistics_tracker import BackupStatistics
 
@@ -567,5 +575,220 @@ class RestoreBackupManagerProtocol(Protocol):
 
         Returns:
             List of (backup_path, timestamp_str) tuples, newest first
+        """
+        ...
+
+
+# =============================================================================
+# Verification Manager Protocol
+# =============================================================================
+
+
+class VerificationManagerProtocol(Protocol):
+    """
+    Protocol defining interface for backup verification management.
+
+    Implementations must provide file verification (size and hash comparison)
+    and report generation for backup integrity checking.
+    """
+
+    @property
+    def hash_verification_enabled(self) -> bool:
+        """Get whether SHA-256 hash verification is enabled."""
+        ...
+
+    @hash_verification_enabled.setter
+    def hash_verification_enabled(self, value: bool) -> None:
+        """Set whether SHA-256 hash verification is enabled."""
+        ...
+
+    def verify_backup(
+        self,
+        backup_path: Path,
+        source_paths: list[tuple[Path, Path]],
+        backup_type: str = "mirror",
+    ) -> VerificationReportDict:
+        """
+        Verify integrity of a backup by comparing files against sources.
+
+        Args:
+            backup_path: Base path of the backup to verify
+            source_paths: List of (source_path, backup_path) tuples to verify
+            backup_type: Type of backup ("mirror" or "archive")
+
+        Returns:
+            VerificationReportDict with verification results
+        """
+        ...
+
+    def verify_file(
+        self,
+        source_path: Path,
+        backup_path: Path,
+    ) -> tuple[bool, bool | None, str]:
+        """
+        Verify a single file's integrity.
+
+        Args:
+            source_path: Original source file path
+            backup_path: File path in the backup
+
+        Returns:
+            Tuple of (size_match, hash_match, error_message)
+            hash_match is None if hash verification is disabled
+        """
+        ...
+
+    def format_report_for_log(self, report: VerificationReportDict) -> str:
+        """
+        Format a verification report for display in the log viewer.
+
+        Args:
+            report: Verification report dictionary
+
+        Returns:
+            Human-readable formatted string for log output
+        """
+        ...
+
+
+# =============================================================================
+# Error Handler Protocol
+# =============================================================================
+
+
+class ErrorHandlerProtocol(Protocol):
+    """
+    Protocol defining interface for structured error handling.
+
+    Implementations must provide error categorization, user-friendly message
+    formatting, and operation result tracking for backup/restore operations.
+    """
+
+    def create_path_result(
+        self,
+        path: str,
+        dest_path: str | None,
+        status: str,
+        error_type: str | None = None,
+        error_message: str = "",
+        can_retry: bool = False,
+    ) -> PathResultDict:
+        """
+        Create a structured result for a single path operation.
+
+        Args:
+            path: The file or directory path that was processed
+            dest_path: Destination path for copy operations
+            status: Result status ("success", "failed", "skipped", "warning")
+            error_type: Error category if failed
+            error_message: Human-readable error message
+            can_retry: Whether this operation might succeed on retry
+
+        Returns:
+            PathResultDict with operation result
+        """
+        ...
+
+    def create_operation_result(
+        self,
+        operation_type: str,
+    ) -> OperationResultDict:
+        """
+        Create a new empty operation result for tracking.
+
+        Args:
+            operation_type: Type of operation ("mirror_backup", "archive_backup", "restore")
+
+        Returns:
+            OperationResultDict initialized for tracking
+        """
+        ...
+
+    def handle_exception(
+        self,
+        exception: Exception,
+        path: str,
+        dest_path: str | None = None,
+    ) -> PathResultDict:
+        """
+        Convert an exception to a structured PathResultDict.
+
+        Categorizes exceptions and generates user-friendly error messages.
+
+        Args:
+            exception: The exception that occurred
+            path: Path where the error occurred
+            dest_path: Destination path if applicable
+
+        Returns:
+            PathResultDict with categorized error information
+        """
+        ...
+
+    def format_user_message(
+        self,
+        error_type: str,
+        path: str,
+        original_error: str = "",
+    ) -> str:
+        """
+        Format a technical error into a user-friendly message.
+
+        Args:
+            error_type: Error category (e.g., "permission", "not_found", "disk_full")
+            path: Path where the error occurred
+            original_error: Original technical error message
+
+        Returns:
+            User-friendly error message with actionable guidance
+        """
+        ...
+
+    def finalize_result(
+        self,
+        result: OperationResultDict,
+    ) -> OperationResultDict:
+        """
+        Finalize an operation result, determining overall status.
+
+        Sets the status field based on completed/failed/skipped counts
+        and populates the can_retry list.
+
+        Args:
+            result: The operation result to finalize
+
+        Returns:
+            Finalized OperationResultDict with status determined
+        """
+        ...
+
+    def format_summary_for_log(
+        self,
+        result: OperationResultDict,
+    ) -> str:
+        """
+        Format an operation result for display in the log viewer.
+
+        Args:
+            result: Operation result to format
+
+        Returns:
+            Human-readable formatted string for log output
+        """
+        ...
+
+    def get_retryable_paths(
+        self,
+        result: OperationResultDict,
+    ) -> list[str]:
+        """
+        Get list of paths that can be retried.
+
+        Args:
+            result: Operation result containing failed paths
+
+        Returns:
+            List of path strings that might succeed on retry
         """
         ...

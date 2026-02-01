@@ -64,6 +64,8 @@ class OptionsDict(TypedDict):
     max_archives: int
     pre_restore_backup: bool
     max_restore_backups: int
+    verify_after_backup: bool
+    hash_verification: bool
 
 
 class SettingsDict(TypedDict):
@@ -133,3 +135,115 @@ class LegacyDotFileDict(TypedDict):
     mirror_dir: str
     archive_dir: str
     enabled: bool
+
+
+class VerificationResultDict(TypedDict):
+    """
+    Type definition for individual file verification result.
+
+    Contains verification status and details for a single file.
+
+    Fields:
+        path: Original source path that was backed up
+        backup_path: Path in the backup directory
+        status: Verification status ("ok", "size_mismatch", "hash_mismatch", "missing", "error")
+        size_match: Whether file sizes match
+        hash_match: Whether SHA-256 hashes match (None if not checked)
+        expected_size: Expected file size in bytes
+        actual_size: Actual file size in bytes (None if file missing)
+        error: Error message if status is "error"
+    """
+
+    path: str
+    backup_path: str
+    status: str
+    size_match: bool
+    hash_match: bool | None
+    expected_size: int
+    actual_size: int | None
+    error: str
+
+
+class VerificationReportDict(TypedDict):
+    """
+    Type definition for backup verification report.
+
+    Contains overall verification summary and individual file results.
+
+    Fields:
+        timestamp: ISO format timestamp of verification
+        backup_type: Type of backup verified ("mirror" or "archive")
+        backup_path: Path to the backup that was verified
+        total_files: Total number of files checked
+        verified_ok: Number of files that passed verification
+        verified_failed: Number of files that failed verification
+        hash_verified: Whether SHA-256 hash verification was performed
+        results: List of individual file verification results
+    """
+
+    timestamp: str
+    backup_type: str
+    backup_path: str
+    total_files: int
+    verified_ok: int
+    verified_failed: int
+    hash_verified: bool
+    results: list[VerificationResultDict]
+
+
+# =============================================================================
+# Error Handling Types (v0.9.0)
+# =============================================================================
+
+
+class PathResultDict(TypedDict):
+    """
+    Type definition for individual path operation result.
+
+    Contains the result of an operation on a single file or directory path.
+
+    Fields:
+        path: The file or directory path that was processed
+        dest_path: Destination path (for copy operations, None if not applicable)
+        status: Result status ("success", "failed", "skipped", "warning")
+        error_type: Error category if failed (None if success)
+        error_message: Human-readable error message (empty if success)
+        can_retry: Whether this operation might succeed on retry
+    """
+
+    path: str
+    dest_path: str | None
+    status: str  # "success", "failed", "skipped", "warning"
+    error_type: str | None  # "permission", "not_found", "disk_full", "locked", etc.
+    error_message: str
+    can_retry: bool
+
+
+class OperationResultDict(TypedDict):
+    """
+    Type definition for structured operation result.
+
+    Contains comprehensive result information for backup/restore operations,
+    replacing simple success/fail returns with detailed tracking.
+
+    Fields:
+        status: Overall operation status ("success", "partial", "failed")
+        operation_type: Type of operation ("mirror_backup", "archive_backup", "restore")
+        total_items: Total number of items attempted
+        completed: List of successfully processed paths
+        failed: List of paths that failed with error details
+        skipped: List of paths that were skipped with reasons
+        warnings: List of non-fatal warning messages
+        can_retry: List of paths that might succeed on retry
+        timestamp: ISO format timestamp of operation
+    """
+
+    status: str  # "success", "partial", "failed"
+    operation_type: str  # "mirror_backup", "archive_backup", "restore"
+    total_items: int
+    completed: list[PathResultDict]
+    failed: list[PathResultDict]
+    skipped: list[PathResultDict]
+    warnings: list[str]
+    can_retry: list[str]  # List of path strings that can be retried
+    timestamp: str
