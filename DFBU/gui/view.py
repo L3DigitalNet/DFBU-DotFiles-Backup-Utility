@@ -69,7 +69,9 @@ from PySide6.QtWidgets import (
 )
 
 from gui.constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
+from gui.help_dialog import HelpDialog
 from gui.input_validation import InputValidator
+from gui.tooltip_manager import TooltipManager
 from gui.viewmodel import DFBUViewModel
 
 
@@ -545,6 +547,10 @@ class MainWindow(QMainWindow):
         # Configure table widget properties
         self._configure_table_widget()
 
+        # Apply tooltips to all widgets
+        self._tooltip_manager = TooltipManager()
+        self._tooltip_manager.apply_tooltips(self)
+
         # Set initial status message
         self.status_bar.showMessage("Ready - Load configuration to begin")
 
@@ -708,6 +714,7 @@ class MainWindow(QMainWindow):
             QAction, "actionVerifyBackup"
         )  # type: ignore[assignment]
         self.action_about: QAction = loaded_window.findChild(QAction, "actionAbout")  # type: ignore[assignment]
+        self.action_user_guide: QAction = loaded_window.findChild(QAction, "actionUserGuide")  # type: ignore[assignment]
 
         # Fix Qt object ownership: Reparent actions to prevent deletion
         for action in [
@@ -716,6 +723,7 @@ class MainWindow(QMainWindow):
             self.action_start_restore,
             self.action_verify_backup,
             self.action_about,
+            self.action_user_guide,
         ]:
             if action:
                 action.setParent(self)
@@ -784,6 +792,7 @@ class MainWindow(QMainWindow):
         self.action_start_restore.triggered.connect(self._on_start_restore)
         self.action_verify_backup.triggered.connect(self._on_verify_backup)
         self.action_about.triggered.connect(self._show_about)
+        self.action_user_guide.triggered.connect(self._show_user_guide)
 
     def _configure_table_widget(self) -> None:
         """Configure the dotfile table widget properties.
@@ -1314,6 +1323,11 @@ class MainWindow(QMainWindow):
             "Email: chris@l3digital.net\n"
             "GitHub: https://github.com/L3DigitalNet",
         )
+
+    def _show_user_guide(self) -> None:
+        """Show user guide help dialog."""
+        dialog = HelpDialog(self)
+        dialog.exec()
 
     def _on_browse_mirror_dir(self) -> None:
         """Handle browse mirror directory button click."""
