@@ -1,100 +1,90 @@
-# DFBU Project Documentation
+# DFBU GUI Project Documentation
 
-**Description:** Comprehensive project documentation for Dotfiles Backup Utility (DFBU). This single project documentation file provides detailed information about installation, usage, API reference, and examples for developers and users.
+**Description:** Comprehensive project documentation for Dotfiles Backup Utility GUI (DFBU GUI). This document provides detailed technical information about the MVVM architecture, implementation details, and development guidelines.
 
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
 **GitHub:** <https://github.com/L3DigitalNet>
-**Version:** 0.5.5
+**Version:** 0.5.6
 **Date Created:** 10-18-2025
 **Date Changed:** 11-01-2025
 
 ## Overview
 
-This documentation provides comprehensive information about the Dotfiles Backup Utility, a Linux-only Python 3.14+ application that uses TOML configuration to manage system configuration files with hostname-based directory structure and intelligent path handling. The application leverages Python's standard library exclusively with custom utility classes for clean code organization.
+DFBU GUI is a modern desktop application built with Python 3.14+ and PySide6, implementing a clean MVVM (Model-View-ViewModel) architectural pattern for managing Linux system configuration file backups. The application provides an intuitive graphical interface with threaded operations, real-time progress tracking, interactive dotfile management with enable/disable functionality, incremental mirror backups with file change detection, automatic config backup rotation, and comprehensive error handling.
 
-**Architecture Philosophy**: The codebase follows a clean, confident design approach with minimal defensive programming. Path validation occurs at architectural boundaries, allowing core business logic to execute confidently without scattered error checks. This version-aware approach (pre-v1.0.0) focuses on core functionality and clean architecture, deferring comprehensive error handling until the v1.0.0 release.
+The Model layer has been refactored (v0.4.0+) to follow SOLID principles, with DFBUModel acting as a facade coordinating four focused components: ConfigManager, FileOperations, BackupOrchestrator, and StatisticsTracker.
 
-## Key Features
+For installation and usage instructions, see the main [README.md](../README.md) file.
 
-- **TOML Configuration**: Flexible dotfile management via `data/dfbu-config.toml` with comprehensive validation
-- **Dual-Mode Operation**: Interactive backup and restore functionality with dedicated CLIHandler class
-- **Hostname-based Structure**: Organized backups by machine hostname managed by PathAssembler utility
-- **Python 3.14 Path.copy()**: Enhanced file copying with metadata preservation and symlink following
-- **ANSI Color Output**: Color-coded terminal output using embedded utility classes
-- **Interactive CLI**: Fully separated UI concerns via CLIHandler with interactive menu integration
-- **Robust Validation**: ConfigValidator class with comprehensive type checking and range validation at architectural boundaries
-- **Operation Classes**: MirrorBackup and ArchiveBackup classes for clean separation of concerns
-- **Command-line Arguments**: Support for `--dry-run` and `--force` flags via argparse
-- **Archive Support**: Compressed TAR.GZ archive creation with rotation and retention policies
-- **Confident Code Design**: Minimal defensive programming with validation at boundaries, clean execution paths in core logic
-- **Simplified Return Types**: Pythonic APIs using None to indicate failure rather than redundant tuple returns
+## Architecture
 
-## Quick Start
+### MVVM Pattern
 
-```bash
-# Navigate to the project directory
-cd Python/projects/DFBU
+The application follows the Model-View-ViewModel architectural pattern:
 
-# Run the interactive backup utility
-python3 dfbu.py
-```
+- **Model**: Business logic and data management (DFBUModel as facade)
+- **View**: PySide6 GUI components (MainWindow)
+- **ViewModel**: Presentation logic and state management (DFBUViewModel)
 
-## Documentation Sections
+### Model Layer Components (v0.4.0+)
 
-- **Installation**: See main [README.md](../README.md#installation)
-- **Configuration**: TOML file setup and format specification
-- **Usage**: Interactive backup process and features
-- **Architecture**: Class structure and implementation details
-- **Architectural Patterns**: Confident design approach and validation boundaries
-- **Error Handling**: Version-aware error handling strategy (pre-v1.0.0 vs. post-v1.0.0)
+The Model layer uses a facade pattern with specialized components:
 
-## Architectural Patterns (v0.3.2+)
+#### DFBUModel (Facade)
 
-### Confident Code Design
+- **Lines**: 583 (reduced from 1,178, 50.5% reduction)
+- **Role**: Coordinates all model components via delegation
+- **Components**: ConfigManager, FileOperations, BackupOrchestrator, StatisticsTracker
+- **Properties**: Exposes component state (config_path, options, dotfiles, statistics, etc.)
+- **Backward Compatibility**: Full API compatibility maintained via property setters
 
-The codebase follows a **confident design philosophy** that minimizes defensive programming:
+#### ConfigManager
 
-- **Validation at Boundaries**: Path validation and type checking occur at architectural boundaries (ViewModel, configuration loading)
-- **Clean Execution Paths**: Core business logic executes confidently without scattered None checks or "just in case" conditionals
-- **Pythonic Return Types**: Methods return `Path | None` instead of `tuple[Path | None, bool]` - None indicates failure
-- **Trust Architectural Guarantees**: Once data passes validation boundaries, core methods trust the validity of inputs
+- **Lines**: 555
+- **Responsibilities**:
+  - Configuration file I/O (load, save with rotating backups)
+  - TOML parsing and serialization
+  - Dotfile CRUD operations (add, update, remove, toggle)
+  - Configuration validation integration
+  - GUI-specific enabled field handling
 
-### Examples
+#### FileOperations
 
-**Before (Defensive)**:
+- **Lines**: 620
+- **Responsibilities**:
+  - Path expansion and validation
+  - File/directory copying with metadata preservation
+  - Archive creation (TAR.GZ compression)
+  - Archive rotation and cleanup
+  - Restore path reconstruction
+  - Metadata-based file comparison
 
-```python
-def copy_file(src: Path, dest: Path) -> tuple[Path | None, bool]:
-    if not self.check_readable(src):  # Defensive check
-        return None, False
-    try:
-        # ... copy logic
-        return dest, True
-    except Exception:
-        return dest, False
-```
+#### BackupOrchestrator
 
-**After (Confident)**:
+- **Lines**: 420
+- **Responsibilities**:
+  - Mirror backup coordination
+  - Archive backup coordination
+  - Restore operation coordination
+  - Progress tracking and callbacks
+  - Dotfile path validation
+  - Statistics integration
 
-```python
-def copy_file(src: Path, dest: Path) -> bool:
-    # Assumes src is validated at boundary (ViewModel)
-    src.copy(dest, follow_symlinks=True, preserve_metadata=True)
-    return True
-```
+#### StatisticsTracker
 
-### Version-Aware Error Handling
-
-- **Pre-v1.0.0 (Current)**: Focus on clean architecture and core functionality; minimal error handling
-- **Post-v1.0.0 (Planned)**: Comprehensive error handling with proper logging and recovery strategies
+- **Lines**: 158
+- **Responsibilities**:
+  - Operation metrics tracking
+  - Processing time calculation
+  - Success/skip/failure counters
+  - Statistics reset functionality
+  - BackupStatistics dataclass management
 
 ## External Resources
 
-- **Main Documentation**: [README.md](../README.md)
-- **Repository Guidelines**: [../../.github/copilot-instructions.md](../../.github/copilot-instructions.md)
-- **CLI Tool Guidelines**: [../../.github/instructions/cli-tool.instructions.md](../../.github/instructions/cli-tool.instructions.md)
-
----
-
-For detailed installation, configuration, and usage information, please refer to the main [README.md](../README.md) file.
+- **Main README**: [../README.md](../README.md)
+- **Repository Guidelines**: [../../../.github/copilot-instructions.md](../../../.github/copilot-instructions.md)
+- **Desktop App Guidelines**: [../../../.github/instructions/desktop-application.instructions.md](../../../.github/instructions/desktop-application.instructions.md)
+- **Python Documentation**: <https://docs.python.org/3.14/>
+- **PySide6 Documentation**: <https://doc.qt.io/qtforpython/>

@@ -156,13 +156,12 @@ path = "~/.test3"
 """)
 
         model = DFBUModel(config)
+        # Use synchronous load_config on model (not async command_load_config)
+        model.load_config()
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
             window = MainWindow(viewmodel, "1.0.0")
-
-        # Load config
-        viewmodel.command_load_config()
 
         # Mock size data (small, large, medium)
         size_data = {
@@ -226,12 +225,12 @@ enabled = true
 """)
 
         model = DFBUModel(config)
+        # Use synchronous load_config on model (not async command_load_config)
+        model.load_config()
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
             window = MainWindow(viewmodel, "1.0.0")
-
-        viewmodel.command_load_config()
 
         with patch.object(
             viewmodel, "get_dotfile_sizes", return_value={0: 0, 1: 0, 2: 0}
@@ -277,12 +276,12 @@ path = "~/.test3"
 """)
 
         model = DFBUModel(config)
+        # Use synchronous load_config on model (not async command_load_config)
+        model.load_config()
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
             window = MainWindow(viewmodel, "1.0.0")
-
-        viewmodel.command_load_config()
 
         with patch.object(
             viewmodel, "get_dotfile_sizes", return_value={0: 0, 1: 0, 2: 0}
@@ -324,12 +323,12 @@ path = "~/.test2"
 """)
 
         model = DFBUModel(config)
+        # Use synchronous load_config on model (not async command_load_config)
+        model.load_config()
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
             window = MainWindow(viewmodel, "1.0.0")
-
-        viewmodel.command_load_config()
 
         with patch.object(
             viewmodel, "get_dotfile_sizes", return_value={0: 2048, 1: 1024}
@@ -375,12 +374,12 @@ path = "~/.test3"
 """)
 
         model = DFBUModel(config)
+        # Use synchronous load_config on model (not async command_load_config)
+        model.load_config()
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
             window = MainWindow(viewmodel, "1.0.0")
-
-        viewmodel.command_load_config()
 
         with patch.object(
             viewmodel, "get_dotfile_sizes", return_value={0: 0, 1: 0, 2: 0}
@@ -420,12 +419,12 @@ path = "~/.test"
 """)
 
         model = DFBUModel(config)
+        # Use synchronous load_config on model (not async command_load_config)
+        model.load_config()
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
             window = MainWindow(viewmodel, "1.0.0")
-
-        viewmodel.command_load_config()
 
         with patch.object(viewmodel, "get_dotfile_sizes", return_value={0: 0}):
             window._update_dotfile_table()
@@ -456,12 +455,12 @@ path = "~/.test"
 """)
 
         model = DFBUModel(config)
+        # Use synchronous load_config on model (not async command_load_config)
+        model.load_config()
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
             window = MainWindow(viewmodel, "1.0.0")
-
-        viewmodel.command_load_config()
 
         with patch.object(viewmodel, "get_dotfile_sizes", return_value={0: 0}):
             window._update_dotfile_table()

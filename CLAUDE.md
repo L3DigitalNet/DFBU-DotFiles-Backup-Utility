@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux application for configuration file backup/restoration with CLI and GUI (PySide6) interfaces. Uses UV for package management.
+DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux desktop application for configuration file backup/restoration with a PySide6 GUI interface. Uses UV for package management.
 
 ## Essential Commands
 
@@ -14,8 +14,7 @@ DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux application for configura
 source .venv/bin/activate             # Activate virtual environment
 
 # Run Application
-python DFBU/dfbu-gui.py               # GUI mode
-python DFBU/dfbu.py                   # CLI mode
+python DFBU/dfbu-gui.py               # Run the GUI application
 
 # Testing
 pytest DFBU/tests/                    # All tests
@@ -78,7 +77,7 @@ Components (implement Protocol interfaces):
 
 ### Shared Types
 
-`DFBU/core/common_types.py` defines `TypedDict` classes shared between CLI and GUI:
+`DFBU/core/common_types.py` defines `TypedDict` classes used across the application:
 
 - `DotFileDict`: Dotfile entry (category, application, description, paths, enabled)
 - `OptionsDict`: Backup settings (mirror, archive, hostname_subdir, date_subdir, compression)

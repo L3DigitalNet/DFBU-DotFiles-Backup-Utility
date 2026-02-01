@@ -1,13 +1,13 @@
 # DFBU - DotFiles Backup Utility
 
-**Version:** 0.5.8
+**Version:** 0.6.0
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
 **GitHub:** [L3DigitalNet/DFBU-DotFiles-Backup-Utility](https://github.com/L3DigitalNet/DFBU-DotFiles-Backup-Utility)
 **License:** MIT
 **Platform:** Linux Only
 
-Modern Python 3.14+ application for comprehensive Linux configuration file backup and restoration with both CLI and GUI interfaces.
+Modern Python 3.14+ desktop application for comprehensive Linux configuration file backup and restoration with a PySide6 GUI.
 
 ---
 
@@ -15,7 +15,7 @@ Modern Python 3.14+ application for comprehensive Linux configuration file backu
 
 ### Core Capabilities
 
-- **Dual Interface**: Command-line and desktop GUI (PySide6) modes
+- **Desktop GUI**: Modern PySide6 interface with MVVM architecture
 - **TOML Configuration**: Structured config with Category/Subcategory/Application organization
 - **Hostname-based Backups**: Automatic directory organization by hostname and date
 - **Dual Backup Modes**:
@@ -29,6 +29,7 @@ Modern Python 3.14+ application for comprehensive Linux configuration file backu
 
 ### Advanced Features
 
+- **Pre-Restore Safety**: Automatic backup of files before restore operations
 - **Enable/Disable Dotfiles**: Toggle individual files in configuration
 - **Real-time Progress**: Visual progress bars and status updates
 - **Configuration Backups**: Automatic config backup rotation before saves
@@ -56,18 +57,9 @@ source .venv/bin/activate
 
 ### Basic Usage
 
-#### GUI Mode
-
 ```bash
-cd DFBU
-python3 dfbu-gui.py
-```
-
-#### CLI Mode
-
-```bash
-cd DFBU
-python3 dfbu.py
+# Run the GUI application
+python DFBU/dfbu-gui.py
 ```
 
 ### Configuration
@@ -94,11 +86,10 @@ enabled = true
 
 ## Project Structure
 
-```
+```text
 DFBU-DotFiles-Backup-Utility/
 ├── DFBU/                           # Main application directory
 │   ├── dfbu-gui.py                 # GUI application entry point
-│   ├── dfbu.py                     # CLI application entry point
 │   ├── requirements.txt            # Python dependencies
 │   ├── data/
 │   │   └── dfbu-config.toml        # Default configuration file
@@ -109,40 +100,36 @@ DFBU-DotFiles-Backup-Utility/
 │   │   ├── backup_orchestrator.py  # Backup/restore coordination
 │   │   ├── config_manager.py       # Configuration management
 │   │   ├── file_operations.py      # File system operations
+│   │   ├── restore_backup_manager.py # Pre-restore safety backups
 │   │   ├── statistics_tracker.py   # Operation metrics
 │   │   ├── input_validation.py     # Input validation framework
 │   │   ├── logging_config.py       # Logging configuration
-│   │   ├── constants.py            # Application constants
 │   │   └── designer/               # Qt Designer .ui files
 │   ├── core/                       # Shared utilities
 │   │   ├── common_types.py         # TypedDict definitions
 │   │   └── validation.py           # Configuration validation
-│   ├── tests/                      # Test suite (217 tests, 82% coverage)
-│   │   ├── README.md               # Testing documentation
+│   ├── tests/                      # Test suite (330+ tests)
 │   │   ├── conftest.py             # Pytest fixtures
 │   │   └── test_*.py               # Unit and integration tests
-│   ├── docs/                       # Project documentation
-│   │   ├── CHANGELOG.md            # Version history
-│   │   ├── GUI-CHANGELOG.md        # GUI-specific changes
-│   │   ├── PROJECT-DOC.md          # CLI documentation
-│   │   └── GUI-PROJECT-DOC.md      # GUI documentation
-│   └── htmlcov/                    # Coverage reports
+│   └── docs/                       # Project documentation
+│       ├── CHANGELOG.md            # Version history
+│       ├── ARCHITECTURE.md         # Architecture documentation
+│       └── PROJECT-DOC.md          # Technical documentation
+├── docs/                           # Additional documentation
+│   ├── BRANCH_PROTECTION.md        # Branch protection docs
+│   └── BRANCH_PROTECTION_QUICK.md  # Quick reference
 ├── .github/
 │   ├── copilot-instructions.md     # GitHub Copilot guidelines
-│   ├── prompts/                    # Development prompts
-│   └── workflows/                  # CI/CD workflows
+│   └── prompts/                    # Development prompts
 ├── .agents/                        # AI agent tools
 │   ├── memory.instruction.md       # Coding preferences
 │   └── branch_protection.py        # Branch protection checker
 ├── AGENTS.md                       # Quick agent reference
-├── QUICKSTART.md                   # CLI quick start guide
-├── QUICKSTART_UI_UV.md             # GUI quick start with UV
-├── UI_DESIGN_GUIDE.md              # Qt Designer workflow
+├── CLAUDE.md                       # Claude Code instructions
 ├── CONTRIBUTING.md                 # Contribution guidelines
-├── BRANCH_PROTECTION.md            # Branch protection docs
-├── setup.sh                        # Project setup script
+├── scripts/                        # Setup scripts
+│   └── setup.sh                    # Project setup script
 ├── pyproject.toml                  # Project configuration
-├── mypy.ini                        # Type checking config
 └── README.md                       # This file
 ```
 
@@ -214,24 +201,14 @@ Components:
 - Success/skip/failure counters
 - Statistics reset functionality
 
-### CLI Architecture
-
-The CLI uses a **confident design philosophy**:
-
-- **Validation at Boundaries**: Type and path validation at entry points
-- **Clean Execution Paths**: Core logic executes without defensive checks
-- **Pythonic Returns**: Use `None` to indicate failure, not tuple booleans
-- **Trust Guarantees**: Core methods trust validated inputs
-
 ---
 
 ## Testing
 
 ### Test Suite Overview
 
-- **Total Tests**: 217
-- **Overall Coverage**: 82%
-- **Pass Rate**: 99.08% (215 passed, 2 skipped)
+- **Total Tests**: 330+
+- **Overall Coverage**: 83%
 
 ### Running Tests
 
@@ -337,15 +314,12 @@ enabled = true                   # Enable/disable in GUI
 
 ## Documentation
 
-- **[QUICKSTART.md](QUICKSTART.md)**: CLI quick start guide
-- **[QUICKSTART_UI_UV.md](QUICKSTART_UI_UV.md)**: GUI quick start with UV
-- **[UI_DESIGN_GUIDE.md](UI_DESIGN_GUIDE.md)**: Qt Designer workflow
-- **[AGENTS.md](AGENTS.md)**: Quick reference for AI agents
+- **[CLAUDE.md](CLAUDE.md)**: Claude Code / AI agent instructions
 - **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
 - **[DFBU/docs/CHANGELOG.md](DFBU/docs/CHANGELOG.md)**: Version history
-- **[DFBU/docs/PROJECT-DOC.md](DFBU/docs/PROJECT-DOC.md)**: CLI technical docs
-- **[DFBU/docs/GUI-PROJECT-DOC.md](DFBU/docs/GUI-PROJECT-DOC.md)**: GUI technical docs
-- **[DFBU/tests/README.md](DFBU/tests/README.md)**: Testing documentation
+- **[DFBU/docs/ARCHITECTURE.md](DFBU/docs/ARCHITECTURE.md)**: Architecture documentation
+- **[DFBU/docs/PROJECT-DOC.md](DFBU/docs/PROJECT-DOC.md)**: Technical documentation
+- **[docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md)**: Branch protection guide
 
 ---
 
@@ -363,13 +337,12 @@ enabled = true                   # Enable/disable in GUI
 
 - Differential backups with change detection (modification time)
 - Enhanced restore with cross-hostname support
-- Pre-restoration backup of existing files
 - Network path support for remote destinations
 - Backup verification and integrity checking (hash comparison)
 - Scheduled backups with timer automation
 - Multiple configuration profiles
-- Drag-and-drop file addition (GUI)
-- Dark mode theme (GUI)
+- Drag-and-drop file addition
+- Dark mode theme
 - Enhanced error handling for production (v1.0.0+)
 
 ---
@@ -388,7 +361,7 @@ python .agents/branch_protection.py
 git checkout testing
 ```
 
-See [BRANCH_PROTECTION_QUICK.md](BRANCH_PROTECTION_QUICK.md) for full details.
+See [docs/BRANCH_PROTECTION_QUICK.md](docs/BRANCH_PROTECTION_QUICK.md) for full details.
 
 ### Code Standards
 
@@ -462,4 +435,4 @@ GitHub: [@L3DigitalNet](https://github.com/L3DigitalNet)
 
 ---
 
-**Last Updated**: November 3, 2025
+**Last Updated**: January 31, 2026
