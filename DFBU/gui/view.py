@@ -479,6 +479,9 @@ class MainWindow(QMainWindow):
         self._skipped_count: int = 0
         self._last_logged_skip_count: int = 0
 
+        # Filter input reference (set up in _setup_filter_ui)
+        self._filter_input: QLineEdit | None = None
+
         self.setup_ui()
         self._connect_viewmodel_signals()
         self._load_settings()
@@ -582,6 +585,10 @@ class MainWindow(QMainWindow):
         )  # type: ignore[assignment]
         self.dotfile_table: QTableWidget = ui_widget.findChild(
             QTableWidget, "fileGroupFileTable"
+        )  # type: ignore[assignment]
+        # Filter input for searching dotfiles
+        self._filter_input = ui_widget.findChild(
+            QLineEdit, "filterLineEdit"
         )  # type: ignore[assignment]
         self.total_size_label: QLabel = ui_widget.findChild(
             QLabel, "fileGroupTotalSizeLabel"
@@ -740,6 +747,10 @@ class MainWindow(QMainWindow):
             self._on_dotfile_selection_changed
         )
 
+        # Filter input connection
+        if self._filter_input:
+            self._filter_input.textChanged.connect(self._apply_filter)
+
         # Restore tab connections
         self.browse_restore_btn.clicked.connect(self._on_browse_restore_source)
         self.restore_btn.clicked.connect(self._on_start_restore)
@@ -786,15 +797,24 @@ class MainWindow(QMainWindow):
         self.action_about.triggered.connect(self._show_about)
 
     def _configure_table_widget(self) -> None:
-        """Configure the dotfile table widget properties."""
+        """Configure the dotfile table widget properties.
+
+        Column structure:
+            0: Included (checkbox indicator)
+            1: Status (file exists)
+            2: Application
+            3: Tags
+            4: Size
+            5: Path (stretch)
+        """
         # Set column resize modes
         header = self.dotfile_table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
-        header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # Included
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # Status
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)  # Application
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)  # Tags
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)  # Size
+        header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)  # Path
 
     def _connect_viewmodel_signals(self) -> None:
         """Connect ViewModel signals to View slots."""
@@ -805,6 +825,7 @@ class MainWindow(QMainWindow):
         self.viewmodel.error_occurred.connect(self._on_error_occurred)
         self.viewmodel.config_loaded.connect(self._on_config_loaded)
         self.viewmodel.dotfiles_updated.connect(self._on_dotfiles_updated)
+        self.viewmodel.exclusions_changed.connect(self._on_exclusions_changed)
 
     def _load_settings(self) -> None:
         """Load persisted settings."""
@@ -1103,8 +1124,11 @@ class MainWindow(QMainWindow):
         """
         Fast update of dotfile table without filesystem validation.
 
-        Used for operations that only change metadata (like toggling enabled status)
+        Used for operations that only change metadata (like toggling inclusion status)
         but don't affect file existence. Reuses cached validation and size data.
+
+        Column structure:
+            0: Included, 1: Status, 2: Application, 3: Tags, 4: Size, 5: Path
         """
         dotfiles = self.viewmodel.get_dotfile_list()
 
@@ -1123,21 +1147,21 @@ class MainWindow(QMainWindow):
         for i in range(len(dotfiles)):
             if i in idx_to_row:
                 row = idx_to_row[i]
-                # Get existing status from current table
+                # Get existing status from current table (column 1 = Status)
                 status_item = self.dotfile_table.item(row, 1)
-                type_item = self.dotfile_table.item(row, 5)
-                size_item = self.dotfile_table.item(row, 6)
+                size_item = self.dotfile_table.item(row, 4)  # column 4 = Size
 
-                if status_item and type_item and size_item:
+                if status_item and size_item:
                     exists = status_item.text() == "✓"
-                    type_str = type_item.text()
-                    is_dir = type_str == "Directory"
-                    validation[i] = (exists, is_dir, type_str)
+                    # We don't track is_dir separately anymore, default to False
+                    validation[i] = (exists, False, "File")
 
-                    # Store size data by parsing back from the stored UserRole data
-                    # Since we have formatted text, we need to cache the raw bytes
-                    # For now, get fresh sizes (it's still reasonably fast)
-                    sizes = self.viewmodel.get_dotfile_sizes()
+                    # Get size from UserRole data stored in size item
+                    size_data = size_item.data(Qt.ItemDataRole.UserRole)
+                    if isinstance(size_data, int):
+                        sizes[i] = size_data
+                    else:
+                        sizes[i] = 0
                 else:
                     # Fallback for missing data
                     validation[i] = (False, False, "File")
@@ -1209,26 +1233,37 @@ class MainWindow(QMainWindow):
         """
         Create and populate table items for a single dotfile row.
 
+        Column structure:
+            0: Included (checkbox indicator) - checked = included, unchecked = excluded
+            1: Status (file exists)
+            2: Application
+            3: Tags
+            4: Size
+            5: Path
+
         Args:
             row_idx: Row index in table
             original_idx: Original index in dotfiles list
-            dotfile: Dotfile dictionary
+            dotfile: Dotfile dictionary (LegacyDotFileDict with application key)
             exists: Whether the dotfile exists on filesystem
             size: Total size in bytes
         """
-        enabled = dotfile.get("enabled", True)
+        # Get application name for exclusion check
+        application = dotfile.get("application", "")
 
-        # Enabled indicator
-        indicator = "✓" if enabled else "✗"
-        enabled_item = QTableWidgetItem(indicator)
-        enabled_item.setData(
+        # Included indicator (checked = included, unchecked = excluded)
+        # In the legacy format, "enabled" reflects "not excluded"
+        included = dotfile.get("enabled", True)
+        indicator = "✓" if included else "✗"
+        included_item = QTableWidgetItem(indicator)
+        included_item.setData(
             Qt.ItemDataRole.UserRole, original_idx
         )  # Store original index
-        if enabled:
-            enabled_item.setForeground(QColor(0, 150, 0))  # Green
+        if included:
+            included_item.setForeground(QColor(0, 150, 0))  # Green
         else:
-            enabled_item.setForeground(QColor(128, 128, 128))  # Gray
-        self.dotfile_table.setItem(row_idx, 0, enabled_item)
+            included_item.setForeground(QColor(128, 128, 128))  # Gray
+        self.dotfile_table.setItem(row_idx, 0, included_item)
 
         # Status indicator (file exists)
         status_item = QTableWidgetItem("✓" if exists else "✗")
@@ -1238,13 +1273,15 @@ class MainWindow(QMainWindow):
             status_item.setForeground(QColor(200, 0, 0))  # Red
         self.dotfile_table.setItem(row_idx, 1, status_item)
 
-        # Category
-        self.dotfile_table.setItem(row_idx, 2, QTableWidgetItem(dotfile["category"]))
+        # Application name (column 2)
+        self.dotfile_table.setItem(row_idx, 2, QTableWidgetItem(application))
 
-        # Application
-        self.dotfile_table.setItem(row_idx, 3, QTableWidgetItem(dotfile["application"]))
+        # Tags (column 3) - use category as tags for legacy format
+        # In legacy format, category serves as tags
+        tags = dotfile.get("category", "")
+        self.dotfile_table.setItem(row_idx, 3, QTableWidgetItem(tags))
 
-        # Size - format to human readable with custom numeric sorting
+        # Size - format to human readable with custom numeric sorting (column 4)
         size_str = self.viewmodel.format_size(size)
         size_item = NumericTableWidgetItem(size_str)
         # Store raw size value for proper numeric sorting
@@ -1255,7 +1292,7 @@ class MainWindow(QMainWindow):
         )
         self.dotfile_table.setItem(row_idx, 4, size_item)
 
-        # Path - show first path with count indicator if multiple
+        # Path - show first path with count indicator if multiple (column 5)
         paths = dotfile["paths"]
         if len(paths) == 1:
             path_display = paths[0]
@@ -1642,7 +1679,11 @@ class MainWindow(QMainWindow):
                 )
 
     def _on_toggle_dotfile_enabled(self) -> None:
-        """Handle toggle dotfile enabled button click."""
+        """Handle toggle dotfile inclusion button click.
+
+        Toggles the exclusion status for the selected dotfile. If included,
+        it becomes excluded; if excluded, it becomes included.
+        """
         # Get selected row
         selected_rows = self.dotfile_table.selectionModel().selectedRows()
 
@@ -1654,19 +1695,22 @@ class MainWindow(QMainWindow):
 
         # Get current dotfile
         dotfile = self.viewmodel.get_dotfile_list()[original_idx]
+        application = dotfile.get("application", "")
 
-        # Toggle enabled status via ViewModel
-        new_status = self.viewmodel.command_toggle_dotfile_enabled(original_idx)
+        if not application:
+            return
 
-        # Update status bar with brief feedback (non-blocking)
-        status_text = "enabled" if new_status else "disabled"
+        # Toggle exclusion status via ViewModel
+        # This will emit exclusions_changed signal which triggers table refresh
+        self.viewmodel.command_toggle_exclusion(application)
+
+        # Determine new status for feedback (after toggle, if it was included it's now excluded)
+        is_now_excluded = self.viewmodel.is_excluded(application)
+        status_text = "excluded" if is_now_excluded else "included"
         self.status_bar.showMessage(
-            f"Dotfile '{dotfile['application']}' {status_text}",
+            f"Dotfile '{application}' {status_text}",
             STATUS_MESSAGE_TIMEOUT_MS,
         )
-
-        # Perform lightweight table update without re-validation
-        self._update_dotfile_table_fast()
 
     def _on_dotfiles_updated(self, dotfile_count: int) -> None:
         """Handle dotfiles updated signal."""
@@ -1675,6 +1719,47 @@ class MainWindow(QMainWindow):
 
         # Update status bar
         self.status_bar.showMessage(f"Configuration updated: {dotfile_count} dotfiles")
+
+    def _on_exclusions_changed(self) -> None:
+        """Handle exclusions changed signal.
+
+        Refreshes the dotfile table to reflect updated inclusion status.
+        Uses fast update since only exclusion status changed, not file existence.
+        """
+        self._update_dotfile_table_fast()
+
+    def _apply_filter(self, text: str) -> None:
+        """Filter dotfile table by search text.
+
+        Filters rows based on matches in application name, tags, or path columns.
+        Empty search text shows all rows.
+
+        Column structure:
+            0: Included, 1: Status, 2: Application, 3: Tags, 4: Size, 5: Path
+
+        Args:
+            text: Search text to filter by (case-insensitive)
+        """
+        text = text.lower().strip()
+
+        for row in range(self.dotfile_table.rowCount()):
+            # Get items from searchable columns
+            app_item = self.dotfile_table.item(row, 2)  # Application column
+            tags_item = self.dotfile_table.item(row, 3)  # Tags column
+            path_item = self.dotfile_table.item(row, 5)  # Path column
+
+            # Extract text from items (handle None safely)
+            app_text = app_item.text().lower() if app_item else ""
+            tags_text = tags_item.text().lower() if tags_item else ""
+            path_text = path_item.text().lower() if path_item else ""
+
+            # Show row if any column matches, or if search text is empty
+            if not text:
+                matches = True
+            else:
+                matches = text in app_text or text in tags_text or text in path_text
+
+            self.dotfile_table.setRowHidden(row, not matches)
 
     def _on_save_log(self) -> None:
         """Handle save log button click."""
