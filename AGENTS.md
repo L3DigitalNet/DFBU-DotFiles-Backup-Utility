@@ -18,9 +18,9 @@ This template is for building desktop applications with:
 - `.github/copilot-instructions.md` - Comprehensive GitHub Copilot instructions
 - `.agents/memory.instruction.md` - Coding preferences and patterns
 - `.agents/branch_protection.py` - Branch protection checker for AI agents
-- `BRANCH_PROTECTION.md` - Complete branch protection documentation
-- `BRANCH_PROTECTION_QUICK.md` - Quick reference for branch protection
-- `create-branch-protections.prompt.md` - Setup instructions for new repositories
+- `docs/BRANCH_PROTECTION.md` - Complete branch protection documentation
+- `docs/BRANCH_PROTECTION_QUICK.md` - Quick reference for branch protection
+- `CLAUDE.md` - Claude Code / AI assistant instructions
 - This file (AGENTS.md) - Quick agent reference
 
 ## ⚠️ CRITICAL: Branch Protection (AI Agents)

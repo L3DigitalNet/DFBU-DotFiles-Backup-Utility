@@ -1,9 +1,9 @@
 # DFBU Architecture Documentation
 
-**Version:** 0.5.8
+**Version:** 0.9.1
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
-**Last Updated:** November 3, 2025
+**Last Updated:** February 1, 2026
 **License:** MIT
 
 ---
@@ -268,7 +268,7 @@ ConfigManager  FileOperations  BackupOrchestrator  StatisticsTracker
 
 ### DFBUModel (Facade Pattern)
 
-**Lines of Code**: 583 (reduced from 1,178 through refactoring)
+**Lines of Code**: 737
 
 **Purpose**: Provide unified interface to all Model components
 
@@ -280,6 +280,9 @@ ConfigManager  FileOperations  BackupOrchestrator  StatisticsTracker
 2. FileOperations
 3. BackupOrchestrator
 4. StatisticsTracker
+5. ErrorHandler (v0.9.0+)
+6. VerificationManager (v0.8.0+)
+7. RestoreBackupManager (v0.6.0+)
 
 **Key Benefits**:
 
@@ -317,15 +320,16 @@ class DFBUModel:
 
 ### ConfigManager
 
-**Lines of Code**: 555
+**Lines of Code**: 814
 
 **Purpose**: Configuration file management and CRUD operations
 
 **Responsibilities**:
 
-- Load/save TOML configuration files
-- Parse and serialize configuration data
-- Dotfile CRUD operations (add, update, remove, toggle)
+- Load/save YAML configuration files (settings.yaml, dotfiles.yaml, session.yaml)
+- Parse and serialize configuration data with ruamel.yaml
+- Dotfile CRUD operations (add, update, remove)
+- Exclusion-based selection management
 - Configuration backup rotation
 - Validation integration
 
@@ -338,30 +342,43 @@ class ConfigManager:
     def add_dotfile(self, dotfile: DotFileDict) -> bool: ...
     def update_dotfile(self, index: int, dotfile: DotFileDict) -> bool: ...
     def remove_dotfile(self, index: int) -> bool: ...
-    def toggle_dotfile_enabled(self, index: int) -> bool: ...
+    def add_exclusion(self, name: str) -> bool: ...
+    def remove_exclusion(self, name: str) -> bool: ...
+    def is_excluded(self, name: str) -> bool: ...
 ```
 
-**Configuration Structure**:
+**Configuration Structure** (YAML - split across 3 files):
 
-```toml
-[options]
-hostname = "myhost"
-mirror_base_dir = "~/backups/mirror"
-archive_base_dir = "~/backups/archives"
-compression_level = 9
-max_archives = 5
+```yaml
+# settings.yaml
+paths:
+  mirror_dir: ~/backups/mirror
+  archive_dir: ~/backups/archives
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
 
-[[dotfiles]]
-category = "Shell"
-subcategory = "Bash"
-application = "bashrc"
-source_path = "~/.bashrc"
-enabled = true
+options:
+  mirror: true
+  archive: true
+  hostname_subdir: true
+  archive_compression_level: 9
+  max_archives: 5
+  verify_after_backup: true
+
+# dotfiles.yaml
+Bash:
+  description: Bash shell configuration
+  paths: ~/.bashrc
+  tags: shell, terminal
+
+# session.yaml
+excluded:
+  - Firefox
+  - Steam
 ```
 
 ### FileOperations
 
-**Lines of Code**: 620
+**Lines of Code**: 686
 
 **Purpose**: All file system operations and path handling
 
@@ -403,7 +420,7 @@ shutil.copy2(src, dest, follow_symlinks=True)
 
 ### BackupOrchestrator
 
-**Lines of Code**: 420
+**Lines of Code**: 549
 
 **Purpose**: Coordinate backup and restore operations with progress tracking
 
@@ -493,6 +510,76 @@ class StatisticsTracker:
     def record_item_failed(self) -> None: ...
     def reset_statistics(self) -> None: ...
     def get_statistics(self) -> BackupStatistics: ...
+```
+
+### ErrorHandler (v0.9.0+)
+
+**Lines of Code**: 443
+
+**Purpose**: Structured error handling with categorization and recovery suggestions
+
+**Responsibilities**:
+
+- Categorize errors by type (PERMISSION, NOT_FOUND, DISK_FULL, etc.)
+- Determine retry eligibility for recoverable errors
+- Provide user-friendly error messages
+- Support recovery dialog integration
+- Track error patterns and statistics
+
+**Key Methods**:
+
+```python
+class ErrorHandler:
+    def handle_error(self, exception: Exception, context: str) -> ErrorInfo: ...
+    def categorize_error(self, exception: Exception) -> ErrorCategory: ...
+    def is_retryable(self, error: ErrorInfo) -> bool: ...
+    def get_recovery_suggestions(self, error: ErrorInfo) -> list[str]: ...
+```
+
+### VerificationManager (v0.8.0+)
+
+**Lines of Code**: 355
+
+**Purpose**: Backup integrity verification with configurable checks
+
+**Responsibilities**:
+
+- Verify file existence in backup destinations
+- Size comparison between source and backup
+- Optional hash verification (SHA-256)
+- Generate verification reports
+- Integration with backup completion workflow
+
+**Key Methods**:
+
+```python
+class VerificationManager:
+    def verify_backup(self, source: Path, backup: Path) -> VerificationResult: ...
+    def verify_all(self, backup_dir: Path) -> list[VerificationResult]: ...
+    def generate_report(self, results: list[VerificationResult]) -> str: ...
+```
+
+### RestoreBackupManager (v0.6.0+)
+
+**Lines of Code**: 267
+
+**Purpose**: Pre-restore safety backups to prevent data loss
+
+**Responsibilities**:
+
+- Create timestamped backups before restore operations
+- Generate TOML manifest files documenting backups
+- Enforce retention policy (configurable max backups)
+- Automatic cleanup of old backups
+- Directory structure preservation
+
+**Key Methods**:
+
+```python
+class RestoreBackupManager:
+    def create_backup(self, paths: list[Path]) -> Path: ...
+    def cleanup_old_backups(self, max_count: int) -> None: ...
+    def get_backup_history(self) -> list[BackupInfo]: ...
 ```
 
 ---
@@ -784,39 +871,38 @@ warn_unused_configs = True
 
 ## Error Handling Strategy
 
-### Current Approach (Pre-v1.0.0)
+### Current Approach (v0.9.0+)
 
-**Philosophy**: Confident design with minimal defensive programming
+**Philosophy**: Structured error handling with categorization and recovery
 
-**Error Handling Priorities**:
+**Error Handling Features**:
 
-1. **Boundary Validation**: Validate at architectural boundaries
-2. **Graceful Failures**: Return `None` or `False` on error
-3. **Logging**: Log errors for debugging
-4. **User Feedback**: Signal errors to UI when appropriate
+1. **Error Categorization**: Errors classified by type (PERMISSION, NOT_FOUND, DISK_FULL, NETWORK, etc.)
+2. **Recovery Dialogs**: UI-integrated error recovery with user choices (Retry, Skip, Abort)
+3. **Retry Logic**: Automatic retry for transient failures with configurable attempts
+4. **User-Friendly Messages**: Detailed error explanations with remediation suggestions
+5. **Logging**: Comprehensive logging for debugging and audit trails
 
-**Example**:
+**Error Flow**:
 
 ```python
-def copy_file(self, src: Path, dest: Path) -> bool:
-    """Copy file with error handling at method level."""
-    try:
-        src.copy(dest, follow_symlinks=True, preserve_metadata=True)
-        return True
-    except (OSError, PermissionError) as e:
-        logger.error(f"Failed to copy {src} to {dest}: {e}")
-        return False
+# ErrorHandler categorizes and provides recovery options
+error_info = error_handler.handle_error(exception, context="backup")
+if error_info.is_retryable:
+    # Show recovery dialog with Retry/Skip/Abort options
+    recovery_dialog.show(error_info)
+else:
+    # Log and continue with graceful degradation
+    logger.error(f"{error_info.category}: {error_info.message}")
 ```
 
-### Future Approach (v1.0.0+)
+**Error Categories**:
 
-**Planned Improvements**:
-
-1. **Comprehensive Exception Handling**: Catch and recover from more error cases
-2. **User-Friendly Messages**: Detailed error explanations with remediation steps
-3. **Automatic Recovery**: Retry mechanisms and fallback strategies
-4. **Validation Improvements**: More thorough input validation
-5. **Transaction Safety**: Rollback capabilities for failed operations
+- `PERMISSION`: Access denied errors → Suggest permission fixes
+- `NOT_FOUND`: Missing files/directories → Skip or verify paths
+- `DISK_FULL`: Storage exhausted → Free space or change destination
+- `NETWORK`: Connection issues → Retry with backoff
+- `UNKNOWN`: Unexpected errors → Log details for debugging
 
 ---
 
@@ -825,14 +911,18 @@ def copy_file(self, src: Path, dest: Path) -> bool:
 ### Test Organization
 
 ```
-DFBU/tests/
-├── conftest.py                      # Pytest configuration
-├── test_model.py                    # Model unit tests
-├── test_viewmodel_*.py              # ViewModel tests
+DFBU/tests/                          # 24 test files, 540+ test functions
+├── conftest.py                      # Pytest configuration & fixtures
+├── test_model*.py                   # Model unit tests (3 files)
+├── test_viewmodel_*.py              # ViewModel tests (4 files)
 ├── test_view_comprehensive.py       # View tests
-├── test_backup_orchestrator.py      # Component tests
-├── test_config_validation.py        # Validation tests
-└── test_dfbu_cli.py                 # CLI integration tests
+├── test_backup_orchestrator.py      # Backup coordination tests
+├── test_config_*.py                 # Config manager & validation tests
+├── test_error_handler.py            # Error handling tests
+├── test_verification_manager.py     # Verification tests
+├── test_recovery_dialog*.py         # Recovery dialog tests (2 files)
+├── test_worker*.py                  # Worker thread tests (2 files)
+└── test_*.py                        # Additional component tests
 ```
 
 ### Test Markers
@@ -891,10 +981,11 @@ def test_main_window_initialization(qapp, viewmodel):
 
 ### Coverage Goals
 
-- **Overall**: 80%+ coverage
+- **Overall**: 84% coverage (current)
 - **Model Layer**: 95%+ coverage
 - **ViewModel Layer**: 90%+ coverage
-- **View Layer**: Optional (UI testing complexity)
+- **View Layer**: 70%+ coverage
+- **Test Count**: 540+ tests across 24 files
 
 ---
 
@@ -904,11 +995,13 @@ DFBU's architecture demonstrates:
 
 1. **Clean Separation**: MVVM pattern with clear layer boundaries
 2. **SOLID Principles**: Single responsibility, dependency inversion
-3. **Confident Design**: Validation at boundaries, clean execution paths
-4. **Type Safety**: Full type hint coverage with mypy compliance
-5. **Testability**: 82% coverage with comprehensive test suite
-6. **Performance**: Non-blocking UI through threaded operations
-7. **Maintainability**: Small, focused components (all < 650 lines)
+3. **Protocol-Based DI**: Type-safe dependency injection via Python Protocols
+4. **Structured Error Handling**: Categorized errors with recovery options (v0.9.0+)
+5. **Backup Verification**: Integrity checking with size/hash comparison (v0.8.0+)
+6. **Type Safety**: Full type hint coverage with mypy compliance
+7. **Testability**: 84% coverage with 540+ tests across 24 files
+8. **Performance**: Non-blocking UI through threaded operations
+9. **Maintainability**: Small, focused components (all < 850 lines)
 
 This architecture supports both current development needs and future extensibility while maintaining code quality and developer experience.
 

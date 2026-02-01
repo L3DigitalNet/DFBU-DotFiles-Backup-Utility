@@ -82,13 +82,15 @@ AI can help with merges ONLY when human explicitly says:
 
 ## Protection Components
 
-| Component | Protects Against | When Active |
-|-----------|------------------|-------------|
-| `pre-commit` hook | Direct commits to main | Every commit attempt |
-| `post-checkout` hook | Forgetting you're on main | After branch switch |
-| `post-merge` hook | Staying on main after merge | After merge completes |
-| `branch_protection.py` | AI modifications to main | Before AI file operations |
-| `memory.instruction.md` | AI violations | Every AI session |
+| Component | Protects Against | Status |
+|-----------|------------------|--------|
+| `branch_protection.py` | AI modifications to main | ✅ **Active** - Primary protection |
+| `memory.instruction.md` | AI violations | ✅ **Active** - Every AI session |
+| `pre-commit` hook | Direct commits to main | ⚪ Optional - Not installed |
+| `post-checkout` hook | Forgetting you're on main | ⚪ Optional - Not installed |
+| `post-merge` hook | Staying on main after merge | ⚪ Optional - Not installed |
+
+**Note**: Git hooks are documented for optional setup. The Python script is the primary protection mechanism.
 
 ## Testing Protection
 

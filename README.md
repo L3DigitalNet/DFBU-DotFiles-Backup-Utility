@@ -1,6 +1,6 @@
 # DFBU - DotFiles Backup Utility
 
-**Version:** 0.6.0
+**Version:** 0.9.1
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
 **GitHub:** [L3DigitalNet/DFBU-DotFiles-Backup-Utility](https://github.com/L3DigitalNet/DFBU-DotFiles-Backup-Utility)
@@ -114,18 +114,24 @@ DFBU-DotFiles-Backup-Utility/
 │   │   ├── model.py                # Business logic and state (facade)
 │   │   ├── viewmodel.py            # Presentation logic
 │   │   ├── view.py                 # PySide6 UI components
-│   │   ├── backup_orchestrator.py  # Backup/restore coordination
+│   │   ├── protocols.py            # Protocol interfaces for DI
 │   │   ├── config_manager.py       # Configuration management
 │   │   ├── file_operations.py      # File system operations
+│   │   ├── backup_orchestrator.py  # Backup/restore coordination
+│   │   ├── error_handler.py        # Error handling & categorization
+│   │   ├── verification_manager.py # Backup integrity verification
 │   │   ├── restore_backup_manager.py # Pre-restore safety backups
-│   │   ├── statistics_tracker.py   # Operation metrics
+│   │   ├── help_dialog.py          # In-app documentation
+│   │   ├── recovery_dialog.py      # Error recovery UI
 │   │   ├── input_validation.py     # Input validation framework
 │   │   ├── logging_config.py       # Logging configuration
 │   │   └── designer/               # Qt Designer .ui files
 │   ├── core/                       # Shared utilities
 │   │   ├── common_types.py         # TypedDict definitions
-│   │   └── validation.py           # Configuration validation
-│   ├── tests/                      # Test suite (330+ tests)
+│   │   ├── validation.py           # Configuration validation
+│   │   ├── yaml_config.py          # YAML config loading/saving
+│   │   └── migration.py            # Config migration utilities
+│   ├── tests/                      # Test suite (540+ tests, 24 files)
 │   │   ├── conftest.py             # Pytest fixtures
 │   │   └── test_*.py               # Unit and integration tests
 │   └── docs/                       # Project documentation
@@ -166,10 +172,13 @@ ViewModel (DFBUViewModel)
 Model (DFBUModel - Facade)
     ↕ coordinates
 Components:
-    ├── ConfigManager       # Config I/O and CRUD
-    ├── FileOperations      # File system operations
-    ├── BackupOrchestrator  # Backup/restore coordination
-    └── StatisticsTracker   # Operation metrics
+    ├── ConfigManager          # Config I/O and CRUD
+    ├── FileOperations         # File system operations
+    ├── BackupOrchestrator     # Backup/restore coordination
+    ├── StatisticsTracker      # Operation metrics
+    ├── ErrorHandler           # Error handling & categorization
+    ├── VerificationManager    # Backup integrity verification
+    └── RestoreBackupManager   # Pre-restore safety backups
 ```
 
 **Key Principles:**
@@ -182,13 +191,13 @@ Components:
 
 ### Model Components (v0.4.0+)
 
-**DFBUModel (Facade - 583 lines)**
+**DFBUModel (Facade - 737 lines)**
 
 - Coordinates all model components via delegation
 - Provides unified API to ViewModel
 - Maintains backward compatibility
 
-**ConfigManager (555 lines)**
+**ConfigManager (814 lines)**
 
 - Configuration file I/O with rotating backups
 - YAML parsing and serialization (ruamel.yaml)
@@ -196,7 +205,7 @@ Components:
 - Exclusion-based selection management
 - Configuration validation integration
 
-**FileOperations (620 lines)**
+**FileOperations (686 lines)**
 
 - Path expansion and validation
 - File/directory copying with metadata preservation
@@ -204,7 +213,7 @@ Components:
 - Restore path reconstruction
 - File comparison utilities
 
-**BackupOrchestrator (420 lines)**
+**BackupOrchestrator (549 lines)**
 
 - Mirror backup coordination
 - Archive backup coordination
@@ -212,12 +221,13 @@ Components:
 - Progress tracking with callbacks
 - Statistics integration
 
-**StatisticsTracker (158 lines)**
+**Additional Components (v0.8.0+)**
 
-- Operation metrics tracking
-- Processing time calculation
-- Success/skip/failure counters
-- Statistics reset functionality
+- **ErrorHandler (443 lines)**: Structured error handling with categorization
+- **VerificationManager (355 lines)**: Backup integrity verification
+- **RestoreBackupManager (267 lines)**: Pre-restore safety backups
+- **HelpDialog (198 lines)**: In-app documentation display
+- **TooltipManager (118 lines)**: Dynamic tooltip management
 
 ---
 
@@ -225,8 +235,9 @@ Components:
 
 ### Test Suite Overview
 
-- **Total Tests**: 330+
-- **Overall Coverage**: 83%
+- **Total Tests**: 540+
+- **Test Files**: 24
+- **Overall Coverage**: 84%
 
 ### Running Tests
 
@@ -348,23 +359,26 @@ Bash:                            # Application name (key)
 
 - No support for network paths or remote destinations
 - Restore requires exact hostname match in backup directory structure
-- No verification of successful copies or integrity checks
 - Limited symlink support (follow_symlinks=True only)
-- Comprehensive error handling deferred until v1.0.0
+- File size management for large backups (planned for v1.0)
 
 ---
 
-## Planned Features
+## Recent Features (v0.7.0-v0.9.0)
 
-- Differential backups with change detection (modification time)
+- **v0.9.0**: Comprehensive error handling with recovery dialogs
+- **v0.8.0**: Backup verification with size/hash integrity checks
+- **v0.7.0**: In-app help system with tooltips and help dialog
+
+## Planned Features (v1.0+)
+
+- File size management and warnings for large backups
 - Enhanced restore with cross-hostname support
 - Network path support for remote destinations
-- Backup verification and integrity checking (hash comparison)
 - Scheduled backups with timer automation
 - Multiple configuration profiles
 - Drag-and-drop file addition
 - Dark mode theme
-- Enhanced error handling for production (v1.0.0+)
 
 ---
 

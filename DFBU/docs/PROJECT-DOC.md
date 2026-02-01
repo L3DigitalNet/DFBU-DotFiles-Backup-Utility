@@ -5,7 +5,7 @@
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
 **GitHub:** <https://github.com/L3DigitalNet>
-**Version:** 0.6.1
+**Version:** 0.9.1
 **Date Created:** 10-18-2025
 **Date Changed:** 02-01-2026
 
@@ -33,15 +33,15 @@ The Model layer uses a facade pattern with specialized components:
 
 #### DFBUModel (Facade)
 
-- **Lines**: 583 (reduced from 1,178, 50.5% reduction)
+- **Lines**: 737
 - **Role**: Coordinates all model components via delegation
-- **Components**: ConfigManager, FileOperations, BackupOrchestrator, StatisticsTracker
+- **Components**: ConfigManager, FileOperations, BackupOrchestrator, StatisticsTracker, ErrorHandler, VerificationManager, RestoreBackupManager
 - **Properties**: Exposes component state (config_path, options, dotfiles, statistics, etc.)
 - **Backward Compatibility**: Full API compatibility maintained via property setters
 
 #### ConfigManager
 
-- **Lines**: 555
+- **Lines**: 814
 - **Responsibilities**:
   - Configuration file I/O (load, save with rotating backups)
   - YAML parsing and serialization (ruamel.yaml)
@@ -51,7 +51,7 @@ The Model layer uses a facade pattern with specialized components:
 
 #### FileOperations
 
-- **Lines**: 620
+- **Lines**: 686
 - **Responsibilities**:
   - Path expansion and validation
   - File/directory copying with metadata preservation
@@ -62,7 +62,7 @@ The Model layer uses a facade pattern with specialized components:
 
 #### BackupOrchestrator
 
-- **Lines**: 420
+- **Lines**: 549
 - **Responsibilities**:
   - Mirror backup coordination
   - Archive backup coordination
@@ -71,15 +71,32 @@ The Model layer uses a facade pattern with specialized components:
   - Dotfile path validation
   - Statistics integration
 
-#### StatisticsTracker
+#### ErrorHandler (v0.9.0+)
 
-- **Lines**: 158
+- **Lines**: 443
 - **Responsibilities**:
-  - Operation metrics tracking
-  - Processing time calculation
-  - Success/skip/failure counters
-  - Statistics reset functionality
-  - BackupStatistics dataclass management
+  - Error categorization (PERMISSION, NOT_FOUND, DISK_FULL, etc.)
+  - Recovery suggestion generation
+  - Retry eligibility determination
+  - Integration with RecoveryDialog
+
+#### VerificationManager (v0.8.0+)
+
+- **Lines**: 355
+- **Responsibilities**:
+  - Backup integrity verification
+  - Size/hash comparison
+  - Verification report generation
+  - Post-backup verification workflow
+
+#### RestoreBackupManager (v0.6.0+)
+
+- **Lines**: 267
+- **Responsibilities**:
+  - Pre-restore safety backups
+  - Timestamped backup directories
+  - TOML manifest generation
+  - Retention policy enforcement
 
 ## External Resources
 

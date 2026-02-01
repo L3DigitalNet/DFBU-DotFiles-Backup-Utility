@@ -2,15 +2,19 @@
 
 ## Overview
 
-This repository implements a comprehensive branch protection system to prevent accidental modifications to the `main` branch. The protection applies to both human developers and AI coding agents.
+This repository implements branch protection to prevent accidental modifications to the `main` branch. The protection applies primarily to AI coding agents via a Python script.
 
 For setting up branch protection on new repositories, see `create-branch-protections.prompt.md`.
 
 ## Protection Layers
 
-### 1. Git Hooks (Human Protection)
+### 1. AI Agent Protection (Active)
 
-Three Git hooks are installed to protect the main branch:
+The primary protection mechanism is `.agents/branch_protection.py` - see section below.
+
+### 2. Git Hooks (Optional - Not Installed by Default)
+
+Three Git hooks can optionally be installed to protect the main branch:
 
 #### Pre-Commit Hook (`.git/hooks/pre-commit`)
 
@@ -40,9 +44,9 @@ Three Git hooks are installed to protect the main branch:
   - Reminds user to switch back to testing
   - Prevents accidental continued work on main
 
-### 2. AI Agent Protection (`.agents/branch_protection.py`)
+### 3. AI Agent Protection - Primary Mechanism (`.agents/branch_protection.py`)
 
-Python script that AI agents must run before making any file modifications.
+Python script that AI agents must run before making any file modifications. **This is the active protection in this repository.**
 
 **Features:**
 
@@ -62,7 +66,7 @@ python .agents/branch_protection.py
 - `0`: Protection check passed, modifications allowed
 - `1`: Protection violation, modifications blocked
 
-### 3. Memory File Rules (`.agents/memory.instruction.md`)
+### 4. Memory File Rules (`.agents/memory.instruction.md`)
 
 AI agent instructions include mandatory branch protection checks:
 
