@@ -91,6 +91,18 @@ class RecoveryDialog(QDialog):
         self.continue_btn: QPushButton = loaded.findChild(QPushButton, "continueBtn")
         self.abort_btn: QPushButton = loaded.findChild(QPushButton, "abortBtn")
 
+        # Validate all required widgets were found
+        if not all([
+            self.success_count_label,
+            self.failed_count_label,
+            self.failed_items_tree,
+            self.retry_info_label,
+            self.retry_failed_btn,
+            self.continue_btn,
+            self.abort_btn,
+        ]):
+            raise RuntimeError(f"Missing required widgets in UI file: {UI_FILE}")
+
         # Transfer layout from loaded widget to this dialog
         if loaded.layout():
             self.setLayout(loaded.layout())
@@ -103,7 +115,10 @@ class RecoveryDialog(QDialog):
         completed_count = len(result["completed"])
         failed_count = len(result["failed"])
 
-        self.success_count_label.setText(f"{completed_count} files backed up successfully")
+        # Determine action text based on operation type
+        operation = result["operation_type"]
+        action_text = "backed up" if "backup" in operation else "restored"
+        self.success_count_label.setText(f"{completed_count} files {action_text} successfully")
         self.failed_count_label.setText(f"{failed_count} files failed")
 
         # Populate failed items tree
