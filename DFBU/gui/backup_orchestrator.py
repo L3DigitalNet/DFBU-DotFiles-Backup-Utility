@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 # Local imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from core.common_types import DotFileDict, OptionsDict
+from core.common_types import DotFileDict, OptionsDict, VerificationReportDict
 
 
 # Type checking imports to avoid circular dependencies
@@ -57,6 +57,7 @@ if TYPE_CHECKING:
     from file_operations import FileOperations
     from statistics_tracker import StatisticsTracker
     from restore_backup_manager import RestoreBackupManager
+    from verification_manager import VerificationManager
 
 
 # =============================================================================
@@ -96,6 +97,7 @@ class BackupOrchestrator:
         mirror_base_dir: Path,
         archive_base_dir: Path,
         restore_backup_manager: RestoreBackupManager | None = None,
+        verification_manager: VerificationManager | None = None,
     ) -> None:
         """
         Initialize BackupOrchestrator.
@@ -106,12 +108,15 @@ class BackupOrchestrator:
             mirror_base_dir: Base directory for mirror backups
             archive_base_dir: Base directory for archive backups
             restore_backup_manager: Optional RestoreBackupManager for pre-restore backups
+            verification_manager: Optional VerificationManager for post-backup verification
         """
         self.file_ops = file_ops
         self.stats_tracker = stats_tracker
         self.mirror_base_dir = mirror_base_dir
         self.archive_base_dir = archive_base_dir
         self._restore_backup_manager = restore_backup_manager
+        self._verification_manager = verification_manager
+        self._last_backup_files: list[tuple[Path, Path]] = []  # (source, backup) pairs
 
     def validate_dotfile_paths(
         self, dotfiles: list[DotFileDict]
@@ -176,6 +181,9 @@ class BackupOrchestrator:
         Returns:
             Tuple of (successful_items, total_items)
         """
+        # Clear tracked files for fresh verification tracking
+        self._last_backup_files.clear()
+
         # Validate which dotfiles exist in filesystem
         validation_results = self.validate_dotfile_paths(dotfiles)
 
@@ -379,6 +387,46 @@ class BackupOrchestrator:
 
         return processed_count, total_items
 
+    def verify_last_backup(self) -> VerificationReportDict | None:
+        """
+        Verify the integrity of the last mirror backup operation.
+
+        Uses the tracked source/backup file pairs from the most recent
+        execute_mirror_backup call to verify all files were backed up correctly.
+
+        Returns:
+            VerificationReportDict with results, or None if:
+            - No verification manager is configured
+            - No backup has been performed yet
+            - No files were tracked during backup
+        """
+        if self._verification_manager is None:
+            logger.warning("Verification requested but no VerificationManager configured")
+            return None
+
+        if not self._last_backup_files:
+            logger.warning("No backup files to verify - run a backup first")
+            return None
+
+        logger.info(f"Starting verification of {len(self._last_backup_files)} files")
+
+        report = self._verification_manager.verify_backup(
+            backup_path=self.mirror_base_dir,
+            source_paths=self._last_backup_files,
+            backup_type="mirror",
+        )
+
+        return report
+
+    def get_last_backup_file_count(self) -> int:
+        """
+        Get the number of files tracked from the last backup operation.
+
+        Returns:
+            Number of source/backup file pairs tracked
+        """
+        return len(self._last_backup_files)
+
     def _process_file_backup(
         self,
         src_path: Path,
@@ -415,6 +463,8 @@ class BackupOrchestrator:
             if item_skipped_callback:
                 item_skipped_callback(str(src_path), "File unchanged")
             self.stats_tracker.record_item_skipped()
+            # Track skipped files too - they should still verify
+            self._last_backup_files.append((src_path, dest_path))
             return True
 
         # Perform file copy operation with metadata preservation
@@ -426,6 +476,8 @@ class BackupOrchestrator:
         if success:
             elapsed = time.perf_counter() - start_time
             self.stats_tracker.record_item_processed(elapsed)
+            # Track successfully backed up files for verification
+            self._last_backup_files.append((src_path, dest_path))
             if item_processed_callback:
                 item_processed_callback(str(src_path), str(dest_path))
         else:
@@ -474,8 +526,14 @@ class BackupOrchestrator:
                     if item_skipped_callback:
                         item_skipped_callback(str(src_file), "File unchanged")
                     self.stats_tracker.record_item_skipped()
+                    # Track skipped files for verification
+                    if dest_file is not None:
+                        self._last_backup_files.append((src_file, dest_file))
                 else:
                     success_count += 1
+                    # Track successfully backed up files for verification
+                    if dest_file is not None:
+                        self._last_backup_files.append((src_file, dest_file))
                     if item_processed_callback:
                         item_processed_callback(str(src_file), str(dest_file))
                     self.stats_tracker.record_item_processed(0.0)

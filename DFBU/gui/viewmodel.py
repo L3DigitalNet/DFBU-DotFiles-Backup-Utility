@@ -44,7 +44,7 @@ from pathlib import Path
 from typing import Any, Final
 
 # Local imports
-from core.common_types import DotFileDict, OptionsDict
+from core.common_types import DotFileDict, OperationResultDict, OptionsDict
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
 
 from gui.config_workers import ConfigLoadWorker, ConfigSaveWorker
@@ -85,6 +85,7 @@ class BackupWorker(QThread):
     item_processed = Signal(str, str)  # source_path, dest_path
     item_skipped = Signal(str, str)  # path, reason
     backup_finished = Signal()
+    backup_finished_with_result = Signal(object)  # OperationResultDict
     error_occurred = Signal(str, str)  # context, error_message
 
     def __init__(self) -> None:
@@ -94,6 +95,7 @@ class BackupWorker(QThread):
         self.mirror_mode: bool = True
         self.archive_mode: bool = False
         self.force_full_backup: bool = False
+        self.operation_result: OperationResultDict | None = None
 
     def set_model(self, model: DFBUModel) -> None:
         """
@@ -145,6 +147,7 @@ class BackupWorker(QThread):
             )
             return False
 
+        error_handler = self.model.get_error_handler()
         start_time = time.perf_counter()
 
         try:
@@ -152,6 +155,13 @@ class BackupWorker(QThread):
             if not src_path.exists():
                 self.item_skipped.emit(str(src_path), "File not found")
                 self.model.record_item_skipped()
+                # Track in operation result (v0.9.0)
+                if self.operation_result:
+                    result = error_handler.create_path_result(
+                        str(src_path), str(dest_path), "skipped",
+                        error_type="not_found", error_message="File not found"
+                    )
+                    self.operation_result["skipped"].append(result)
                 return False
 
             # Check readability
@@ -160,12 +170,29 @@ class BackupWorker(QThread):
                     str(src_path), "Permission denied (no read access)"
                 )
                 self.model.record_item_skipped()
+                # Track in operation result (v0.9.0)
+                if self.operation_result:
+                    result = error_handler.create_path_result(
+                        str(src_path), str(dest_path), "skipped",
+                        error_type="permission",
+                        error_message="Permission denied (no read access)",
+                        can_retry=True
+                    )
+                    self.operation_result["skipped"].append(result)
                 return False
 
             # Check if file is identical before copying (optimization for mirror mode)
             if skip_identical and self.model.files_are_identical(src_path, dest_path):
                 self.item_skipped.emit(str(src_path), "File unchanged")
                 self.model.record_item_skipped()
+                # Track skipped files for verification (they should still verify OK)
+                self.model.register_backed_up_file(src_path, dest_path)
+                # Track in operation result (v0.9.0) - unchanged files are "completed"
+                if self.operation_result:
+                    result = error_handler.create_path_result(
+                        str(src_path), str(dest_path), "success"
+                    )
+                    self.operation_result["completed"].append(result)
                 return True
 
             # Copy file with skip_identical optimization
@@ -177,26 +204,54 @@ class BackupWorker(QThread):
                 elapsed = time.perf_counter() - start_time
                 self.model.record_item_processed(elapsed)
                 self.item_processed.emit(str(src_path), str(dest_path))
+                # Track successfully backed up file for verification
+                self.model.register_backed_up_file(src_path, dest_path)
+                # Track in operation result (v0.9.0)
+                if self.operation_result:
+                    result = error_handler.create_path_result(
+                        str(src_path), str(dest_path), "success"
+                    )
+                    self.operation_result["completed"].append(result)
             else:
                 self.model.record_item_failed()
                 self.error_occurred.emit(
                     str(src_path), "Failed to copy file (unknown error)"
                 )
+                # Track in operation result (v0.9.0)
+                if self.operation_result:
+                    result = error_handler.create_path_result(
+                        str(src_path), str(dest_path), "failed",
+                        error_type="unknown",
+                        error_message="Failed to copy file (unknown error)"
+                    )
+                    self.operation_result["failed"].append(result)
 
             return success
 
         except PermissionError as e:
             self.item_skipped.emit(str(src_path), f"Permission denied: {e}")
             self.model.record_item_skipped()
+            # Track in operation result (v0.9.0)
+            if self.operation_result:
+                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                self.operation_result["failed"].append(result)
             return False
         except FileNotFoundError as e:
             self.item_skipped.emit(str(src_path), f"File not found: {e}")
             self.model.record_item_skipped()
+            # Track in operation result (v0.9.0)
+            if self.operation_result:
+                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                self.operation_result["failed"].append(result)
             return False
         except OSError as e:
             # Disk full, read-only filesystem, etc.
             self.error_occurred.emit(str(src_path), f"Filesystem error: {e}")
             self.model.record_item_failed()
+            # Track in operation result (v0.9.0)
+            if self.operation_result:
+                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                self.operation_result["failed"].append(result)
             return False
         except Exception as e:
             # Catch-all for unexpected errors
@@ -204,6 +259,10 @@ class BackupWorker(QThread):
                 str(src_path), f"Unexpected error: {type(e).__name__}: {e}"
             )
             self.model.record_item_failed()
+            # Track in operation result (v0.9.0)
+            if self.operation_result:
+                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                self.operation_result["failed"].append(result)
             return False
 
     def _process_directory(
@@ -227,17 +286,33 @@ class BackupWorker(QThread):
             )
             return 0
 
+        error_handler = self.model.get_error_handler()
+
         try:
             # Check directory exists
             if not src_path.exists():
                 self.item_skipped.emit(str(src_path), "Directory not found")
                 self.model.record_item_skipped()
+                # Track in operation result (v0.9.0)
+                if self.operation_result:
+                    result = error_handler.create_path_result(
+                        str(src_path), str(dest_path), "skipped",
+                        error_type="not_found", error_message="Directory not found"
+                    )
+                    self.operation_result["skipped"].append(result)
                 return 0
 
             # Check it's actually a directory
             if not src_path.is_dir():
                 self.item_skipped.emit(str(src_path), "Not a directory")
                 self.model.record_item_skipped()
+                # Track in operation result (v0.9.0)
+                if self.operation_result:
+                    result = error_handler.create_path_result(
+                        str(src_path), str(dest_path), "skipped",
+                        error_type="invalid_path", error_message="Not a directory"
+                    )
+                    self.operation_result["skipped"].append(result)
                 return 0
 
             # Check readability
@@ -246,6 +321,15 @@ class BackupWorker(QThread):
                     str(src_path), "Permission denied (no read access)"
                 )
                 self.model.record_item_skipped()
+                # Track in operation result (v0.9.0)
+                if self.operation_result:
+                    result = error_handler.create_path_result(
+                        str(src_path), str(dest_path), "skipped",
+                        error_type="permission",
+                        error_message="Permission denied (no read access)",
+                        can_retry=True
+                    )
+                    self.operation_result["skipped"].append(result)
                 return 0
 
             # Copy directory with skip_identical optimization
@@ -257,34 +341,82 @@ class BackupWorker(QThread):
             success_count = 0
             skipped_count = 0
             for src_file, dest_file, success, skipped in results:
+                dest_str = str(dest_file) if dest_file else None
                 if success:
                     if skipped:
                         skipped_count += 1
                         self.item_skipped.emit(str(src_file), "File unchanged")
+                        # Track skipped files for verification
+                        if dest_file is not None:
+                            self.model.register_backed_up_file(src_file, dest_file)
+                        # Track in operation result (v0.9.0) - unchanged files are "completed"
+                        if self.operation_result:
+                            result = error_handler.create_path_result(
+                                str(src_file), dest_str, "success"
+                            )
+                            self.operation_result["completed"].append(result)
                     else:
                         success_count += 1
                         self.item_processed.emit(str(src_file), str(dest_file))
+                        # Track successfully backed up files for verification
+                        if dest_file is not None:
+                            self.model.register_backed_up_file(src_file, dest_file)
+                        # Track in operation result (v0.9.0)
+                        if self.operation_result:
+                            result = error_handler.create_path_result(
+                                str(src_file), dest_str, "success"
+                            )
+                            self.operation_result["completed"].append(result)
                 elif dest_file is None:
                     self.item_skipped.emit(
                         str(src_file), "Permission denied or read error"
                     )
+                    # Track in operation result (v0.9.0)
+                    if self.operation_result:
+                        result = error_handler.create_path_result(
+                            str(src_file), dest_str, "skipped",
+                            error_type="permission",
+                            error_message="Permission denied or read error",
+                            can_retry=True
+                        )
+                        self.operation_result["skipped"].append(result)
                 else:
                     self.error_occurred.emit(str(src_file), "Failed to copy file")
+                    # Track in operation result (v0.9.0)
+                    if self.operation_result:
+                        result = error_handler.create_path_result(
+                            str(src_file), dest_str, "failed",
+                            error_type="unknown",
+                            error_message="Failed to copy file"
+                        )
+                        self.operation_result["failed"].append(result)
 
             return success_count
 
         except PermissionError as e:
             self.item_skipped.emit(str(src_path), f"Permission denied: {e}")
             self.model.record_item_skipped()
+            # Track in operation result (v0.9.0)
+            if self.operation_result:
+                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                self.operation_result["failed"].append(result)
             return 0
         except FileNotFoundError as e:
             self.item_skipped.emit(str(src_path), f"Directory not found: {e}")
             self.model.record_item_skipped()
+            # Track in operation result (v0.9.0)
+            if self.operation_result:
+                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                self.operation_result["failed"].append(result)
             return 0
         except OSError as e:
             # Disk full, read-only filesystem, etc.
             self.error_occurred.emit(str(src_path), f"Filesystem error: {e}")
             self.model.record_item_failed()
+            # Track in operation result (v0.9.0)
+            if self.operation_result:
+                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                self.operation_result["failed"].append(result)
             return 0
         except Exception as e:
             # Catch-all for unexpected errors
@@ -292,6 +424,10 @@ class BackupWorker(QThread):
                 str(src_path), f"Unexpected error: {type(e).__name__}: {e}"
             )
             self.model.record_item_failed()
+            # Track in operation result (v0.9.0)
+            if self.operation_result:
+                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                self.operation_result["failed"].append(result)
             return 0
 
     def _process_mirror_backup(self) -> None:
@@ -453,6 +589,14 @@ class BackupWorker(QThread):
         # Ensures clean slate for current backup run
         self.model.reset_statistics()
 
+        # Clear backup tracking for fresh verification tracking
+        self.model.clear_backup_tracking()
+
+        # Initialize structured operation result for error tracking (v0.9.0)
+        error_handler = self.model.get_error_handler()
+        operation_type = "mirror_backup" if self.mirror_mode else "archive_backup"
+        self.operation_result = error_handler.create_operation_result(operation_type)
+
         # Process mirror backup if enabled in configuration
         # Mirror backup = uncompressed file copies maintaining directory structure
         if self.mirror_mode:
@@ -466,6 +610,11 @@ class BackupWorker(QThread):
         # Calculate and record total elapsed time for statistics
         end_time = time.perf_counter()
         self.model.statistics.total_time = end_time - start_time
+
+        # Finalize operation result with status determination (v0.9.0)
+        if self.operation_result:
+            self.operation_result = error_handler.finalize_result(self.operation_result)
+            self.backup_finished_with_result.emit(self.operation_result)
 
         # Emit completion signal to notify ViewModel/View of finished operation
         # ViewModel will disconnect signals and display statistics summary
@@ -494,6 +643,7 @@ class RestoreWorker(QThread):
     progress_updated = Signal(int)  # progress percentage
     item_processed = Signal(str, str)  # source_path, dest_path
     restore_finished = Signal()
+    restore_finished_with_result = Signal(object)  # OperationResultDict
     error_occurred = Signal(str, str)  # context, error_message
 
     def __init__(self) -> None:
@@ -501,6 +651,7 @@ class RestoreWorker(QThread):
         super().__init__()
         self.model: DFBUModel | None = None
         self.source_directory: Path | None = None
+        self.operation_result: OperationResultDict | None = None
 
     def set_model(self, model: DFBUModel) -> None:
         """
@@ -532,25 +683,78 @@ class RestoreWorker(QThread):
         # Reset statistics from any previous restore operation
         self.model.reset_statistics()
 
+        # Initialize structured operation result for error tracking (v0.9.0)
+        error_handler = self.model.get_error_handler()
+        self.operation_result = error_handler.create_operation_result("restore")
+
+        # Track restored files for operation result
+        restored_files: list[tuple[str, str]] = []
+
+        def track_item(src: str, dest: str) -> None:
+            """Callback to track restored items."""
+            self.item_processed.emit(src, dest)
+            restored_files.append((src, dest))
+
         # Execute restore via BackupOrchestrator (includes pre-restore backup if enabled)
         # Callbacks emit signals for progress and item processing
         processed, total = self.model.execute_restore(
             src_dir=self.source_directory,
             progress_callback=lambda pct: self.progress_updated.emit(pct),
-            item_processed_callback=lambda src, dest: self.item_processed.emit(src, dest),
+            item_processed_callback=track_item,
         )
+
+        # Track results in operation result (v0.9.0)
+        if self.operation_result:
+            # Add completed items
+            for src, dest in restored_files:
+                result = error_handler.create_path_result(src, dest, "success")
+                self.operation_result["completed"].append(result)
+
+            # Calculate failed count (total - processed = failed/skipped)
+            failed_count = total - processed
+            if failed_count > 0 and total > 0:
+                # Add a summary warning for failed items
+                self.operation_result["warnings"].append(
+                    f"{failed_count} files could not be restored"
+                )
 
         # Handle error cases
         if total == 0:
             self.error_occurred.emit("Restore", "No files found in source directory")
+            if self.operation_result:
+                self.operation_result["warnings"].append(
+                    "No files found in source directory"
+                )
+            # Still finalize and emit result
+            if self.operation_result:
+                self.operation_result = error_handler.finalize_result(self.operation_result)
+                self.restore_finished_with_result.emit(self.operation_result)
             return
+
         if processed == 0 and total > 0:
             self.error_occurred.emit("Restore", "Restore operation failed")
+            if self.operation_result:
+                # Mark as completely failed
+                result = error_handler.create_path_result(
+                    str(self.source_directory), None, "failed",
+                    error_type="unknown",
+                    error_message="Restore operation failed"
+                )
+                self.operation_result["failed"].append(result)
+            # Finalize and emit result
+            if self.operation_result:
+                self.operation_result = error_handler.finalize_result(self.operation_result)
+                self.restore_finished_with_result.emit(self.operation_result)
             return
 
         # Calculate and record total elapsed time for statistics
         end_time = time.perf_counter()
         self.model.statistics.total_time = end_time - start_time
+
+        # Finalize operation result with status determination (v0.9.0)
+        if self.operation_result:
+            self.operation_result = error_handler.finalize_result(self.operation_result)
+            self.restore_finished_with_result.emit(self.operation_result)
 
         # Emit completion signal to notify ViewModel/View of finished operation
         self.restore_finished.emit()
@@ -707,6 +911,8 @@ class DFBUViewModel(QObject):
             "max_archives": int,
             "pre_restore_backup": bool,
             "max_restore_backups": int,
+            "verify_after_backup": bool,
+            "hash_verification": bool,
         }
 
         # Validate key exists
@@ -917,6 +1123,18 @@ class DFBUViewModel(QObject):
         """
         self.model.get_config_manager().toggle_exclusion(application)
         self.exclusions_changed.emit()
+
+    def command_verify_backup(self) -> str | None:
+        """
+        Command to verify integrity of the last backup operation.
+
+        Returns:
+            Formatted verification report for log display, or None if no backup to verify
+        """
+        file_count = self.model.get_last_backup_file_count()
+        if file_count == 0:
+            return None
+        return self.model.verify_last_backup()
 
     def get_exclusions(self) -> list[str]:
         """Get current exclusion list.

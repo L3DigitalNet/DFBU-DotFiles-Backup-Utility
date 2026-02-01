@@ -74,6 +74,8 @@ class TestSettingsDict:
                 "max_archives": 5,
                 "pre_restore_backup": True,
                 "max_restore_backups": 5,
+                "verify_after_backup": False,
+                "hash_verification": False,
             },
         }
         assert settings["paths"]["mirror_dir"] == "~/backups/mirror"
@@ -113,6 +115,8 @@ class TestOptionsDict:
             "max_archives": 5,
             "pre_restore_backup": True,
             "max_restore_backups": 5,
+            "verify_after_backup": False,
+            "hash_verification": False,
         }
         assert options["mirror"] is True
         assert options["archive_format"] == "tar.gz"

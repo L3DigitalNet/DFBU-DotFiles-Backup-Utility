@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux desktop application for configuration file backup/restoration with a PySide6 GUI interface. Uses UV for package management.
 
+**Current Focus:** v0.9.0 Error Handling & Recovery — see `docs/plans/2026-01-31-production-readiness-design.md`
+
 ## Essential Commands
 
 ```bash
@@ -48,10 +50,13 @@ ViewModel (DFBUViewModel, viewmodel.py)
 Model (DFBUModel, model.py - Facade)
     ↕ delegates to
 Components (implement Protocol interfaces):
-    ├── ConfigManager (config_manager.py)   # Config I/O, YAML, CRUD
-    ├── FileOperations (file_operations.py) # Path handling, copying, archives
+    ├── ConfigManager (config_manager.py)        # Config I/O, YAML, CRUD
+    ├── FileOperations (file_operations.py)      # Path handling, copying, archives
     ├── BackupOrchestrator (backup_orchestrator.py) # Backup/restore coordination
-    └── StatisticsTracker (statistics_tracker.py)   # Operation metrics
+    ├── StatisticsTracker (statistics_tracker.py)   # Operation metrics
+    ├── RestoreBackupManager (restore_backup_manager.py) # Pre-restore safety backups
+    ├── VerificationManager (verification_manager.py)    # Backup integrity verification
+    └── ErrorHandler (error_handler.py)          # Structured error handling
 ```
 
 ### Layer Responsibilities
@@ -81,6 +86,9 @@ Components (implement Protocol interfaces):
 
 - `DotFileDict`: Dotfile entry (application, description, paths, tags)
 - `OptionsDict`: Backup settings (mirror, archive, hostname_subdir, date_subdir, compression)
+- `VerificationResultDict`: File verification result (path, status, size/hash match)
+- `OperationResultDict`: Structured operation result (status, completed, failed, warnings)
+- `PathResultDict`: Per-path result with error categorization and retry eligibility
 
 ## Code Standards
 
@@ -138,6 +146,8 @@ options:
   max_archives: 5
   pre_restore_backup: true
   max_restore_backups: 5
+  verify_after_backup: true
+  hash_verification: false
 ```
 
 **dotfiles.yaml** - Dotfile library:
@@ -190,4 +200,7 @@ Fixtures in `DFBU/tests/conftest.py` provide `qapp`, `temp_config_path`, `temp_d
 - `DFBU/gui/protocols.py` - Protocol definitions for dependency injection
 - `DFBU/gui/config_workers.py` - Worker thread implementations
 - `DFBU/core/common_types.py` - Shared TypedDict definitions
+- `DFBU/core/yaml_config.py` - YAML config loading/saving with schema validation
+- `DFBU/core/validation.py` - Configuration validation rules
 - `DFBU/tests/conftest.py` - Pytest fixtures for Qt and file testing
+- `docs/plans/` - Implementation plans for production readiness features

@@ -31,6 +31,8 @@ options:
   max_archives: 5
   pre_restore_backup: true
   max_restore_backups: 5
+  verify_after_backup: false
+  hash_verification: false
 """)
         loader = YAMLConfigLoader(tmp_path)
         settings = loader.load_settings()
@@ -107,6 +109,8 @@ excluded:
                 "max_archives": 5,
                 "pre_restore_backup": True,
                 "max_restore_backups": 5,
+                "verify_after_backup": False,
+                "hash_verification": False,
             },
         }
         loader.save_settings(settings)

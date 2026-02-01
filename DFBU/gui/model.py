@@ -44,9 +44,11 @@ from core.common_types import DotFileDict, OptionsDict
 
 from gui.backup_orchestrator import BackupOrchestrator
 from gui.config_manager import ConfigManager
+from gui.error_handler import ErrorHandler
 from gui.file_operations import FileOperations
 from gui.restore_backup_manager import RestoreBackupManager
 from gui.statistics_tracker import BackupStatistics, StatisticsTracker
+from gui.verification_manager import VerificationManager
 
 
 # =============================================================================
@@ -131,14 +133,28 @@ class DFBUModel:
             max_backups=self._config_manager.options.get("max_restore_backups", 5),
         )
 
-        # Initialize BackupOrchestrator with restore backup manager
+        # Initialize VerificationManager for post-backup verification
+        self._verification_manager = VerificationManager(
+            hash_verification_enabled=self._config_manager.options.get(
+                "hash_verification", False
+            ),
+        )
+
+        # Initialize BackupOrchestrator with restore backup and verification managers
         self._backup_orchestrator = BackupOrchestrator(
             file_ops=self._file_ops,
             stats_tracker=self._stats_tracker,
             mirror_base_dir=self._config_manager.mirror_base_dir,
             archive_base_dir=self._config_manager.archive_base_dir,
             restore_backup_manager=self._restore_backup_manager,
+            verification_manager=self._verification_manager,
         )
+
+        # Track backed up files for verification (used by BackupWorker)
+        self._last_backup_files: list[tuple[Path, Path]] = []
+
+        # Initialize ErrorHandler for structured error handling (v0.9.0)
+        self._error_handler = ErrorHandler()
 
     # =========================================================================
     # Property Accessors for Backward Compatibility
@@ -205,6 +221,15 @@ class DFBUModel:
             ConfigManager instance
         """
         return self._config_manager
+
+    def get_error_handler(self) -> ErrorHandler:
+        """
+        Get the ErrorHandler instance for structured error handling.
+
+        Returns:
+            ErrorHandler instance
+        """
+        return self._error_handler
 
     # =========================================================================
     # Configuration Management (Delegate to ConfigManager)
@@ -648,3 +673,65 @@ class DFBUModel:
     def reset_statistics(self) -> None:
         """Reset operation statistics for new run."""
         self._stats_tracker.reset_statistics()
+
+    # =========================================================================
+    # Backup Verification (Delegate to VerificationManager)
+    # =========================================================================
+
+    def verify_last_backup(self) -> str | None:
+        """
+        Verify integrity of the last backup operation.
+
+        Uses the Model's tracked file pairs (populated by BackupWorker)
+        rather than BackupOrchestrator's tracking (which BackupWorker bypasses).
+
+        Returns:
+            Formatted verification report for log display, or None if no backup to verify
+        """
+        if not self._last_backup_files:
+            return None
+
+        report = self._verification_manager.verify_backup(
+            backup_path=self.mirror_base_dir,
+            source_paths=self._last_backup_files,
+            backup_type="mirror",
+        )
+        return self._verification_manager.format_report_for_log(report)
+
+    def get_last_backup_file_count(self) -> int:
+        """
+        Get the number of files from the last backup operation.
+
+        Returns:
+            Number of files tracked for verification
+        """
+        return len(self._last_backup_files)
+
+    def register_backed_up_file(self, source: Path, backup: Path) -> None:
+        """
+        Register a successfully backed up file for verification tracking.
+
+        Called by BackupWorker after each successful file copy.
+
+        Args:
+            source: Original source file path
+            backup: Backup destination file path
+        """
+        self._last_backup_files.append((source, backup))
+
+    def clear_backup_tracking(self) -> None:
+        """
+        Clear the tracked backup files list.
+
+        Should be called at the start of a new backup operation.
+        """
+        self._last_backup_files.clear()
+
+    def set_hash_verification_enabled(self, enabled: bool) -> None:
+        """
+        Enable or disable SHA-256 hash verification.
+
+        Args:
+            enabled: Whether to enable hash verification
+        """
+        self._verification_manager.hash_verification_enabled = enabled

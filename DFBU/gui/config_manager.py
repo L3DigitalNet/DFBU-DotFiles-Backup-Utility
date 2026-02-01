@@ -576,6 +576,10 @@ class ConfigManager:
                 self.options["pre_restore_backup"] = bool(value)
             elif key == "max_restore_backups":
                 self.options["max_restore_backups"] = int(value)
+            elif key == "verify_after_backup":
+                self.options["verify_after_backup"] = bool(value)
+            elif key == "hash_verification":
+                self.options["hash_verification"] = bool(value)
             return True
         return False
 
@@ -770,6 +774,8 @@ class ConfigManager:
             "max_archives": 5,
             "pre_restore_backup": True,
             "max_restore_backups": 5,
+            "verify_after_backup": False,
+            "hash_verification": False,
         }
 
     def _path_to_tilde_notation(self, path: Path) -> str:
