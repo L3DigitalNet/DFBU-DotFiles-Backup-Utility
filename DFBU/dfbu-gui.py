@@ -135,8 +135,8 @@ class Application:
             logger.debug("Creating Main Window")
             self.view = MainWindow(self.viewmodel, __version__)
 
-            # Auto-load configuration if available from previous session
-            self._auto_load_config()
+            # Load configuration from default path if available
+            self._load_config_if_available()
 
             logger.info("Application initialized successfully")
         except Exception as e:
@@ -147,18 +147,9 @@ class Application:
         """Create configuration directory if needed."""
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
-    def _auto_load_config(self) -> None:
-        """Auto-load configuration from previous session or default config."""
-        # Load settings to get previous config path
-        settings = self.viewmodel.load_settings()
-        config_path = settings.get("config_path", "")
-
-        # If valid config path exists from previous session, load it
-        if config_path and Path(config_path).exists():
-            self.viewmodel.command_load_config()
-        # Otherwise, load the default config if it exists
-        elif DEFAULT_CONFIG_PATH.exists():
-            # Model was initialized with DEFAULT_CONFIG_PATH, just load it
+    def _load_config_if_available(self) -> None:
+        """Load configuration from default path on startup."""
+        if DEFAULT_CONFIG_PATH.exists():
             self.viewmodel.command_load_config()
 
     def run(self) -> int:
