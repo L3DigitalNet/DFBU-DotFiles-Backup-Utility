@@ -825,6 +825,7 @@ class MainWindow(QMainWindow):
         self.viewmodel.config_loaded.connect(self._on_config_loaded)
         self.viewmodel.dotfiles_updated.connect(self._on_dotfiles_updated)
         self.viewmodel.exclusions_changed.connect(self._on_exclusions_changed)
+        self.viewmodel.recovery_dialog_requested.connect(self._show_recovery_dialog)
 
     def _load_settings(self) -> None:
         """Load persisted settings."""
@@ -1330,18 +1331,26 @@ class MainWindow(QMainWindow):
         dialog = HelpDialog(self)
         dialog.exec()
 
-    def _show_recovery_dialog(self, result: OperationResultDict) -> str:
+    def _show_recovery_dialog(self, result: OperationResultDict) -> None:
         """Show recovery dialog when operation has failures.
 
         Args:
             result: Operation result with failures
-
-        Returns:
-            User's chosen action: "retry", "continue", or "abort"
         """
         dialog = RecoveryDialog(result, parent=self)
         dialog.exec()
-        return dialog.action
+
+        if dialog.action == "retry":
+            # Get retryable paths and trigger retry
+            paths_to_retry = dialog.get_retryable_paths()
+            self.operation_log.append(
+                f"Retrying {len(paths_to_retry)} failed items...\n"
+            )
+            # TODO: Implement retry logic in v0.9.1
+        elif dialog.action == "continue":
+            self.operation_log.append("Skipping failed items, operation complete.\n")
+        else:  # abort
+            self.operation_log.append("Operation aborted by user.\n")
 
     def _on_browse_mirror_dir(self) -> None:
         """Handle browse mirror directory button click."""
