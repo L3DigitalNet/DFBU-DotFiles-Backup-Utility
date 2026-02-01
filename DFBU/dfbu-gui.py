@@ -90,8 +90,9 @@ __version__: Final[str] = "0.6.0"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
 # Use relative path for portability - resolve to absolute at runtime
+# Points to directory containing settings.yaml, dotfiles.yaml, session.yaml
 DEFAULT_CONFIG_PATH: Final[Path] = (
-    Path(__file__).parent / "data" / "dfbu-config.toml"
+    Path(__file__).parent / "data"
 ).resolve()
 
 
