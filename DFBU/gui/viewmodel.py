@@ -611,6 +611,7 @@ class DFBUViewModel(QObject):
     error_occurred = Signal(str, str)
     config_loaded = Signal(int)  # dotfile count
     dotfiles_updated = Signal(int)
+    exclusions_changed = Signal()  # emitted when exclusion list changes
 
     SETTINGS_ORG: Final[str] = "L3DigitalNet"
     SETTINGS_APP: Final[str] = "dfbu_gui_settings"
@@ -907,6 +908,34 @@ class DFBUViewModel(QObject):
         # only the enabled status of one entry. The View will update locally.
 
         return self.model.toggle_dotfile_enabled(index)
+
+    def command_toggle_exclusion(self, application: str) -> None:
+        """Toggle exclusion status for a dotfile.
+
+        Args:
+            application: Application name to toggle
+        """
+        self.model.get_config_manager().toggle_exclusion(application)
+        self.exclusions_changed.emit()
+
+    def get_exclusions(self) -> list[str]:
+        """Get current exclusion list.
+
+        Returns:
+            List of excluded application names
+        """
+        return self.model.get_config_manager().get_exclusions()
+
+    def is_excluded(self, application: str) -> bool:
+        """Check if application is excluded.
+
+        Args:
+            application: Application name
+
+        Returns:
+            True if excluded
+        """
+        return self.model.get_config_manager().is_excluded(application)
 
     def get_dotfile_count(self) -> int:
         """
