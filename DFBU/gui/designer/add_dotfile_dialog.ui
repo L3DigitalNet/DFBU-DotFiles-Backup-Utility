@@ -27,19 +27,16 @@
    <item>
     <layout class="QFormLayout" name="formLayout">
      <item row="0" column="0">
-      <widget class="QLabel" name="categoryLabel">
+      <widget class="QLabel" name="tagsLabel">
        <property name="text">
-        <string>Category:</string>
+        <string>Tags:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QComboBox" name="categoryCombo">
-       <property name="editable">
-        <bool>true</bool>
-       </property>
+      <widget class="QLineEdit" name="tagsEdit">
        <property name="placeholderText">
-        <string>e.g., Applications, Shell configs</string>
+        <string>e.g., shell, terminal, config (comma-separated)</string>
        </property>
       </widget>
      </item>

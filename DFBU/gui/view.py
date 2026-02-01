@@ -119,7 +119,7 @@ class AddDotfileDialog(QDialog):
     CRITICAL: UI is loaded from Qt Designer .ui file, NOT hardcoded.
 
     Attributes:
-        category_combo: Editable combo box for category (prepopulated)
+        tags_edit: Line edit for tags (comma-separated)
         application_edit: Line edit for application name
         description_edit: Line edit for description
         paths_list: List widget displaying all paths
@@ -139,7 +139,6 @@ class AddDotfileDialog(QDialog):
         self,
         parent: QWidget | None = None,
         dotfile_data: dict[str, Any] | None = None,
-        categories: list[str] | None = None,
     ) -> None:
         """
         Initialize the AddDotfileDialog.
@@ -147,7 +146,6 @@ class AddDotfileDialog(QDialog):
         Args:
             parent: Parent widget
             dotfile_data: Optional existing dotfile data for update mode
-            categories: List of existing categories for dropdown
         """
         super().__init__(parent)
         self.is_update_mode = dotfile_data is not None
@@ -170,16 +168,14 @@ class AddDotfileDialog(QDialog):
         )
         self.info_label.setText(info_text)
 
-        # Populate categories dropdown if provided
-        if categories:
-            self.category_combo.addItems(categories)
-
         # Connect signals
         self._connect_signals()
 
         # Pre-populate fields if in update mode
         if self.is_update_mode and dotfile_data:
-            self.category_combo.setCurrentText(dotfile_data.get("category", ""))
+            # Tags field - check both 'tags' (new) and 'category' (legacy) keys
+            tags = dotfile_data.get("tags", dotfile_data.get("category", ""))
+            self.tags_edit.setText(tags)
             self.application_edit.setText(dotfile_data.get("application", ""))
             self.description_edit.setText(dotfile_data.get("description", ""))
             self.enabled_checkbox.setChecked(dotfile_data.get("enabled", True))
@@ -214,7 +210,7 @@ class AddDotfileDialog(QDialog):
 
         # Get references to UI widgets by objectName from Qt Designer
         self.info_label: QLabel = self.findChild(QLabel, "infoLabel")  # type: ignore[assignment]
-        self.category_combo: QComboBox = self.findChild(QComboBox, "categoryCombo")  # type: ignore[assignment]
+        self.tags_edit: QLineEdit = self.findChild(QLineEdit, "tagsEdit")  # type: ignore[assignment]
         self.application_edit: QLineEdit = self.findChild(QLineEdit, "applicationEdit")  # type: ignore[assignment]
         self.description_edit: QLineEdit = self.findChild(QLineEdit, "descriptionEdit")  # type: ignore[assignment]
         self.paths_list: QListWidget = self.findChild(QListWidget, "pathsList")  # type: ignore[assignment]
@@ -231,7 +227,7 @@ class AddDotfileDialog(QDialog):
         if not all(
             [
                 self.info_label,
-                self.category_combo,
+                self.tags_edit,
                 self.application_edit,
                 self.description_edit,
                 self.paths_list,
@@ -330,16 +326,16 @@ class AddDotfileDialog(QDialog):
 
         Validates all fields and shows error message if validation fails.
         """
-        # Validate category
-        category = self.category_combo.currentText().strip()
+        # Validate tags (optional, comma-separated)
+        tags = self.tags_edit.text().strip()
         validation_result = InputValidator.validate_string(
-            category, field_name="Category", min_length=1, max_length=100
+            tags, field_name="Tags", allow_empty=True, max_length=200
         )
         if not validation_result.success:
             QMessageBox.warning(
                 self, "Validation Error", validation_result.error_message
             )
-            self.category_combo.setFocus()
+            self.tags_edit.setFocus()
             return
 
         # Validate application
@@ -1530,32 +1526,29 @@ class MainWindow(QMainWindow):
 
     def _on_add_dotfile(self) -> None:
         """Handle add dotfile button click."""
-        # Get unique categories for dropdown
-        categories = self.viewmodel.get_unique_categories()
-
         # Create dialog for adding new dotfile
-        dialog = AddDotfileDialog(self, categories=categories)
+        dialog = AddDotfileDialog(self)
 
         if dialog.exec():
             # Get values from dialog
-            category = dialog.category_combo.currentText()
+            tags = dialog.tags_edit.text().strip()
             application = dialog.application_edit.text()
             description = dialog.description_edit.text()
             paths = dialog.get_paths()
             enabled = dialog.enabled_checkbox.isChecked()
 
-            # Validate inputs
-            if not all([category, application, description]) or not paths:
+            # Validate inputs (tags are optional)
+            if not all([application, description]) or not paths:
                 QMessageBox.warning(
                     self,
                     "Missing Information",
-                    "Please fill in all fields and add at least one path.",
+                    "Please fill in Application, Description, and add at least one path.",
                 )
                 return
 
-            # Add dotfile via ViewModel
+            # Add dotfile via ViewModel (tags passed as category for compatibility)
             success = self.viewmodel.command_add_dotfile(
-                category, application, description, paths, enabled
+                tags, application, description, paths, enabled
             )
 
             if success:
@@ -1579,38 +1572,34 @@ class MainWindow(QMainWindow):
         # Get existing dotfile data
         dotfile = self.viewmodel.get_dotfile_list()[original_idx]
 
-        # Get unique categories for dropdown
-        categories = self.viewmodel.get_unique_categories()
-
         # Create dialog for updating dotfile with pre-populated data
         # Cast TypedDict to plain dict for dialog compatibility
         dialog = AddDotfileDialog(
             self,
             dotfile_data=dict(dotfile),
-            categories=categories,
         )
 
         if dialog.exec():
             # Get updated values from dialog
-            category = dialog.category_combo.currentText()
+            tags = dialog.tags_edit.text().strip()
             application = dialog.application_edit.text()
             description = dialog.description_edit.text()
             paths = dialog.get_paths()
             enabled = dialog.enabled_checkbox.isChecked()
 
-            # Validate inputs
-            if not all([category, application, description]) or not paths:
+            # Validate inputs (tags are optional)
+            if not all([application, description]) or not paths:
                 QMessageBox.warning(
                     self,
                     "Missing Information",
-                    "Please fill in all fields and add at least one path.",
+                    "Please fill in Application, Description, and add at least one path.",
                 )
                 return
 
-            # Update dotfile via ViewModel
+            # Update dotfile via ViewModel (tags passed as category for compatibility)
             success = self.viewmodel.command_update_dotfile(
                 original_idx,
-                category,
+                tags,
                 application,
                 description,
                 paths,

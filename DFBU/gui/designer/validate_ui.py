@@ -53,8 +53,7 @@ def extract_widget_names_from_python(file_path: Path) -> set[str]:
 
     # Remove AddDotfileDialog widgets (separate dialog, not in main window UI)
     dialog_widgets = {
-        "category_combo",
-        "subcategory_combo",
+        "tags_edit",
         "application_edit",
         "description_edit",
         "paths_list",

@@ -16,28 +16,25 @@ from gui.view import AddDotfileDialog
 class TestDialogValidationEmpty:
     """Test validation of empty/missing fields."""
 
-    def test_empty_category_shows_error(self, qapp, tmp_path):
-        """Test validation fails with empty category."""
+    def test_empty_tags_allowed(self, qapp, tmp_path):
+        """Test validation passes with empty tags (optional field)."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("")
+        dialog.tags_edit.setText("")
         dialog.application_edit.setText("TestApp")
         dialog.description_edit.setText("Test description")
         dialog.paths_list.addItem("~/.testrc")
 
-        # Act & Assert
-        with patch.object(QMessageBox, "warning") as mock_warning:
+        # Act - Should not fail validation for empty tags
+        with patch("PySide6.QtWidgets.QDialog.accept") as mock_accept:
             dialog.accept()
-            mock_warning.assert_called_once()
-            # Check title (arg 1) is "Validation Error", message (arg 2) contains the field error
-            assert mock_warning.call_args[0][1] == "Validation Error"
-            assert "Category cannot be empty" in mock_warning.call_args[0][2]
+            # Should validate successfully (tags are optional)
 
     def test_empty_application_shows_error(self, qapp, tmp_path):
         """Test validation fails with empty application."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("TestCat")
+        dialog.tags_edit.setText("shell, terminal")
         dialog.application_edit.setText("")
         dialog.description_edit.setText("Test description")
         dialog.paths_list.addItem("~/.testrc")
@@ -47,25 +44,24 @@ class TestDialogValidationEmpty:
             dialog.accept()
             mock_warning.assert_called_once()
 
-    def test_whitespace_only_category_fails(self, qapp, tmp_path):
-        """Test validation fails with whitespace-only category."""
+    def test_whitespace_only_tags_normalized(self, qapp, tmp_path):
+        """Test whitespace-only tags are normalized (tags are optional)."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("   ")
+        dialog.tags_edit.setText("   ")
         dialog.application_edit.setText("TestApp")
         dialog.description_edit.setText("Test")
         dialog.paths_list.addItem("~/.testrc")
 
-        # Act & Assert
-        with patch.object(QMessageBox, "warning") as mock_warning:
+        # Act - Should pass validation (empty/whitespace tags are allowed)
+        with patch("PySide6.QtWidgets.QDialog.accept") as mock_accept:
             dialog.accept()
-            mock_warning.assert_called_once()
 
     def test_no_paths_shows_error(self, qapp, tmp_path):
         """Test validation fails when no paths added."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("TestCat")
+        dialog.tags_edit.setText("shell")
         dialog.application_edit.setText("TestApp")
         dialog.description_edit.setText("Test description")
         # Don't add any paths
@@ -80,7 +76,7 @@ class TestDialogValidationEmpty:
         """Test validation passes with empty description (optional field)."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("TestCat")
+        dialog.tags_edit.setText("shell")
         dialog.application_edit.setText("TestApp")
         dialog.description_edit.setText("")
         dialog.paths_list.addItem("~/.testrc")
@@ -96,12 +92,12 @@ class TestDialogValidationEmpty:
 class TestDialogValidationLength:
     """Test validation of field length limits."""
 
-    def test_category_exceeds_max_length(self, qapp, tmp_path):
-        """Test validation fails when category exceeds 100 characters."""
+    def test_tags_exceeds_max_length(self, qapp, tmp_path):
+        """Test validation fails when tags exceeds 200 characters."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        long_category = "A" * 101  # Over limit
-        dialog.category_combo.setCurrentText(long_category)
+        long_tags = "A" * 201  # Over limit
+        dialog.tags_edit.setText(long_tags)
         dialog.application_edit.setText("TestApp")
         dialog.description_edit.setText("Test")
         dialog.paths_list.addItem("~/.testrc")
@@ -116,7 +112,7 @@ class TestDialogValidationLength:
         """Test validation fails when application exceeds 100 characters."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("TestCat")
+        dialog.tags_edit.setText("shell")
         long_app = "A" * 101
         dialog.application_edit.setText(long_app)
         dialog.description_edit.setText("Test")
@@ -131,7 +127,7 @@ class TestDialogValidationLength:
         """Test validation fails when description exceeds 255 characters."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("TestCat")
+        dialog.tags_edit.setText("shell")
         dialog.application_edit.setText("TestApp")
         long_desc = "A" * 256  # Over limit
         dialog.description_edit.setText(long_desc)
@@ -146,7 +142,7 @@ class TestDialogValidationLength:
         """Test validation passes with maximum length fields."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("A" * 100)  # Exactly at limit
+        dialog.tags_edit.setText("A" * 200)  # Exactly at limit
         dialog.application_edit.setText("B" * 100)
         dialog.description_edit.setText("C" * 255)
         dialog.paths_list.addItem("~/.testrc")
@@ -354,32 +350,28 @@ class TestDialogBrowseButton:
         # Assert (would check path_input_edit contains test_dir)
 
 
-class TestDialogCategoryDropdown:
-    """Test category dropdown with existing categories."""
+class TestDialogTagsField:
+    """Test tags text field functionality."""
 
-    def test_categories_populated_from_list(self, qapp, tmp_path):
-        """Test dialog populates category dropdown with existing categories."""
+    def test_tags_accepts_comma_separated_values(self, qapp, tmp_path):
+        """Test tags field accepts comma-separated values."""
         # Arrange
-        categories = ["Shell", "Editor", "Terminal"]
+        dialog = AddDotfileDialog(parent=None)
 
         # Act
-        dialog = AddDotfileDialog(parent=None, categories=categories)
+        dialog.tags_edit.setText("shell, terminal, config")
 
         # Assert
-        assert dialog.category_combo.count() >= len(categories)
-        for i, cat in enumerate(categories):
-            assert dialog.category_combo.itemText(i) == cat
+        assert dialog.tags_edit.text() == "shell, terminal, config"
 
-    def test_custom_category_can_be_entered(self, qapp, tmp_path):
-        """Test user can enter custom category in editable combo box."""
-        # Arrange
-        dialog = AddDotfileDialog(parent=None, categories=["Existing"])
+    def test_tags_field_is_line_edit(self, qapp, tmp_path):
+        """Test tags field is a QLineEdit (not combo box)."""
+        # Arrange & Act
+        dialog = AddDotfileDialog(parent=None)
 
-        # Act
-        dialog.category_combo.setCurrentText("NewCategory")
-
-        # Assert
-        assert dialog.category_combo.currentText() == "NewCategory"
+        # Assert - tags_edit should be a QLineEdit
+        from PySide6.QtWidgets import QLineEdit
+        assert isinstance(dialog.tags_edit, QLineEdit)
 
 
 class TestDialogEnabledCheckbox:
@@ -397,7 +389,7 @@ class TestDialogEnabledCheckbox:
         """Test enabled checkbox reflects dotfile data in update mode."""
         # Arrange
         dotfile_data = {
-            "category": "Test",
+            "tags": "shell, terminal",
             "application": "TestApp",
             "description": "Test",
             "paths": ["~/.test"],
@@ -423,6 +415,44 @@ class TestDialogEnabledCheckbox:
         assert dialog.enabled_checkbox.isChecked() != initial_state
 
 
+class TestDialogUpdateMode:
+    """Test dialog in update mode with pre-populated data."""
+
+    def test_update_mode_populates_tags_from_tags_field(self, qapp, tmp_path):
+        """Test update mode populates tags from 'tags' key."""
+        # Arrange
+        dotfile_data = {
+            "tags": "shell, terminal",
+            "application": "Bash",
+            "description": "Bash configuration",
+            "paths": ["~/.bashrc"],
+            "enabled": True,
+        }
+
+        # Act
+        dialog = AddDotfileDialog(parent=None, dotfile_data=dotfile_data)
+
+        # Assert
+        assert dialog.tags_edit.text() == "shell, terminal"
+
+    def test_update_mode_populates_tags_from_category_field(self, qapp, tmp_path):
+        """Test update mode falls back to 'category' key for legacy data."""
+        # Arrange - legacy data with 'category' instead of 'tags'
+        dotfile_data = {
+            "category": "Shell",
+            "application": "Bash",
+            "description": "Bash configuration",
+            "paths": ["~/.bashrc"],
+            "enabled": True,
+        }
+
+        # Act
+        dialog = AddDotfileDialog(parent=None, dotfile_data=dotfile_data)
+
+        # Assert - should read from 'category' as fallback
+        assert dialog.tags_edit.text() == "Shell"
+
+
 class TestDialogCompleteValidation:
     """Test complete validation flow."""
 
@@ -430,7 +460,7 @@ class TestDialogCompleteValidation:
         """Test dialog with all valid inputs passes validation."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("TestCategory")
+        dialog.tags_edit.setText("shell, terminal")
         dialog.application_edit.setText("TestApplication")
         dialog.description_edit.setText("Test description text")
         dialog.paths_list.addItem("~/.testrc")
@@ -439,13 +469,13 @@ class TestDialogCompleteValidation:
 
         # Act
         # Call validation logic directly
-        category = dialog.category_combo.currentText().strip()
+        tags = dialog.tags_edit.text().strip()
         application = dialog.application_edit.text().strip()
         description = dialog.description_edit.text().strip()
         paths = dialog.get_paths()
 
         # Assert - all fields valid
-        assert len(category) > 0 and len(category) <= 100
+        assert len(tags) <= 200
         assert len(application) > 0 and len(application) <= 100
         assert len(description) <= 255
         assert len(paths) > 0
@@ -454,9 +484,9 @@ class TestDialogCompleteValidation:
         """Test dialog shows first validation error when multiple exist."""
         # Arrange
         dialog = AddDotfileDialog(parent=None)
-        dialog.category_combo.setCurrentText("")  # Error 1
-        dialog.application_edit.setText("")  # Error 2
-        # No paths added  # Error 3
+        dialog.tags_edit.setText("shell")  # Valid
+        dialog.application_edit.setText("")  # Error 1
+        # No paths added  # Error 2
 
         # Act & Assert
         with patch.object(QMessageBox, "warning") as mock_warning:

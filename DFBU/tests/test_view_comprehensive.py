@@ -145,7 +145,7 @@ class TestAddDotfileDialog:
         # Assert
         assert dialog.is_update_mode is True
         assert dialog.windowTitle() == "Update Dotfile Entry"
-        assert dialog.category_combo.currentText() == "TestCat"
+        assert dialog.tags_edit.text() == "TestCat"  # category used as tags fallback
         assert dialog.application_edit.text() == "TestApp"
         assert dialog.description_edit.text() == "Test description"
         assert dialog.paths_list.count() == 2
