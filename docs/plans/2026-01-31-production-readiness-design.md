@@ -455,15 +455,15 @@ auto_exclude_cache = true
 - [x] Documentation updates
 
 ### v0.9.0 - Error Handling & Recovery
-- [ ] `ErrorHandler` component
-- [ ] `ErrorHandlerProtocol` interface
-- [ ] `OperationResult` dataclass
-- [ ] Error categorization logic
-- [ ] User-friendly error messages
-- [ ] Recovery dialog UI
-- [ ] Retry/skip/continue logic
-- [ ] Comprehensive tests
-- [ ] Documentation updates
+- [x] `ErrorHandler` component
+- [x] `ErrorHandlerProtocol` interface
+- [x] `OperationResult` dataclass (OperationResultDict TypedDict)
+- [x] Error categorization logic
+- [x] User-friendly error messages
+- [x] Recovery dialog UI
+- [x] Retry/skip/continue logic (basic - retry execution deferred to v0.9.1)
+- [x] Comprehensive tests
+- [x] Documentation updates
 
 ### v1.0.0 - File Size Management
 - [ ] `SizeAnalyzer` component
