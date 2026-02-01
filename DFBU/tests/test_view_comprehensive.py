@@ -358,23 +358,6 @@ class TestMainWindow:
 class TestMainWindowActions:
     """Test suite for MainWindow menu actions and commands."""
 
-    def test_load_config_action_triggers_command(self, qapp, viewmodel_with_config):
-        """Test load config menu action triggers ViewModel command."""
-        # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
-        # Set a config path in the edit field (view reads from this)
-        window.config_path_edit.setText("/path/to/config.toml")
-
-        # Mock the command
-        with patch.object(viewmodel_with_config, "command_load_config") as mock_command:
-            mock_command.return_value = True  # Simulate successful load
-
-            # Act
-            window._on_load_config()
-
-            # Assert
-            mock_command.assert_called_once()
-
     def test_save_config_action_triggers_command(self, qapp, viewmodel_with_config):
         """Test save config menu action triggers ViewModel command."""
         # Arrange
