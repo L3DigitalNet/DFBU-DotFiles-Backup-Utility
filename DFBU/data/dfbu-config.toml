@@ -47,13 +47,6 @@ path = "~/.config/fish/fish_variables"
 
 [[dotfile]]
 category = "Shell configs"
-application = "Fish profile"
-description = "Fish shell profile configuration for login sessions"
-enabled = true
-path = "~/.fish_profile"
-
-[[dotfile]]
-category = "Shell configs"
 application = "Starship"
 description = "Starship cross-shell prompt configuration"
 enabled = true
