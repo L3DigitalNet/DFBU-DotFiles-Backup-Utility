@@ -47,6 +47,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.6.0] - 2026-01-31
+
+### Added
+
+- **Pre-Restore Safety Feature**: Automatic backup of files before restore operations to prevent data loss
+  - Added `RestoreBackupManager` component (`gui/restore_backup_manager.py`) for managing pre-restore backups
+  - Timestamped backup directories at `~/.local/share/dfbu/restore-backups/`
+  - TOML manifest files documenting what was backed up and why
+  - Configurable retention policy (default: 5 backups)
+  - Automatic cleanup of old backups exceeding retention limit
+  - Directory structure preservation in backups
+- **New Configuration Options**:
+  - `pre_restore_backup` toggle in UI Configuration tab (default: enabled)
+  - `max_restore_backups` setting for retention policy control
+  - `restore_backup_dir` path configuration for backup location
+- **Model Facade Method**: Added `execute_restore()` to DFBUModel for proper orchestration
+
+### Changed
+
+- **BackupOrchestrator Integration**: Restore operations now route through orchestrator with pre-restore backup
+  - Added `pre_restore_enabled` parameter to `execute_restore()` method
+  - Integrated `RestoreBackupManager` into restore workflow
+- **UI Updates**: Configuration tab now includes pre-restore safety settings
+  - Pre-restore backup checkbox toggle
+  - Max restore backups spinbox (1-50 range)
+  - Restore backup directory path field with browse button
+- **Common Types**: Extended `OptionsDict` with `pre_restore_backup` and `max_restore_backups` fields
+
+### Fixed
+
+- **Critical**: RestoreWorker now uses `BackupOrchestrator.execute_restore()` instead of bypassing it with direct file operations - pre-restore backup was not executing during GUI restore
+- **Encapsulation**: Added `backup_base_dir` setter to `RestoreBackupManager` for proper attribute access
+- **Retention Policy**: Added `cleanup_old_backups()` call after successful pre-restore backup
+- **DRY Violation**: Import `DEFAULT_BACKUP_DIR` constant from `restore_backup_manager.py` into `config_manager.py`
+- **Documentation**: Updated `update_path()` docstring in protocols.py to include `restore_backup_dir`
+- **Config Respect**: Pre-restore backup now respects the `pre_restore_backup` config option
+
 ## [0.5.8] - 2025-11-03
 
 ### Added

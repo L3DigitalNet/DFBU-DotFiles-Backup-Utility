@@ -102,6 +102,11 @@ class RestoreBackupManager:
         """Get base directory for restore backups."""
         return self._backup_base_dir
 
+    @backup_base_dir.setter
+    def backup_base_dir(self, path: Path) -> None:
+        """Set base directory for restore backups."""
+        self._backup_base_dir = path
+
     @property
     def max_backups(self) -> int:
         """Get maximum number of restore backups to retain."""

@@ -33,6 +33,7 @@ Functions:
 """
 
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from socket import gethostname
 
@@ -124,8 +125,11 @@ class DFBUModel:
         # Initialize StatisticsTracker
         self._stats_tracker = StatisticsTracker()
 
-        # Initialize pre-restore backup manager
-        self._restore_backup_manager = RestoreBackupManager()
+        # Initialize pre-restore backup manager with config-based directory
+        self._restore_backup_manager = RestoreBackupManager(
+            backup_base_dir=self._config_manager.restore_backup_dir,
+            max_backups=self._config_manager.options.get("max_restore_backups", 5),
+        )
 
         # Initialize BackupOrchestrator with restore backup manager
         self._backup_orchestrator = BackupOrchestrator(
@@ -187,6 +191,17 @@ class DFBUModel:
         self._config_manager.archive_base_dir = path
         self._backup_orchestrator.archive_base_dir = path
 
+    @property
+    def restore_backup_dir(self) -> Path:
+        """Get pre-restore backup directory."""
+        return self._config_manager.restore_backup_dir
+
+    @restore_backup_dir.setter
+    def restore_backup_dir(self, path: Path) -> None:
+        """Set pre-restore backup directory."""
+        self._config_manager.restore_backup_dir = path
+        self._restore_backup_manager.backup_base_dir = path
+
     def get_config_manager(self) -> ConfigManager:
         """
         Get the ConfigManager instance for worker threads.
@@ -216,6 +231,13 @@ class DFBUModel:
             )
             self._backup_orchestrator.archive_base_dir = (
                 self._config_manager.archive_base_dir
+            )
+            # Update RestoreBackupManager with config values (v0.6.0)
+            self._restore_backup_manager.backup_base_dir = (
+                self._config_manager.restore_backup_dir
+            )
+            self._restore_backup_manager.max_backups = self._config_manager.options.get(
+                "max_restore_backups", 5
             )
 
         return success, error
@@ -320,10 +342,10 @@ class DFBUModel:
 
     def update_path(self, path_type: str, value: str) -> bool:
         """
-        Update mirror_dir or archive_dir path.
+        Update mirror_dir, archive_dir, or restore_backup_dir path.
 
         Args:
-            path_type: Either "mirror_dir" or "archive_dir"
+            path_type: One of "mirror_dir", "archive_dir", or "restore_backup_dir"
             value: New path value
 
         Returns:
@@ -331,13 +353,17 @@ class DFBUModel:
         """
         success = self._config_manager.update_path(path_type, value)
 
-        # Update BackupOrchestrator with new base directories
+        # Update components with new base directories
         if success:
             self._backup_orchestrator.mirror_base_dir = (
                 self._config_manager.mirror_base_dir
             )
             self._backup_orchestrator.archive_base_dir = (
                 self._config_manager.archive_base_dir
+            )
+            # Sync restore_backup_dir to RestoreBackupManager (v0.6.0)
+            self._restore_backup_manager.backup_base_dir = (
+                self._config_manager.restore_backup_dir
             )
 
         return success
@@ -574,6 +600,34 @@ class DFBUModel:
             Dict mapping dotfile index to (exists, is_dir, type_str) tuple
         """
         return self._backup_orchestrator.validate_dotfile_paths(self.dotfiles)
+
+    def execute_restore(
+        self,
+        src_dir: Path,
+        progress_callback: Callable[[int], None] | None = None,
+        item_processed_callback: Callable[[str, str], None] | None = None,
+    ) -> tuple[int, int]:
+        """
+        Execute restore operation with pre-restore safety backup.
+
+        Delegates to BackupOrchestrator which handles pre-restore backup
+        if enabled in configuration.
+
+        Args:
+            src_dir: Source backup directory to restore from
+            progress_callback: Optional callback for progress updates (percent)
+            item_processed_callback: Optional callback for processed items (src, dest)
+
+        Returns:
+            Tuple of (successful_items, total_items)
+        """
+        pre_restore_enabled = self._config_manager.options.get("pre_restore_backup", True)
+        return self._backup_orchestrator.execute_restore(
+            src_dir,
+            pre_restore_enabled=pre_restore_enabled,
+            progress_callback=progress_callback,
+            item_processed_callback=item_processed_callback,
+        )
 
     # =========================================================================
     # Statistics Tracking (Delegate to StatisticsTracker)
