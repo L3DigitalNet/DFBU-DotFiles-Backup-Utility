@@ -419,8 +419,6 @@ class MainWindow(QMainWindow):
         update_dotfile_btn: Button to update selected dotfile entry
         remove_dotfile_btn: Button to remove selected dotfile entry
         save_dotfiles_btn: Button to save dotfile configuration changes
-        config_path_edit: Line edit for configuration file path
-        load_config_btn: Button to load configuration
         backup_btn: Button to start backup
         mirror_checkbox: Checkbox for mirror backup mode
         archive_checkbox: Checkbox for archive backup mode
@@ -577,12 +575,6 @@ class MainWindow(QMainWindow):
 
     def _find_backup_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to Backup tab widgets."""
-        self.config_path_edit: QLineEdit = ui_widget.findChild(
-            QLineEdit, "configGroupPathEdit"
-        )  # type: ignore[assignment]
-        self.load_config_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "configGroupLoadButton"
-        )  # type: ignore[assignment]
         self.dotfile_table: QTableWidget = ui_widget.findChild(
             QTableWidget, "fileGroupFileTable"
         )  # type: ignore[assignment]
@@ -704,9 +696,6 @@ class MainWindow(QMainWindow):
         Args:
             loaded_window: Original loaded QMainWindow for finding menu actions
         """
-        self.action_load_config: QAction = loaded_window.findChild(
-            QAction, "actionLoadConfig"
-        )  # type: ignore[assignment]
         self.action_exit: QAction = loaded_window.findChild(QAction, "actionExit")  # type: ignore[assignment]
         self.action_start_backup: QAction = loaded_window.findChild(
             QAction, "actionStartBackup"
@@ -718,7 +707,6 @@ class MainWindow(QMainWindow):
 
         # Fix Qt object ownership: Reparent actions to prevent deletion
         for action in [
-            self.action_load_config,
             self.action_exit,
             self.action_start_backup,
             self.action_start_restore,
@@ -730,11 +718,6 @@ class MainWindow(QMainWindow):
     def _connect_ui_signals(self) -> None:
         """Connect UI element signals to handler methods."""
         # Backup tab connections
-        browse_config_btn: QPushButton = self.central_widget.findChild(
-            QPushButton, "configGroupBrowseButton"
-        )  # type: ignore[assignment]
-        browse_config_btn.clicked.connect(self._on_browse_config)
-        self.load_config_btn.clicked.connect(self._on_load_config)
         self.add_dotfile_btn.clicked.connect(self._on_add_dotfile)
         self.update_dotfile_btn.clicked.connect(self._on_update_dotfile)
         self.remove_dotfile_btn.clicked.connect(self._on_remove_dotfile)
@@ -790,7 +773,6 @@ class MainWindow(QMainWindow):
         self.save_log_btn.clicked.connect(self._on_save_log)
 
         # Menu action connections
-        self.action_load_config.triggered.connect(self._on_browse_config)
         self.action_exit.triggered.connect(self.close)
         self.action_start_backup.triggered.connect(self._on_start_backup)
         self.action_start_restore.triggered.connect(self._on_start_restore)
