@@ -816,6 +816,7 @@ class DFBUViewModel(QObject):
     config_loaded = Signal(int)  # dotfile count
     dotfiles_updated = Signal(int)
     exclusions_changed = Signal()  # emitted when exclusion list changes
+    recovery_dialog_requested = Signal(object)  # OperationResultDict
 
     SETTINGS_ORG: Final[str] = "L3DigitalNet"
     SETTINGS_APP: Final[str] = "dfbu_gui_settings"
@@ -967,6 +968,9 @@ class DFBUViewModel(QObject):
         self.backup_worker.item_processed.connect(self._on_item_processed)
         self.backup_worker.item_skipped.connect(self._on_item_skipped)
         self.backup_worker.backup_finished.connect(self._on_backup_finished)
+        self.backup_worker.backup_finished_with_result.connect(
+            self._on_backup_finished_with_result
+        )
         self.backup_worker.error_occurred.connect(self._on_worker_error)
 
         # Start worker thread
@@ -1411,10 +1415,25 @@ class DFBUViewModel(QObject):
             self.backup_worker.item_processed.disconnect(self._on_item_processed)
             self.backup_worker.item_skipped.disconnect(self._on_item_skipped)
             self.backup_worker.backup_finished.disconnect(self._on_backup_finished)
+            self.backup_worker.backup_finished_with_result.disconnect(
+                self._on_backup_finished_with_result
+            )
             self.backup_worker.error_occurred.disconnect(self._on_worker_error)
             # Properly cleanup Qt object to free resources
             self.backup_worker.deleteLater()
             self.backup_worker = None
+
+    def _on_backup_finished_with_result(self, result: OperationResultDict) -> None:
+        """Handle backup completion with structured result.
+
+        Emits recovery_dialog_requested signal if there are failures.
+
+        Args:
+            result: Structured operation result
+        """
+        # Only show recovery dialog if there are failures that could be retried
+        if result["status"] != "success" and result["can_retry"]:
+            self.recovery_dialog_requested.emit(result)
 
     def _on_restore_finished(self) -> None:
         """Handle restore completion and cleanup worker."""
