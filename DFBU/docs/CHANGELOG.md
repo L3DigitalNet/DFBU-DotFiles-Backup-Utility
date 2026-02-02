@@ -12,6 +12,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PATCH**: Bug fixes and code refactoring
 - **Development Stages**: `.dev`, `.a` (alpha), `.b` (beta), `.rc` (release candidate)
 
+## [1.1.0] - 2026-02-01
+
+### Added
+
+- **Configuration Tab Extensions**: Added GUI controls for all settings in `settings.yaml`:
+  - Verification Options section: "Verify After Backup" and "Hash Verification" checkboxes
+  - Size Management section: "Enable Size Check" checkbox and threshold spinboxes (Warning/Alert/Critical MB)
+- Integration tests for new configuration options
+
+### Changed
+
+- Configuration tab now exposes all available backup settings
+
+## [1.0.0] - 2026-02-01
+
+### Added
+
+- **File Size Management (P3)**: Pre-backup size analysis and warnings
+  - `SizeAnalyzer` component for analyzing dotfile sizes before backup
+  - Configurable warning thresholds: Warning (10MB), Alert (100MB), Critical (1GB)
+  - `.dfbuignore` file support for gitignore-style exclusion patterns
+  - `SizeWarningDialog` UI showing large files with severity levels
+  - Size check can be enabled/disabled in settings
+  - Progress callback support for non-blocking analysis
+  - Worker thread (`SizeScanWorker`) for background size scanning
+
+- **Documentation Overhaul**
+  - Created `docs/INDEX.md` - comprehensive documentation navigation
+  - Created `docs/TROUBLESHOOTING.md` - user-focused issue resolution guide
+  - Rewrote `README.md` for end users (reduced from 473 to 217 lines)
+  - Added cross-references to consolidate duplicated content
+
+### Changed
+
+- **README.md**: Completely rewritten for intermediate Linux users
+  - Removed developer-focused content (MVVM, testing, architecture)
+  - Added user-focused features, backup modes explanation, troubleshooting
+  - Simplified installation instructions to 3 commands
+  - Moved developer content to `CONTRIBUTING.md`
+
+- **CONTRIBUTING.md**: Now serves as the developer hub
+  - Added cross-references to canonical documentation sources
+  - Links to `ARCHITECTURE.md`, `tests/README.md`, and documentation index
+
+- **AI Documentation**: Added cross-references to reduce duplication
+  - Updated `CLAUDE.md` with links to architecture and testing docs
+  - Updated `AGENTS.md` with project documentation section
+  - Maintains separate docs for different AI systems while reducing redundancy
+
+### New Files
+
+- `DFBU/gui/size_analyzer.py` - Size analysis component
+- `DFBU/gui/size_warning_dialog.py` - Size warning dialog
+- `DFBU/gui/designer/size_warning_dialog.ui` - Dialog UI design
+- `DFBU/data/.dfbuignore` - Default exclusion patterns
+- `DFBU/tests/test_size_analyzer.py` - 28 unit tests for size analysis
+- `docs/INDEX.md` - Documentation index
+- `docs/TROUBLESHOOTING.md` - User troubleshooting guide
+
+### TypedDict Additions
+
+- `SizeItemDict`: Individual file/directory size entry with threshold level
+- `SizeReportDict`: Backup size analysis report with summary and large items
+
 ## [0.6.1] - 2026-02-01
 
 ### Added
