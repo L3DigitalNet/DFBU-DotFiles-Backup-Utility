@@ -63,7 +63,7 @@ All code must adhere to SOLID principles:
 - **I**nterface Segregation
 - **D**ependency Inversion
 
-See `.github/copilot-instructions.md` for detailed guidelines.
+For comprehensive architecture documentation including detailed MVVM patterns, component interactions, and design decisions, see [DFBU/docs/ARCHITECTURE.md](DFBU/docs/ARCHITECTURE.md).
 
 ## Development Workflow
 
@@ -79,7 +79,7 @@ python .agents/branch_protection.py
 git checkout testing
 ```
 
-See `BRANCH_PROTECTION_QUICK.md` for full details.
+See [docs/BRANCH_PROTECTION_QUICK.md](docs/BRANCH_PROTECTION_QUICK.md) for quick reference or [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for full details.
 
 ### 1. Create a Feature Branch
 
@@ -227,6 +227,10 @@ def my_function(param1: str, param2: int) -> dict:
 
 ### Testing
 
+For comprehensive testing documentation including fixtures, markers, and coverage requirements, see [DFBU/tests/README.md](DFBU/tests/README.md).
+
+Key testing principles:
+
 - Use Arrange-Act-Assert pattern
 - One assertion per test (when possible)
 - Descriptive test names: `test_should_X_when_Y` or `test_component_action_result`
@@ -361,8 +365,11 @@ See `AGENTS.md` for:
 
 ## Getting Help
 
-- Check `AGENTS.md` for quick reference
-- Review `.github/copilot-instructions.md` for detailed guidelines
+- Check [docs/INDEX.md](docs/INDEX.md) for a complete documentation guide
+- Check [AGENTS.md](AGENTS.md) for quick reference and templates
+- Review [DFBU/docs/ARCHITECTURE.md](DFBU/docs/ARCHITECTURE.md) for architecture details
+- Review [DFBU/tests/README.md](DFBU/tests/README.md) for testing documentation
+- Review `.github/copilot-instructions.md` for AI coding guidelines
 - Review existing code for patterns
 - Open an issue for questions
 - Join discussions in pull requests

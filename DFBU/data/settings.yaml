@@ -15,3 +15,7 @@ options:
   max_restore_backups: 5
   verify_after_backup: false
   hash_verification: false
+  size_check_enabled: true
+  size_warning_threshold_mb: 10
+  size_alert_threshold_mb: 100
+  size_critical_threshold_mb: 1024

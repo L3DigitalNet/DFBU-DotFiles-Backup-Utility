@@ -32,6 +32,7 @@ Classes:
     - RestoreBackupManagerProtocol: Interface for pre-restore backup management
     - VerificationManagerProtocol: Interface for backup verification
     - ErrorHandlerProtocol: Interface for structured error handling
+    - SizeAnalyzerProtocol: Interface for file size analysis and management
 
 Functions:
     None
@@ -39,7 +40,7 @@ Functions:
 
 import sys
 from pathlib import Path
-from typing import Protocol
+from typing import Callable, Protocol
 
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -48,6 +49,7 @@ from core.common_types import (
     OperationResultDict,
     OptionsDict,
     PathResultDict,
+    SizeReportDict,
     VerificationReportDict,
 )
 
@@ -790,5 +792,128 @@ class ErrorHandlerProtocol(Protocol):
 
         Returns:
             List of path strings that might succeed on retry
+        """
+        ...
+
+
+# =============================================================================
+# Size Analyzer Protocol
+# =============================================================================
+
+
+class SizeAnalyzerProtocol(Protocol):
+    """
+    Protocol defining interface for file size analysis and management.
+
+    Implementations must provide size calculation, threshold checking,
+    exclusion pattern parsing, and report generation for pre-backup
+    size warnings.
+    """
+
+    @property
+    def warning_threshold_mb(self) -> int:
+        """Get warning threshold in megabytes (default: 10)."""
+        ...
+
+    @warning_threshold_mb.setter
+    def warning_threshold_mb(self, value: int) -> None:
+        """Set warning threshold in megabytes."""
+        ...
+
+    @property
+    def alert_threshold_mb(self) -> int:
+        """Get alert threshold in megabytes (default: 100)."""
+        ...
+
+    @alert_threshold_mb.setter
+    def alert_threshold_mb(self, value: int) -> None:
+        """Set alert threshold in megabytes."""
+        ...
+
+    @property
+    def critical_threshold_mb(self) -> int:
+        """Get critical threshold in megabytes (default: 1024)."""
+        ...
+
+    @critical_threshold_mb.setter
+    def critical_threshold_mb(self, value: int) -> None:
+        """Set critical threshold in megabytes."""
+        ...
+
+    @property
+    def size_check_enabled(self) -> bool:
+        """Get whether size checking is enabled."""
+        ...
+
+    @size_check_enabled.setter
+    def size_check_enabled(self, value: bool) -> None:
+        """Set whether size checking is enabled."""
+        ...
+
+    def analyze_dotfiles(
+        self,
+        dotfiles: list[DotFileDict],
+        progress_callback: Callable[[int], None] | None = None,
+        ignore_patterns: list[str] | None = None,
+    ) -> SizeReportDict:
+        """
+        Analyze sizes of all configured dotfiles.
+
+        Args:
+            dotfiles: List of dotfile dictionaries to analyze
+            progress_callback: Optional callback for progress updates (0-100)
+            ignore_patterns: Optional list of gitignore-style exclusion patterns
+
+        Returns:
+            SizeReportDict with analysis results
+        """
+        ...
+
+    def load_ignore_patterns(self, ignore_file: Path) -> list[str]:
+        """
+        Load exclusion patterns from .dfbuignore file.
+
+        Args:
+            ignore_file: Path to .dfbuignore file
+
+        Returns:
+            List of gitignore-style patterns
+        """
+        ...
+
+    def matches_ignore_pattern(self, path: Path, patterns: list[str]) -> bool:
+        """
+        Check if a path matches any exclusion pattern.
+
+        Args:
+            path: Path to check
+            patterns: List of gitignore-style patterns
+
+        Returns:
+            True if path should be excluded, False otherwise
+        """
+        ...
+
+    def categorize_size(self, size_bytes: int) -> str:
+        """
+        Categorize a size by threshold level.
+
+        Args:
+            size_bytes: Size in bytes
+
+        Returns:
+            Threshold level: "info", "warning", "alert", or "critical"
+        """
+        ...
+
+    def format_report_for_log(self, report: SizeReportDict) -> str:
+        """
+        Format a size report for display in the log viewer.
+
+        Args:
+            report: Size analysis report dictionary
+
+        Returns:
+            Human-readable formatted string for log output
         """
         ...

@@ -454,3 +454,14 @@ logging.basicConfig(
 - Follow PEP 8 style guidelines
 - Keep MVVM layers strictly separated
 - Make code testable by design
+
+## Project Documentation
+
+For comprehensive documentation specific to this project:
+
+- [docs/INDEX.md](../docs/INDEX.md) - Complete documentation index
+- [DFBU/docs/ARCHITECTURE.md](../DFBU/docs/ARCHITECTURE.md) - Detailed architecture documentation
+- [DFBU/tests/README.md](../DFBU/tests/README.md) - Testing documentation and fixtures
+- [CONTRIBUTING.md](../CONTRIBUTING.md) - Development setup and contribution guidelines
+- [CLAUDE.md](../CLAUDE.md) - Claude Code / AI assistant instructions
+- [AGENTS.md](../AGENTS.md) - General AI agent reference

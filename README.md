@@ -1,473 +1,217 @@
 # DFBU - DotFiles Backup Utility
 
-**Version:** 0.9.1
-**Author:** Chris Purcell
-**Email:** <chris@l3digital.net>
-**GitHub:** [L3DigitalNet/DFBU-DotFiles-Backup-Utility](https://github.com/L3DigitalNet/DFBU-DotFiles-Backup-Utility)
-**License:** MIT
-**Platform:** Linux Only
+A simple GUI application to backup and restore your Linux configuration files.
 
-Modern Python 3.14+ desktop application for comprehensive Linux configuration file backup and restoration with a PySide6 GUI.
+**Version:** 1.0.0 | **Platform:** Linux | **License:** MIT
 
 ---
 
-## Features
+## Why DFBU?
 
-### Core Capabilities
+Your dotfiles (`.bashrc`, `.config/`, `.local/share/`) contain years of customization - shell aliases, app settings, themes, and preferences. Losing them means hours of reconfiguration.
 
-- **Desktop GUI**: Modern PySide6 interface with MVVM architecture
-- **YAML Configuration**: Split config files (settings, dotfiles, session) for easy manual editing
-- **Hostname-based Backups**: Automatic directory organization by hostname and date
-- **Dual Backup Modes**:
-  - Mirror backups with incremental file change detection
-  - Compressed TAR.GZ archives with rotation and retention policies
-- **Python 3.14 Path.copy()**: Enhanced file operations with metadata and symlink support
-- **Interactive Restore**: Progress tracking and hostname-based restoration
-- **MVVM Architecture**: Clean separation of concerns (GUI only)
-- **Threaded Operations**: Non-blocking GUI with background workers
-- **Window State Persistence**: Saves geometry and configuration paths
+DFBU protects your configuration with:
 
-### Advanced Features
-
-- **Pre-Restore Safety**: Automatic backup of files before restore operations
-- **Exclusion-Based Selection**: All dotfiles included by default; exclude what you don't want
-- **Real-time Progress**: Visual progress bars and status updates
-- **Configuration Backups**: Automatic config backup rotation before saves
-- **Input Validation**: Comprehensive validation framework for all user inputs
-- **Structured Logging**: Rotating logs with configurable levels and handlers
-- **Type Safety**: Full type hint coverage with mypy compliance
+- **Visual interface** - No command line needed for daily use
+- **One-click backups** - Select files, click backup, done
+- **Automatic organization** - Backups sorted by computer name and date
+- **Safe restores** - Creates a safety backup before overwriting any files
+- **Size warnings** - Alerts you before backing up unexpectedly large files
+- **Flexible storage** - Choose mirror copies, compressed archives, or both
 
 ---
 
-## Quick Start
+## Screenshots
 
-### Installation
+Screenshots coming soon - main window, backup in progress, restore dialog
+
+---
+
+## Installation
+
+### Quick Setup
 
 ```bash
-# Clone the repository
+# 1. Download DFBU
 git clone https://github.com/L3DigitalNet/DFBU-DotFiles-Backup-Utility.git
 cd DFBU-DotFiles-Backup-Utility
 
-# Run setup script (installs UV, creates venv, installs dependencies)
-./setup.sh
+# 2. Run the setup script (installs Python 3.14 and dependencies)
+./scripts/setup.sh
 
-# Activate virtual environment
+# 3. Launch DFBU
 source .venv/bin/activate
-```
-
-### Basic Usage
-
-```bash
-# Run the GUI application
 python DFBU/dfbu-gui.py
 ```
 
-### Configuration
+### Requirements
 
-Configuration is split across three YAML files in `DFBU/data/`:
-
-**settings.yaml** - Application settings:
-
-```yaml
-paths:
-  mirror_dir: ~/backups/mirror
-  archive_dir: ~/backups/archives
-
-options:
-  mirror: true
-  archive: true
-  archive_compression_level: 9
-  max_archives: 5
-```
-
-**dotfiles.yaml** - Dotfile library (compact format):
-
-```yaml
-Bash:
-  description: Bash shell configuration
-  paths: ~/.bashrc
-  tags: shell, terminal
-```
-
-**session.yaml** - Runtime exclusions:
-
-```yaml
-excluded:
-  - Firefox
-  - Steam
-```
+- **Linux** - Tested on Ubuntu 22.04+, Fedora 38+, and other modern distributions
+- **Python 3.14+** - The setup script installs this automatically via UV package manager
 
 ---
 
-## Project Structure
+## Using DFBU
 
-```text
-DFBU-DotFiles-Backup-Utility/
-├── DFBU/                           # Main application directory
-│   ├── dfbu-gui.py                 # GUI application entry point
-│   ├── requirements.txt            # Python dependencies
-│   ├── data/
-│   │   ├── settings.yaml           # Application settings
-│   │   ├── dotfiles.yaml           # Dotfile library
-│   │   └── session.yaml            # Session exclusions
-│   ├── gui/                        # GUI components (MVVM)
-│   │   ├── model.py                # Business logic and state (facade)
-│   │   ├── viewmodel.py            # Presentation logic
-│   │   ├── view.py                 # PySide6 UI components
-│   │   ├── protocols.py            # Protocol interfaces for DI
-│   │   ├── config_manager.py       # Configuration management
-│   │   ├── file_operations.py      # File system operations
-│   │   ├── backup_orchestrator.py  # Backup/restore coordination
-│   │   ├── error_handler.py        # Error handling & categorization
-│   │   ├── verification_manager.py # Backup integrity verification
-│   │   ├── restore_backup_manager.py # Pre-restore safety backups
-│   │   ├── help_dialog.py          # In-app documentation
-│   │   ├── recovery_dialog.py      # Error recovery UI
-│   │   ├── input_validation.py     # Input validation framework
-│   │   ├── logging_config.py       # Logging configuration
-│   │   └── designer/               # Qt Designer .ui files
-│   ├── core/                       # Shared utilities
-│   │   ├── common_types.py         # TypedDict definitions
-│   │   ├── validation.py           # Configuration validation
-│   │   ├── yaml_config.py          # YAML config loading/saving
-│   │   └── migration.py            # Config migration utilities
-│   ├── tests/                      # Test suite (540+ tests, 24 files)
-│   │   ├── conftest.py             # Pytest fixtures
-│   │   └── test_*.py               # Unit and integration tests
-│   └── docs/                       # Project documentation
-│       ├── CHANGELOG.md            # Version history
-│       ├── ARCHITECTURE.md         # Architecture documentation
-│       └── PROJECT-DOC.md          # Technical documentation
-├── docs/                           # Additional documentation
-│   ├── BRANCH_PROTECTION.md        # Branch protection docs
-│   └── BRANCH_PROTECTION_QUICK.md  # Quick reference
-├── .github/
-│   ├── copilot-instructions.md     # GitHub Copilot guidelines
-│   └── prompts/                    # Development prompts
-├── .agents/                        # AI agent tools
-│   ├── memory.instruction.md       # Coding preferences
-│   └── branch_protection.py        # Branch protection checker
-├── AGENTS.md                       # Quick agent reference
-├── CLAUDE.md                       # Claude Code instructions
-├── CONTRIBUTING.md                 # Contribution guidelines
-├── scripts/                        # Setup scripts
-│   └── setup.sh                    # Project setup script
-├── pyproject.toml                  # Project configuration
-└── README.md                       # This file
-```
+### First Launch
+
+When you first open DFBU, you'll see the **Backup** tab with an empty file list. To add files to backup:
+
+1. Click **Add Dotfile** in the toolbar
+2. Enter the application name (e.g., "Bash")
+3. Enter the path to backup (e.g., `~/.bashrc`)
+4. Optionally add tags to organize your files
+5. Click **Add**
+
+DFBU comes with a library of common dotfiles you can browse and add.
+
+### Backup Tab
+
+The main tab shows all your configured dotfiles. Each entry displays:
+
+- Application name and description
+- File paths being backed up
+- Tags for organization
+
+To run a backup:
+
+1. Ensure the files you want are checked (all are selected by default)
+2. Choose your backup options (Mirror, Archive, or both)
+3. Click **Start Backup**
+4. Watch the progress bar and log for status
+
+### Restore Tab
+
+To restore files from a previous backup:
+
+1. Switch to the **Restore** tab
+2. Browse to your backup directory
+3. Select the backup date to restore from
+4. Choose which files to restore
+5. Click **Restore**
+
+DFBU automatically creates a safety backup of your current files before restoring, so you can always undo a restore.
+
+### Settings Tab
+
+Configure backup behavior:
+
+- **Mirror Directory** - Where to store mirror backups
+- **Archive Directory** - Where to store compressed archives
+- **Hostname Subdirectory** - Organize backups by computer name
+- **Date Subdirectory** - Create dated folders for each backup
+- **Archive Compression** - Set compression level (0-9)
+- **Archive Rotation** - Keep only the last N archives
+- **Pre-Restore Backup** - Safety backup before restoring (recommended)
+- **Size Warnings** - Alert thresholds for large files
 
 ---
 
-## Architecture
+## Backup Modes
 
-### MVVM Pattern (GUI)
+DFBU offers two backup modes that can be used together or separately.
 
-The GUI follows the **Model-View-ViewModel** architectural pattern:
+### Mirror Backup
 
-```
-View (MainWindow)
-    ↕ signals/slots
-ViewModel (DFBUViewModel)
-    ↕ method calls
-Model (DFBUModel - Facade)
-    ↕ coordinates
-Components:
-    ├── ConfigManager          # Config I/O and CRUD
-    ├── FileOperations         # File system operations
-    ├── BackupOrchestrator     # Backup/restore coordination
-    ├── StatisticsTracker      # Operation metrics
-    ├── ErrorHandler           # Error handling & categorization
-    ├── VerificationManager    # Backup integrity verification
-    └── RestoreBackupManager   # Pre-restore safety backups
-```
+Creates an exact copy of your files in a backup folder.
 
-**Key Principles:**
+Advantages:
 
-- **Separation of Concerns**: Each layer has single, well-defined responsibilities
-- **SOLID Principles**: Especially Single Responsibility and Dependency Inversion
-- **Dependency Injection**: Components receive dependencies via constructors
-- **Signal/Slot Communication**: Qt's event system for reactive updates
-- **Threaded Operations**: Long-running tasks on background threads
+- Files are immediately accessible - just browse the folder
+- Easy to see exactly what's backed up
+- Fast for incremental backups (only changed files are copied)
 
-### Model Components (v0.4.0+)
+Best for quick access to recent backups and browsing backup contents.
 
-**DFBUModel (Facade - 737 lines)**
+### Archive Backup
 
-- Coordinates all model components via delegation
-- Provides unified API to ViewModel
-- Maintains backward compatibility
+Compresses all files into a single `.tar.gz` archive.
 
-**ConfigManager (814 lines)**
+Advantages:
 
-- Configuration file I/O with rotating backups
-- YAML parsing and serialization (ruamel.yaml)
-- Dotfile CRUD operations
-- Exclusion-based selection management
-- Configuration validation integration
+- Saves disk space with compression
+- Creates a single file that's easy to transfer
+- Keeps multiple versions with date-stamped names
 
-**FileOperations (686 lines)**
-
-- Path expansion and validation
-- File/directory copying with metadata preservation
-- TAR.GZ archive creation and rotation
-- Restore path reconstruction
-- File comparison utilities
-
-**BackupOrchestrator (549 lines)**
-
-- Mirror backup coordination
-- Archive backup coordination
-- Restore operation coordination
-- Progress tracking with callbacks
-- Statistics integration
-
-**Additional Components (v0.8.0+)**
-
-- **ErrorHandler (443 lines)**: Structured error handling with categorization
-- **VerificationManager (355 lines)**: Backup integrity verification
-- **RestoreBackupManager (267 lines)**: Pre-restore safety backups
-- **HelpDialog (198 lines)**: In-app documentation display
-- **TooltipManager (118 lines)**: Dynamic tooltip management
+Best for long-term storage and transferring backups between machines.
 
 ---
 
-## Testing
+## Backup Location Structure
 
-### Test Suite Overview
-
-- **Total Tests**: 540+
-- **Test Files**: 24
-- **Overall Coverage**: 84%
-
-### Running Tests
-
-```bash
-# All tests
-pytest DFBU/tests/
-
-# With coverage
-pytest DFBU/tests/ --cov=DFBU --cov-report=html --cov-report=term-missing
-
-# Specific categories
-pytest DFBU/tests/ -m unit           # Unit tests only
-pytest DFBU/tests/ -m integration    # Integration tests only
-pytest DFBU/tests/ -m gui            # GUI tests only
-pytest DFBU/tests/ -m "not slow"     # Skip slow tests
-
-# Specific file
-pytest DFBU/tests/test_model.py -v
-```
-
-### Test Organization
-
-- **Unit Tests**: Fast, isolated component tests
-- **Integration Tests**: Multi-component interaction tests
-- **GUI Tests**: Qt-based signal/slot and worker tests
-- **Fixtures**: Comprehensive fixture set in `conftest.py`
-
-See [DFBU/tests/README.md](DFBU/tests/README.md) for detailed testing documentation.
-
----
-
-## Dependencies
-
-### Core Dependencies
-
-- **Python 3.14+**: Required for `Path.copy()` with metadata preservation
-- **PySide6**: Qt6 bindings for GUI (latest compatible version)
-- **UV**: Fast Python package installer and virtual environment manager
-
-### Standard Library Usage
-
-- `pathlib`: Modern path handling
-- `shutil`: File operations fallback
-- `tarfile`: Archive creation
-- `ruamel.yaml`: YAML parsing with comment preservation
-- `socket`: Hostname detection
-- `datetime`: Timestamp generation
-
-### Development Dependencies
-
-- **pytest**: Test framework
-- **pytest-qt**: Qt testing plugin
-- **pytest-mock**: Mocking utilities
-- **pytest-cov**: Coverage reporting
-- **mypy**: Static type checking
-
----
-
-## Configuration Details
-
-### Settings (settings.yaml)
-
-```yaml
-paths:
-  mirror_dir: ~/backups          # Mirror backup destination
-  archive_dir: ~/archives        # Archive backup destination
-  restore_backup_dir: ~/.local/share/dfbu/restore-backups
-
-options:
-  mirror: true                   # Enable mirror backups
-  archive: true                  # Enable archive backups
-  hostname_subdir: true          # Organize by hostname
-  archive_compression_level: 9   # 0-9 (0=none, 9=maximum)
-  max_archives: 5                # Number of archives to retain
-```
-
-### Dotfiles (dotfiles.yaml)
-
-```yaml
-Bash:                            # Application name (key)
-  description: Bash shell config # Brief description
-  paths: ~/.bashrc               # Single path or list
-  tags: shell, terminal          # Optional comma-separated tags
-```
-
-### Backup Structure
+DFBU organizes your backups like this:
 
 ```
-~/backups/
-└── hostname/
-    └── 2025-11-03/
+~/backups/                          # Your backup directory
+└── my-computer/                    # Organized by hostname
+    └── 2026-02-01/                 # Organized by date
         ├── home/
-        │   └── .bashrc
-        └── root/
-            └── etc/
-                └── config
+        │   └── .bashrc             # Your backed up files
+        │   └── .config/
+        │       └── konsole/
+        └── ...
 
-~/archives/
-└── hostname/
-    ├── backup_2025-11-03_10-30-00.tar.gz
-    ├── backup_2025-11-03_11-45-00.tar.gz
+~/archives/                         # Your archive directory
+└── my-computer/
+    ├── backup_2026-02-01_10-30.tar.gz
+    ├── backup_2026-01-28_14-15.tar.gz
     └── ...
 ```
 
 ---
 
-## Documentation
+## Troubleshooting
 
-- **[CLAUDE.md](CLAUDE.md)**: Claude Code / AI agent instructions
-- **[CONTRIBUTING.md](CONTRIBUTING.md)**: Contribution guidelines
-- **[DFBU/docs/CHANGELOG.md](DFBU/docs/CHANGELOG.md)**: Version history
-- **[DFBU/docs/ARCHITECTURE.md](DFBU/docs/ARCHITECTURE.md)**: Architecture documentation
-- **[DFBU/docs/PROJECT-DOC.md](DFBU/docs/PROJECT-DOC.md)**: Technical documentation
-- **[docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md)**: Branch protection guide
+### Common Issues
 
----
+#### "Python 3.14+ required"
 
-## Known Issues
+Run `./scripts/setup.sh` again - it will install Python 3.14 via UV.
 
-- No support for network paths or remote destinations
-- Restore requires exact hostname match in backup directory structure
-- Limited symlink support (follow_symlinks=True only)
-- File size management for large backups (planned for v1.0)
+#### "Permission denied" when backing up
 
----
+DFBU can only backup files your user can read. System files in `/etc/` may need special handling.
 
-## Recent Features (v0.7.0-v0.9.0)
+#### Backup is unexpectedly large
 
-- **v0.9.0**: Comprehensive error handling with recovery dialogs
-- **v0.8.0**: Backup verification with size/hash integrity checks
-- **v0.7.0**: In-app help system with tooltips and help dialog
+Some dotfile directories (like `.cache/` or browser profiles) can be huge. Use the size warning feature to identify large files, and add patterns to `.dfbuignore` to exclude cache directories.
 
-## Planned Features (v1.0+)
+#### Restore button is grayed out
 
-- File size management and warnings for large backups
-- Enhanced restore with cross-hostname support
-- Network path support for remote destinations
-- Scheduled backups with timer automation
-- Multiple configuration profiles
-- Drag-and-drop file addition
-- Dark mode theme
+Select a valid backup directory first. Ensure the backup contains files for the current hostname.
+
+### Getting Help
+
+- Check the [full troubleshooting guide](docs/TROUBLESHOOTING.md)
+- Report issues on [GitHub](https://github.com/L3DigitalNet/DFBU-DotFiles-Backup-Utility/issues)
 
 ---
 
-## Development
+## For Developers
 
-### Branch Protection
+DFBU is built with Python 3.14 and PySide6 following the MVVM architectural pattern.
 
-**CRITICAL**: Always work on `testing` branch, never modify `main` directly.
+For development setup, code standards, architecture documentation, and contribution guidelines, see:
 
-```bash
-# Check current branch before modifications
-python .agents/branch_protection.py
-
-# Switch to testing branch if needed
-git checkout testing
-```
-
-See [docs/BRANCH_PROTECTION_QUICK.md](docs/BRANCH_PROTECTION_QUICK.md) for full details.
-
-### Code Standards
-
-- **Type Hints**: Mandatory on all functions, parameters, returns
-- **Docstrings**: Required for all public APIs (Google or NumPy style)
-- **MVVM Separation**: Strict layer boundaries (no Qt in Models)
-- **SOLID Principles**: Single Responsibility, Dependency Inversion
-- **Test Coverage**: Target 80%+ on critical paths
-- **PEP 8**: Python style guidelines
-
-### Setup for Development
-
-```bash
-# Install UV
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Create virtual environment
-uv venv
-
-# Activate
-source .venv/bin/activate
-
-# Install dependencies
-uv pip install -r DFBU/requirements.txt
-
-# Run type checking
-mypy DFBU/
-
-# Run tests with coverage
-pytest DFBU/tests/ --cov=DFBU --cov-report=html
-```
-
----
-
-## Contributing
-
-Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Pull Request Process
-
-1. Work on `testing` branch (never `main`)
-2. Add/update tests for new functionality
-3. Ensure 80%+ test coverage
-4. Run `mypy` and fix all type errors
-5. Update documentation
-6. Follow commit message conventions
-7. Submit PR to `testing` branch
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Development setup and guidelines
+- [DFBU/docs/ARCHITECTURE.md](DFBU/docs/ARCHITECTURE.md) - Technical architecture
+- [docs/INDEX.md](docs/INDEX.md) - Full documentation index
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
 ## Contact
 
 **Chris Purcell**
-Email: <chris@l3digital.net>
-GitHub: [@L3DigitalNet](https://github.com/L3DigitalNet)
+
+- Email: <chris@l3digital.net>
+- GitHub: [@L3DigitalNet](https://github.com/L3DigitalNet)
 
 ---
 
-## Acknowledgments
-
-- Python Software Foundation for Python 3.14
-- Qt Project for Qt framework
-- PySide6 maintainers for excellent Python bindings
-- pytest community for robust testing tools
-
----
-
-**Last Updated**: February 1, 2026
+Last Updated: February 2026

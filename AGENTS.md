@@ -413,7 +413,15 @@ class TestMyModel:
 
 ## Resources
 
-### Key Documentation
+### Project Documentation
+
+- [docs/INDEX.md](docs/INDEX.md) - Complete documentation index
+- [DFBU/docs/ARCHITECTURE.md](DFBU/docs/ARCHITECTURE.md) - Comprehensive architecture documentation
+- [DFBU/tests/README.md](DFBU/tests/README.md) - Testing documentation and fixtures
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Development setup and guidelines
+- [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) - Branch protection details
+
+### External Documentation
 
 - [PySide6 Documentation](https://doc.qt.io/qtforpython/)
 - [Pytest Documentation](https://docs.pytest.org/)

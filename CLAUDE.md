@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux desktop application for configuration file backup/restoration with a PySide6 GUI interface. Uses UV for package management.
 
-**Current Focus:** v0.9.0 Error Handling & Recovery — see `docs/plans/2026-01-31-production-readiness-design.md`
+**Current Version:** 1.0.0 — Production ready with full error handling and file size management
 
 ## Essential Commands
 
@@ -89,6 +89,9 @@ Components (implement Protocol interfaces):
 - `VerificationResultDict`: File verification result (path, status, size/hash match)
 - `OperationResultDict`: Structured operation result (status, completed, failed, warnings)
 - `PathResultDict`: Per-path result with error categorization and retry eligibility
+- `SizeReportDict`: Backup size analysis with threshold warnings (v1.0.0)
+
+For comprehensive architecture documentation, see [DFBU/docs/ARCHITECTURE.md](DFBU/docs/ARCHITECTURE.md).
 
 ## Code Standards
 
@@ -192,6 +195,8 @@ Test markers: `@pytest.mark.unit`, `@pytest.mark.integration`, `@pytest.mark.gui
 
 Fixtures in `DFBU/tests/conftest.py` provide `qapp`, `temp_config_path`, `temp_dotfile`, mock services.
 
+For comprehensive testing documentation, see [DFBU/tests/README.md](DFBU/tests/README.md).
+
 ## Key Files
 
 - `.github/copilot-instructions.md` - Detailed coding guidelines and SOLID patterns
@@ -204,3 +209,4 @@ Fixtures in `DFBU/tests/conftest.py` provide `qapp`, `temp_config_path`, `temp_d
 - `DFBU/core/validation.py` - Configuration validation rules
 - `DFBU/tests/conftest.py` - Pytest fixtures for Qt and file testing
 - `docs/plans/` - Implementation plans for production readiness features
+- `docs/INDEX.md` - Complete documentation index

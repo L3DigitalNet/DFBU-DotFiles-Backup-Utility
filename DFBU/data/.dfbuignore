@@ -1,0 +1,76 @@
+# DFBU Ignore File
+# Patterns to exclude from size analysis and backup operations
+# Uses gitignore-style pattern syntax
+
+# =============================================================================
+# Cache Directories
+# =============================================================================
+**/cache/
+**/.cache/
+**/Cache/
+**/CachedData/
+**/CachedExtensions/
+**/CachedExtensionVSIXs/
+
+# =============================================================================
+# Browser Data (typically large)
+# =============================================================================
+# Firefox
+**/.mozilla/firefox/*/cache2/
+**/.mozilla/firefox/*/storage/
+**/.mozilla/firefox/*/thumbnails/
+
+# Chrome/Chromium
+**/.config/google-chrome/*/Cache/
+**/.config/google-chrome/*/Code Cache/
+**/.config/chromium/*/Cache/
+**/.config/chromium/*/Code Cache/
+
+# =============================================================================
+# IDE and Editor Data
+# =============================================================================
+# VS Code / Cursor
+**/.config/Code/CachedData/
+**/.config/Code/CachedExtensions/
+**/.config/Code/Cache/
+**/.config/Cursor/CachedData/
+**/.config/Cursor/Cache/
+
+# JetBrains IDEs
+**/.local/share/JetBrains/*/caches/
+**/.cache/JetBrains/
+
+# =============================================================================
+# Database Files (often large and binary)
+# =============================================================================
+**/*.sqlite-shm
+**/*.sqlite-wal
+**/*.db-shm
+**/*.db-wal
+
+# Akonadi (KDE)
+**/.local/share/akonadi/
+
+# =============================================================================
+# Temporary Files
+# =============================================================================
+**/tmp/
+**/temp/
+**/.tmp/
+**/*.tmp
+**/*.temp
+
+# =============================================================================
+# Log Files
+# =============================================================================
+**/logs/
+**/*.log
+
+# =============================================================================
+# Binary and Compiled Files
+# =============================================================================
+**/*.so
+**/*.dll
+**/*.exe
+**/*.pyc
+**/__pycache__/

@@ -30,6 +30,8 @@ Classes:
     - DotFileDict: TypedDict for dotfile configuration (YAML format)
     - SessionDict: TypedDict for session-specific exclusions
     - LegacyDotFileDict: TypedDict for TOML migration support
+    - SizeItemDict: TypedDict for individual file/directory size entry
+    - SizeReportDict: TypedDict for backup size analysis report
 """
 
 from typing import TypedDict
@@ -47,11 +49,12 @@ class PathsDict(TypedDict):
     restore_backup_dir: str
 
 
-class OptionsDict(TypedDict):
+class OptionsDict(TypedDict, total=False):
     """
     Type definition for backup options configuration dictionary.
 
     Contains all backup operation settings and preferences.
+    All fields are optional (total=False) to support partial updates.
     """
 
     mirror: bool
@@ -66,6 +69,11 @@ class OptionsDict(TypedDict):
     max_restore_backups: int
     verify_after_backup: bool
     hash_verification: bool
+    # Size checking options (v1.0.0)
+    size_check_enabled: bool
+    size_warning_threshold_mb: int
+    size_alert_threshold_mb: int
+    size_critical_threshold_mb: int
 
 
 class SettingsDict(TypedDict):
@@ -247,3 +255,62 @@ class OperationResultDict(TypedDict):
     warnings: list[str]
     can_retry: list[str]  # List of path strings that can be retried
     timestamp: str
+
+
+# =============================================================================
+# File Size Management Types (v1.0.0)
+# =============================================================================
+
+
+class SizeItemDict(TypedDict):
+    """
+    Type definition for individual file/directory size entry.
+
+    Contains size information and threshold level for a single path.
+
+    Fields:
+        path: Absolute path to the file or directory
+        size_bytes: Total size in bytes
+        size_mb: Size in megabytes (for display)
+        level: Threshold level ("info", "warning", "alert", "critical")
+        is_dir: Whether the path is a directory
+        application: Name of the dotfile application this belongs to
+    """
+
+    path: str
+    size_bytes: int
+    size_mb: float
+    level: str  # "info", "warning", "alert", "critical"
+    is_dir: bool
+    application: str
+
+
+class SizeReportDict(TypedDict):
+    """
+    Type definition for backup size analysis report.
+
+    Contains overall size summary and individual large item details.
+
+    Fields:
+        timestamp: ISO format timestamp of analysis
+        total_files: Total number of files analyzed
+        total_size_bytes: Total size of all files in bytes
+        total_size_mb: Total size in megabytes (for display)
+        items_by_level: Count of items at each threshold level
+        large_items: List of items exceeding warning threshold
+        has_critical: Whether any item exceeds critical threshold
+        has_alert: Whether any item exceeds alert threshold
+        has_warning: Whether any item exceeds warning threshold
+        excluded_patterns: List of patterns from .dfbuignore that were applied
+    """
+
+    timestamp: str
+    total_files: int
+    total_size_bytes: int
+    total_size_mb: float
+    items_by_level: dict[str, int]  # {"warning": 3, "alert": 1, "critical": 0}
+    large_items: list[SizeItemDict]
+    has_critical: bool
+    has_alert: bool
+    has_warning: bool
+    excluded_patterns: list[str]
