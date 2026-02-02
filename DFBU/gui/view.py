@@ -193,7 +193,7 @@ class AddDotfileDialog(QDialog):
         ui_file_path = Path(__file__).parent / "designer" / "add_dotfile_dialog.ui"
 
         ui_file = QFile(str(ui_file_path))
-        if not ui_file.open(QFile.ReadOnly):
+        if not ui_file.open(QFile.OpenModeFlag.ReadOnly):
             raise RuntimeError(f"Cannot open UI file: {ui_file_path}")
 
         loader = QUiLoader()

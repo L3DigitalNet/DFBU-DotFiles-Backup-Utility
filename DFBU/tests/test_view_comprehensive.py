@@ -42,7 +42,7 @@ def qapp():
 
 
 @pytest.fixture
-def tmp_config(tmp_path: Path):
+def tmp_config(tmp_path: Path) -> Path:
     """Create temporary config file."""
     config_path = tmp_path / "config.toml"
     config_path.write_text(
@@ -60,7 +60,7 @@ archive = false
 
 
 @pytest.fixture
-def viewmodel_with_config(tmp_config: Path):
+def viewmodel_with_config(tmp_config: Path) -> DFBUViewModel:
     """Create ViewModel with valid config."""
     model = DFBUModel(tmp_config)
     model.load_config()

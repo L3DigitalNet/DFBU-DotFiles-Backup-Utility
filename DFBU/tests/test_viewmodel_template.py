@@ -38,11 +38,13 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol, cast
 from unittest.mock import MagicMock
 
 import pytest
 from PySide6.QtCore import QObject, Signal, Slot
+from pytest_mock import MockerFixture
+from pytestqt.qtbot import QtBot
 
 
 # Add parent directory to path for imports
@@ -107,7 +109,7 @@ class ExampleViewModel(QObject):
 # =============================================================================
 
 
-class DataServiceProtocol:
+class DataServiceProtocol(Protocol):
     """Protocol defining data service interface."""
 
     def fetch(self) -> list[str]:
@@ -135,7 +137,7 @@ class TestExampleViewModelBasics:
     """
 
     @pytest.fixture
-    def mock_data_service(self, mocker: pytest.MockFixture) -> MagicMock:
+    def mock_data_service(self, mocker: MockerFixture) -> MagicMock:
         """
         Create mock data service for testing.
 
@@ -145,7 +147,7 @@ class TestExampleViewModelBasics:
         Returns:
             Mock service object
         """
-        mock_service = mocker.Mock(spec=DataServiceProtocol)
+        mock_service: MagicMock = mocker.Mock(spec=DataServiceProtocol)
         mock_service.fetch.return_value = ["item1", "item2"]
         mock_service.save.return_value = True
         return mock_service
@@ -193,9 +195,9 @@ class TestExampleViewModelSignals:
     """
 
     @pytest.fixture
-    def mock_data_service(self, mocker: pytest.MockFixture) -> MagicMock:
+    def mock_data_service(self, mocker: MockerFixture) -> MagicMock:
         """Create mock data service."""
-        mock_service = mocker.Mock(spec=DataServiceProtocol)
+        mock_service: MagicMock = mocker.Mock(spec=DataServiceProtocol)
         mock_service.fetch.return_value = ["test1", "test2"]
         mock_service.save.return_value = True
         return mock_service
@@ -209,7 +211,7 @@ class TestExampleViewModelSignals:
         self,
         viewmodel: ExampleViewModel,
         mock_data_service: MagicMock,
-        qtbot: pytest.QtBot,
+        qtbot: QtBot,
     ) -> None:
         """Test that load_data emits data_loaded signal with correct data."""
         # Arrange
@@ -228,7 +230,7 @@ class TestExampleViewModelSignals:
         self,
         viewmodel: ExampleViewModel,
         mock_data_service: MagicMock,
-        qtbot: pytest.QtBot,
+        qtbot: QtBot,
     ) -> None:
         """Test that load_data emits error_occurred signal on exception."""
         # Arrange
@@ -246,7 +248,7 @@ class TestExampleViewModelSignals:
         self,
         viewmodel: ExampleViewModel,
         mock_data_service: MagicMock,
-        qtbot: pytest.QtBot,
+        qtbot: QtBot,
     ) -> None:
         """Test that add_item emits data_loaded signal after saving."""
         # Arrange
@@ -261,7 +263,7 @@ class TestExampleViewModelSignals:
         mock_data_service.save.assert_called_once()
 
     def test_add_empty_item_emits_error_signal(
-        self, viewmodel: ExampleViewModel, qtbot: pytest.QtBot
+        self, viewmodel: ExampleViewModel, qtbot: QtBot
     ) -> None:
         """Test that adding empty item emits error signal."""
         # Arrange
@@ -292,9 +294,9 @@ class TestExampleViewModelMockVerification:
     """
 
     @pytest.fixture
-    def mock_data_service(self, mocker: pytest.MockFixture) -> MagicMock:
+    def mock_data_service(self, mocker: MockerFixture) -> MagicMock:
         """Create mock data service."""
-        mock_service = mocker.Mock(spec=DataServiceProtocol)
+        mock_service: MagicMock = mocker.Mock(spec=DataServiceProtocol)
         mock_service.fetch.return_value = ["item1"]
         mock_service.save.return_value = True
         return mock_service
@@ -308,7 +310,7 @@ class TestExampleViewModelMockVerification:
         self,
         viewmodel: ExampleViewModel,
         mock_data_service: MagicMock,
-        qtbot: pytest.QtBot,
+        qtbot: QtBot,
     ) -> None:
         """Test that load_data calls service.fetch() exactly once."""
         # Arrange
@@ -325,7 +327,7 @@ class TestExampleViewModelMockVerification:
         self,
         viewmodel: ExampleViewModel,
         mock_data_service: MagicMock,
-        qtbot: pytest.QtBot,
+        qtbot: QtBot,
     ) -> None:
         """Test that add_item calls service.save() with updated data."""
         # Arrange
@@ -344,7 +346,7 @@ class TestExampleViewModelMockVerification:
         self,
         viewmodel: ExampleViewModel,
         mock_data_service: MagicMock,
-        qtbot: pytest.QtBot,
+        qtbot: QtBot,
     ) -> None:
         """Test that service.save() is NOT called when item is empty."""
         # Arrange
@@ -375,9 +377,9 @@ class TestExampleViewModelIntegration:
     """
 
     @pytest.fixture
-    def mock_data_service(self, mocker: pytest.MockFixture) -> MagicMock:
+    def mock_data_service(self, mocker: MockerFixture) -> MagicMock:
         """Create mock data service."""
-        mock_service = mocker.Mock(spec=DataServiceProtocol)
+        mock_service: MagicMock = mocker.Mock(spec=DataServiceProtocol)
         mock_service.fetch.return_value = []
         mock_service.save.return_value = True
         return mock_service
@@ -391,7 +393,7 @@ class TestExampleViewModelIntegration:
         self,
         viewmodel: ExampleViewModel,
         mock_data_service: MagicMock,
-        qtbot: pytest.QtBot,
+        qtbot: QtBot,
     ) -> None:
         """Test adding multiple items updates state correctly."""
         # Arrange

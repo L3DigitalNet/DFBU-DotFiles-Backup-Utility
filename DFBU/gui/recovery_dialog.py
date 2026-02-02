@@ -5,7 +5,7 @@ Loaded from Qt Designer .ui file.
 """
 
 from pathlib import Path
-from typing import Final
+from typing import Final, cast
 
 from PySide6.QtCore import QFile
 from PySide6.QtUiTools import QUiLoader
@@ -79,17 +79,27 @@ class RecoveryDialog(QDialog):
         self.resize(loaded.size())
 
         # Find widgets by object name
-        self.success_count_label: QLabel = loaded.findChild(QLabel, "successCountLabel")
-        self.failed_count_label: QLabel = loaded.findChild(QLabel, "failedCountLabel")
+        self.success_count_label: QLabel = loaded.findChild(
+            QLabel, "successCountLabel"
+        )  # type: ignore[assignment]
+        self.failed_count_label: QLabel = loaded.findChild(
+            QLabel, "failedCountLabel"
+        )  # type: ignore[assignment]
         self.failed_items_tree: QTreeWidget = loaded.findChild(
             QTreeWidget, "failedItemsTree"
-        )
-        self.retry_info_label: QLabel = loaded.findChild(QLabel, "retryInfoLabel")
+        )  # type: ignore[assignment]
+        self.retry_info_label: QLabel = loaded.findChild(
+            QLabel, "retryInfoLabel"
+        )  # type: ignore[assignment]
         self.retry_failed_btn: QPushButton = loaded.findChild(
             QPushButton, "retryFailedBtn"
-        )
-        self.continue_btn: QPushButton = loaded.findChild(QPushButton, "continueBtn")
-        self.abort_btn: QPushButton = loaded.findChild(QPushButton, "abortBtn")
+        )  # type: ignore[assignment]
+        self.continue_btn: QPushButton = loaded.findChild(
+            QPushButton, "continueBtn"
+        )  # type: ignore[assignment]
+        self.abort_btn: QPushButton = loaded.findChild(
+            QPushButton, "abortBtn"
+        )  # type: ignore[assignment]
 
         # Validate all required widgets were found
         if not all([
@@ -104,8 +114,9 @@ class RecoveryDialog(QDialog):
             raise RuntimeError(f"Missing required widgets in UI file: {UI_FILE}")
 
         # Transfer layout from loaded widget to this dialog
-        if loaded.layout():
-            self.setLayout(loaded.layout())
+        layout = loaded.layout()
+        if layout is not None:
+            self.setLayout(layout)
 
     def _populate_data(self) -> None:
         """Populate dialog with operation result data."""
@@ -169,4 +180,4 @@ class RecoveryDialog(QDialog):
         Returns:
             List of path strings from failed items where can_retry is True
         """
-        return self.operation_result["can_retry"].copy()
+        return cast(list[str], self.operation_result["can_retry"].copy())

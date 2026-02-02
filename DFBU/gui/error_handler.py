@@ -34,7 +34,7 @@ import errno
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Final
+from typing import Final, cast
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.common_types import OperationResultDict, PathResultDict
@@ -395,7 +395,7 @@ class ErrorHandler:
         Returns:
             List of path strings that might succeed on retry
         """
-        return result["can_retry"].copy()
+        return cast(list[str], result["can_retry"].copy())
 
     def _categorize_exception(self, exception: Exception) -> str:
         """

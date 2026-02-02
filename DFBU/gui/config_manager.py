@@ -41,7 +41,7 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 # Local imports - import from parent DFBU directory
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -350,9 +350,9 @@ class ConfigManager:
             List of path strings
         """
         if "paths" in dotfile:
-            return dotfile["paths"]
+            return cast(list[str], dotfile["paths"])
         if "path" in dotfile:
-            return [dotfile["path"]]
+            return [cast(str, dotfile["path"])]
         return []
 
     def save_config(self) -> tuple[bool, str]:

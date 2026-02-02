@@ -41,10 +41,10 @@ Functions:
 
 import time
 from pathlib import Path
-from typing import Any, Final
+from typing import Any, Final, cast
 
 # Local imports
-from core.common_types import DotFileDict, OperationResultDict, OptionsDict
+from core.common_types import DotFileDict, OperationResultDict, OptionsDict, SizeReportDict
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
 
 from gui.config_workers import ConfigLoadWorker, ConfigSaveWorker
@@ -196,7 +196,7 @@ class BackupWorker(QThread):
                 return True
 
             # Copy file with skip_identical optimization
-            success = self.model.copy_file(
+            success: bool = self.model.copy_file(
                 src_path, dest_path, create_parent=True, skip_identical=skip_identical
             )
 
@@ -760,6 +760,65 @@ class RestoreWorker(QThread):
         self.restore_finished.emit()
 
 
+class SizeScanWorker(QThread):
+    """
+    Worker thread for pre-backup size analysis to prevent UI blocking.
+
+    Analyzes dotfile sizes in background to warn about large files
+    before backup operations.
+
+    Attributes:
+        progress_updated: Signal emitted when progress percentage changes
+        scan_finished: Signal emitted when scan completes with SizeReportDict
+        error_occurred: Signal emitted when an error occurs
+        model: Reference to DFBUModel for data access
+
+    Public methods:
+        run: Main thread execution method
+        set_model: Set the model reference
+    """
+
+    # Signal definitions
+    progress_updated = Signal(int)  # progress percentage
+    scan_finished = Signal(object)  # SizeReportDict
+    error_occurred = Signal(str, str)  # context, error_message
+
+    def __init__(self) -> None:
+        """Initialize the SizeScanWorker."""
+        super().__init__()
+        self.model: DFBUModel | None = None
+
+    def set_model(self, model: DFBUModel) -> None:
+        """
+        Set the model reference.
+
+        Args:
+            model: DFBUModel instance
+        """
+        self.model = model
+
+    def run(self) -> None:
+        """Main thread execution method for size scanning."""
+        if not self.model:
+            return
+
+        try:
+            # Emit initial progress
+            self.progress_updated.emit(0)
+
+            # Run size analysis with progress callback
+            report = self.model.analyze_backup_size(
+                progress_callback=lambda pct: self.progress_updated.emit(pct)
+            )
+
+            # Emit completion with report
+            self.progress_updated.emit(100)
+            self.scan_finished.emit(report)
+
+        except Exception as e:
+            self.error_occurred.emit("Size Scan", str(e))
+
+
 class DFBUViewModel(QObject):
     """
     ViewModel mediating between Model and View in MVVM pattern.
@@ -817,6 +876,8 @@ class DFBUViewModel(QObject):
     dotfiles_updated = Signal(int)
     exclusions_changed = Signal()  # emitted when exclusion list changes
     recovery_dialog_requested = Signal(object)  # OperationResultDict
+    size_warning_requested = Signal(object)  # SizeReportDict
+    size_scan_progress = Signal(int)  # progress percentage during size scan
 
     SETTINGS_ORG: Final[str] = "L3DigitalNet"
     SETTINGS_APP: Final[str] = "dfbu_gui_settings"
@@ -834,8 +895,10 @@ class DFBUViewModel(QObject):
         self.restore_worker: RestoreWorker | None = None
         self.config_load_worker: ConfigLoadWorker | None = None
         self.config_save_worker: ConfigSaveWorker | None = None
+        self.size_scan_worker: SizeScanWorker | None = None
         self.settings: QSettings = QSettings(self.SETTINGS_ORG, self.SETTINGS_APP)
         self.restore_source_directory: Path | None = None
+        self._pending_backup_force_full: bool = False  # Track force_full for after scan
 
     def command_load_config(self) -> bool:
         """
@@ -925,7 +988,7 @@ class DFBUViewModel(QObject):
             return False
 
         # Type is already narrowed by function signature (bool | int | str)
-        return self.model.update_option(key, value)
+        return cast(bool, self.model.update_option(key, value))
 
     def command_update_path(self, path_type: str, value: str) -> bool:
         """
@@ -938,23 +1001,71 @@ class DFBUViewModel(QObject):
         Returns:
             True if path updated successfully
         """
-        return self.model.update_path(path_type, value)
+        return cast(bool, self.model.update_path(path_type, value))
 
     def command_start_backup(self, force_full_backup: bool = False) -> bool:
         """
         Command to start backup operation.
 
+        If size checking is enabled, performs size scan first and may show
+        warning dialog before proceeding.
+
         Args:
             force_full_backup: If True, disable skip_identical optimization to copy all files
 
         Returns:
-            True if backup started successfully
+            True if backup/scan started successfully
         """
         # Validate configuration loaded
         if self.model.get_dotfile_count() == 0:
             self.error_occurred.emit("Backup", "No configuration loaded")
             return False
 
+        # Store for use after size scan completes
+        self._pending_backup_force_full = force_full_backup
+
+        # Check if size checking is enabled
+        if self.model.is_size_check_enabled():
+            # Start size scan first
+            return self._start_size_scan()
+        else:
+            # Skip size check, start backup directly
+            return self._start_backup_directly(force_full_backup)
+
+    def _start_size_scan(self) -> bool:
+        """
+        Start size scanning in background thread.
+
+        Returns:
+            True if scan started successfully
+        """
+        # Don't start new scan if one is already in progress
+        if self.size_scan_worker is not None and self.size_scan_worker.isRunning():
+            return False
+
+        # Create and configure worker
+        self.size_scan_worker = SizeScanWorker()
+        self.size_scan_worker.set_model(self.model)
+
+        # Connect worker signals
+        self.size_scan_worker.progress_updated.connect(self._on_size_scan_progress)
+        self.size_scan_worker.scan_finished.connect(self._on_size_scan_finished)
+        self.size_scan_worker.error_occurred.connect(self._on_size_scan_error)
+
+        # Start worker thread
+        self.size_scan_worker.start()
+        return True
+
+    def _start_backup_directly(self, force_full_backup: bool) -> bool:
+        """
+        Start backup operation directly without size checking.
+
+        Args:
+            force_full_backup: If True, disable skip_identical optimization
+
+        Returns:
+            True if backup started successfully
+        """
         # Create and configure worker
         self.backup_worker = BackupWorker()
         self.backup_worker.set_model(self.model)
@@ -976,6 +1087,67 @@ class DFBUViewModel(QObject):
         # Start worker thread
         self.backup_worker.start()
         return True
+
+    def command_proceed_after_size_warning(self) -> bool:
+        """
+        Continue with backup after user acknowledges size warning.
+
+        Called by View when user clicks "Continue Anyway" in size warning dialog.
+
+        Returns:
+            True if backup started successfully
+        """
+        return self._start_backup_directly(self._pending_backup_force_full)
+
+    def _on_size_scan_progress(self, progress: int) -> None:
+        """
+        Handle size scan progress updates.
+
+        Args:
+            progress: Progress percentage (0-100)
+        """
+        self.size_scan_progress.emit(progress)
+
+    def _on_size_scan_error(self, context: str, error_message: str) -> None:
+        """
+        Handle size scan worker errors with cleanup.
+
+        Args:
+            context: Error context
+            error_message: Error message
+        """
+        # Clean up the worker
+        if self.size_scan_worker is not None:
+            self.size_scan_worker.wait()
+            self.size_scan_worker.deleteLater()
+            self.size_scan_worker = None
+
+        # Forward error to standard handler
+        self.error_occurred.emit(context, error_message)
+
+    def _on_size_scan_finished(self, report: SizeReportDict) -> None:
+        """
+        Handle size scan completion.
+
+        If large files detected, emit signal for View to show warning dialog.
+        Otherwise, proceed directly to backup.
+
+        Args:
+            report: Size analysis report
+        """
+        # Clean up the worker to free resources and allow subsequent scans
+        if self.size_scan_worker is not None:
+            self.size_scan_worker.wait()  # Ensure thread has fully stopped
+            self.size_scan_worker.deleteLater()  # Schedule Qt object cleanup
+            self.size_scan_worker = None
+
+        # Check if any thresholds exceeded
+        if report["has_warning"] or report["has_alert"] or report["has_critical"]:
+            # Emit signal for View to show warning dialog
+            self.size_warning_requested.emit(report)
+        else:
+            # No warnings, proceed directly to backup
+            self._start_backup_directly(self._pending_backup_force_full)
 
     def command_start_restore(self) -> bool:
         """
@@ -1040,7 +1212,7 @@ class DFBUViewModel(QObject):
         Returns:
             True if dotfile was added successfully
         """
-        success = self.model.add_dotfile(
+        success: bool = self.model.add_dotfile(
             category, application, description, paths, enabled
         )
 
@@ -1074,7 +1246,7 @@ class DFBUViewModel(QObject):
         Returns:
             True if dotfile was updated successfully
         """
-        success = self.model.update_dotfile(
+        success: bool = self.model.update_dotfile(
             index, category, application, description, paths, enabled
         )
 
@@ -1095,7 +1267,7 @@ class DFBUViewModel(QObject):
         Returns:
             True if dotfile was removed successfully
         """
-        success = self.model.remove_dotfile(index)
+        success: bool = self.model.remove_dotfile(index)
 
         if success:
             # Emit signal to update UI
@@ -1117,7 +1289,7 @@ class DFBUViewModel(QObject):
         # Note: Don't emit dotfiles_updated here - the list hasn't changed,
         # only the enabled status of one entry. The View will update locally.
 
-        return self.model.toggle_dotfile_enabled(index)
+        return cast(bool, self.model.toggle_dotfile_enabled(index))
 
     def command_toggle_exclusion(self, application: str) -> None:
         """Toggle exclusion status for a dotfile.
@@ -1138,7 +1310,7 @@ class DFBUViewModel(QObject):
         file_count = self.model.get_last_backup_file_count()
         if file_count == 0:
             return None
-        return self.model.verify_last_backup()
+        return cast(str | None, self.model.verify_last_backup())
 
     def get_exclusions(self) -> list[str]:
         """Get current exclusion list.
@@ -1146,7 +1318,7 @@ class DFBUViewModel(QObject):
         Returns:
             List of excluded application names
         """
-        return self.model.get_config_manager().get_exclusions()
+        return cast(list[str], self.model.get_config_manager().get_exclusions())
 
     def is_excluded(self, application: str) -> bool:
         """Check if application is excluded.
@@ -1157,7 +1329,7 @@ class DFBUViewModel(QObject):
         Returns:
             True if excluded
         """
-        return self.model.get_config_manager().is_excluded(application)
+        return cast(bool, self.model.get_config_manager().is_excluded(application))
 
     def get_dotfile_count(self) -> int:
         """
@@ -1166,7 +1338,7 @@ class DFBUViewModel(QObject):
         Returns:
             Dotfile count
         """
-        return self.model.get_dotfile_count()
+        return cast(int, self.model.get_dotfile_count())
 
     def get_dotfile_list(self) -> list[DotFileDict]:
         """
@@ -1175,7 +1347,7 @@ class DFBUViewModel(QObject):
         Returns:
             List of dotfile dictionaries
         """
-        return self.model.dotfiles.copy()
+        return cast(list[DotFileDict], self.model.dotfiles.copy())
 
     def get_dotfile_validation(self) -> dict[int, tuple[bool, bool, str]]:
         """
@@ -1184,7 +1356,7 @@ class DFBUViewModel(QObject):
         Returns:
             Dict mapping index to (exists, is_dir, type_str) tuple
         """
-        return self.model.validate_dotfile_paths()
+        return cast(dict[int, tuple[bool, bool, str]], self.model.validate_dotfile_paths())
 
     def get_dotfile_sizes(self) -> dict[int, int]:
         """
@@ -1193,7 +1365,7 @@ class DFBUViewModel(QObject):
         Returns:
             Dict mapping index to size in bytes
         """
-        return self.model.get_dotfile_sizes()
+        return cast(dict[int, int], self.model.get_dotfile_sizes())
 
     def get_unique_categories(self) -> list[str]:
         """

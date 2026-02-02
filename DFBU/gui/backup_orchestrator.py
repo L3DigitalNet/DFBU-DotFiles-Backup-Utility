@@ -35,12 +35,14 @@ Functions:
     None
 """
 
+from __future__ import annotations
+
 import logging
 import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 
 # Setup logger for this module
@@ -299,7 +301,7 @@ class BackupOrchestrator:
             return None
 
         # Create compressed archive with timestamp
-        archive_path = self.file_ops.create_archive(
+        archive_path: Path | None = self.file_ops.create_archive(
             items_to_archive, self.archive_base_dir, options["hostname_subdir"]
         )
 
@@ -468,7 +470,7 @@ class BackupOrchestrator:
             return True
 
         # Perform file copy operation with metadata preservation
-        success = self.file_ops.copy_file(
+        success: bool = self.file_ops.copy_file(
             src_path, dest_path, create_parent=True, skip_identical=skip_identical
         )
 

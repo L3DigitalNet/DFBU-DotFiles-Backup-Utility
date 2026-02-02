@@ -122,7 +122,7 @@ class ConfigMigrator:
         self._save_yaml(dotfiles, self._output_dir / "dotfiles.yaml")
 
         # Create empty session
-        session = {"excluded": []}
+        session: dict[str, list[str]] = {"excluded": []}
         self._save_yaml(session, self._output_dir / "session.yaml")
 
     def _load_toml(self) -> dict[str, Any]:

@@ -6,6 +6,7 @@ Tests NumericTableWidgetItem custom sorting and dotfile table operations.
 
 import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 from PySide6.QtCore import Qt
@@ -21,7 +22,7 @@ from viewmodel import DFBUViewModel
 
 def create_yaml_config(
     config_dir: Path,
-    dotfiles: list[dict],
+    dotfiles: list[dict[str, Any]],
     exclusions: list[str] | None = None
 ) -> Path:
     """

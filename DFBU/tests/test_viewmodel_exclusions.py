@@ -41,7 +41,7 @@ def mock_config_manager(mocker: Any) -> Mock:
     Returns:
         Mock: Configured mock ConfigManager
     """
-    mock_cm = mocker.Mock()
+    mock_cm: Mock = mocker.Mock()
     mock_cm.toggle_exclusion = mocker.Mock()
     mock_cm.get_exclusions = mocker.Mock(return_value=["Bash", "Vim"])
     mock_cm.is_excluded = mocker.Mock(return_value=True)
@@ -60,7 +60,7 @@ def mock_model(mocker: Any, mock_config_manager: Mock) -> Mock:
     Returns:
         Mock: Configured mock DFBUModel
     """
-    mock_m = mocker.Mock()
+    mock_m: Mock = mocker.Mock()
     mock_m.get_config_manager.return_value = mock_config_manager
     return mock_m
 

@@ -6,6 +6,7 @@ Tests BackupWorker and RestoreWorker signal emissions and cleanup.
 
 import sys
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -19,7 +20,7 @@ from model import DFBUModel
 from viewmodel import DFBUViewModel
 
 
-def create_yaml_config(config_dir: Path, dotfiles: list[dict] | None = None) -> Path:
+def create_yaml_config(config_dir: Path, dotfiles: list[dict[str, Any]] | None = None) -> Path:
     """Create YAML config files for testing."""
     config_dir.mkdir(parents=True, exist_ok=True)
 
