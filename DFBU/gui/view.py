@@ -1327,6 +1327,27 @@ class MainWindow(QMainWindow):
         # Enable max restore backups spinbox only if pre-restore backup is enabled
         self.config_max_restore_spinbox.setEnabled(options["pre_restore_backup"])
 
+        # Verification options (v1.1.0)
+        self.config_verify_checkbox.setChecked(options.get("verify_after_backup", False))
+        self.config_hash_checkbox.setChecked(options.get("hash_verification", False))
+
+        # Size management options (v1.1.0)
+        size_check_enabled = options.get("size_check_enabled", True)
+        self.config_size_check_checkbox.setChecked(size_check_enabled)
+        self.config_size_warning_spinbox.setValue(
+            options.get("size_warning_threshold_mb", 10)
+        )
+        self.config_size_alert_spinbox.setValue(
+            options.get("size_alert_threshold_mb", 100)
+        )
+        self.config_size_critical_spinbox.setValue(
+            options.get("size_critical_threshold_mb", 1024)
+        )
+        # Enable threshold spinboxes only if size check is enabled
+        self.config_size_warning_spinbox.setEnabled(size_check_enabled)
+        self.config_size_alert_spinbox.setEnabled(size_check_enabled)
+        self.config_size_critical_spinbox.setEnabled(size_check_enabled)
+
         # Enable save button since config is loaded
         self.save_config_btn.setEnabled(True)
 
