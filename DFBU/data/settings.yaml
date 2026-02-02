@@ -1,6 +1,6 @@
 paths:
-  mirror_dir: ~/TEST
-  archive_dir: ~/TEST
+  mirror_dir: ~/GitHub/dotfiles
+  archive_dir: ~/pCloudDrive/Backups/Dotfiles
   restore_backup_dir: ~/.local/share/dfbu/restore-backups
 options:
   mirror: true
@@ -13,8 +13,8 @@ options:
   max_archives: 5
   pre_restore_backup: true
   max_restore_backups: 5
-  verify_after_backup: false
-  hash_verification: false
+  verify_after_backup: true
+  hash_verification: true
   size_check_enabled: true
   size_warning_threshold_mb: 10
   size_alert_threshold_mb: 100
