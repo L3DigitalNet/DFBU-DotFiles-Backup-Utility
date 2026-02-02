@@ -148,15 +148,25 @@ disallow_untyped_defs = true
 disallow_any_unimported = false
 no_implicit_optional = true
 warn_redundant_casts = true
-warn_unused_ignores = true
+warn_unused_ignores = false  # Many type: ignore comments are Qt-related
 warn_no_return = true
 check_untyped_defs = true
 strict_equality = true
 strict = true
+# Fix duplicate module detection caused by sys.path manipulation
+# Run mypy from project root to ensure consistent module paths
+explicit_package_bases = true
+# Ignore missing imports from internal modules that use sys.path manipulation
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-# Test files can be less strict
-module = "tests.*"
+# External libraries without stubs
+module = ["PySide6.*", "tomli_w", "ruamel.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Test files can be less strict - they use sys.path manipulation
+module = ["DFBU.tests.*", "tests.*"]
 disallow_untyped_defs = false
 
 [dependency-groups]
