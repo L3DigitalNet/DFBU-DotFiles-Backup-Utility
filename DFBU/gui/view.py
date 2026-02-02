@@ -799,6 +799,17 @@ class MainWindow(QMainWindow):
         self.config_restore_path_edit.textChanged.connect(self._on_config_changed)
         self.browse_restore_backup_btn.clicked.connect(self._on_browse_restore_backup_dir)
         self.save_config_btn.clicked.connect(self._on_save_config)
+        # Verification options signal connections (v1.1.0)
+        self.config_verify_checkbox.stateChanged.connect(self._on_config_changed)
+        self.config_hash_checkbox.stateChanged.connect(self._on_config_changed)
+        # Size management signal connections (v1.1.0)
+        self.config_size_check_checkbox.stateChanged.connect(
+            self._on_size_check_checkbox_changed
+        )
+        self.config_size_check_checkbox.stateChanged.connect(self._on_config_changed)
+        self.config_size_warning_spinbox.valueChanged.connect(self._on_config_changed)
+        self.config_size_alert_spinbox.valueChanged.connect(self._on_config_changed)
+        self.config_size_critical_spinbox.valueChanged.connect(self._on_config_changed)
 
         # Logs tab connections
         self.verify_backup_btn.clicked.connect(self._on_verify_backup)
@@ -1448,6 +1459,14 @@ class MainWindow(QMainWindow):
         """Handle pre-restore backup checkbox state change."""
         # Enable/disable max restore backups spinbox based on pre-restore checkbox
         self.config_max_restore_spinbox.setEnabled(bool(state))
+
+    def _on_size_check_checkbox_changed(self, state: int) -> None:
+        """Handle size check enabled checkbox state change."""
+        # Enable/disable threshold spinboxes based on size check checkbox
+        enabled = bool(state)
+        self.config_size_warning_spinbox.setEnabled(enabled)
+        self.config_size_alert_spinbox.setEnabled(enabled)
+        self.config_size_critical_spinbox.setEnabled(enabled)
 
     def _on_browse_restore_backup_dir(self) -> None:
         """Handle browse restore backup directory button click."""
