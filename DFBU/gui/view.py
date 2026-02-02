@@ -42,7 +42,7 @@ from pathlib import Path
 from typing import Any, Final
 
 # Local imports
-from core.common_types import DotFileDict, OperationResultDict
+from core.common_types import DotFileDict, OperationResultDict, SizeReportDict
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtGui import QAction, QCloseEvent, QColor, QTextCursor
 from PySide6.QtUiTools import QUiLoader
@@ -71,6 +71,7 @@ from PySide6.QtWidgets import (
 from gui.constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
 from gui.help_dialog import HelpDialog
 from gui.recovery_dialog import RecoveryDialog
+from gui.size_warning_dialog import SizeWarningDialog
 from gui.input_validation import InputValidator
 from gui.tooltip_manager import TooltipManager
 from gui.viewmodel import DFBUViewModel
@@ -680,6 +681,26 @@ class MainWindow(QMainWindow):
         self.save_config_btn: QPushButton = ui_widget.findChild(
             QPushButton, "saveConfigButton"
         )  # type: ignore[assignment]
+        # Verification options widgets (v1.1.0)
+        self.config_verify_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "config_verify_checkbox"
+        )  # type: ignore[assignment]
+        self.config_hash_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "config_hash_checkbox"
+        )  # type: ignore[assignment]
+        # Size management widgets (v1.1.0)
+        self.config_size_check_checkbox: QCheckBox = ui_widget.findChild(
+            QCheckBox, "config_size_check_checkbox"
+        )  # type: ignore[assignment]
+        self.config_size_warning_spinbox: QSpinBox = ui_widget.findChild(
+            QSpinBox, "config_size_warning_spinbox"
+        )  # type: ignore[assignment]
+        self.config_size_alert_spinbox: QSpinBox = ui_widget.findChild(
+            QSpinBox, "config_size_alert_spinbox"
+        )  # type: ignore[assignment]
+        self.config_size_critical_spinbox: QSpinBox = ui_widget.findChild(
+            QSpinBox, "config_size_critical_spinbox"
+        )  # type: ignore[assignment]
 
     def _find_logs_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to Logs tab widgets."""
@@ -822,6 +843,8 @@ class MainWindow(QMainWindow):
         self.viewmodel.dotfiles_updated.connect(self._on_dotfiles_updated)
         self.viewmodel.exclusions_changed.connect(self._on_exclusions_changed)
         self.viewmodel.recovery_dialog_requested.connect(self._show_recovery_dialog)
+        self.viewmodel.size_warning_requested.connect(self._show_size_warning_dialog)
+        self.viewmodel.size_scan_progress.connect(self._on_size_scan_progress)
 
     def _load_settings(self) -> None:
         """Load persisted settings."""
@@ -1351,6 +1374,47 @@ class MainWindow(QMainWindow):
             self.operation_log.append("⊘ Skipping failed items, operation complete.\n")
         else:  # abort
             self.operation_log.append("✗ Operation aborted by user.\n")
+
+    def _show_size_warning_dialog(self, report: SizeReportDict) -> None:
+        """Show size warning dialog before backup when large files detected.
+
+        Args:
+            report: Size analysis report with large files
+        """
+        try:
+            dialog = SizeWarningDialog(report, parent=self)
+            dialog.exec()
+        except RuntimeError as e:
+            self.operation_log.append(f"✗ Size warning dialog error: {e}\n")
+            self._reset_backup_ui()
+            return
+
+        if dialog.action == "continue":
+            # User acknowledged warning, proceed with backup
+            self.operation_log.append(
+                f"⚠️ Size warning acknowledged: {report['total_size_mb']:.1f} MB total\n"
+            )
+            self.viewmodel.command_proceed_after_size_warning()
+        else:  # cancel
+            self.operation_log.append("✗ Backup cancelled due to size concerns.\n")
+            self._reset_backup_ui()
+
+    def _on_size_scan_progress(self, progress: int) -> None:
+        """Handle size scan progress updates.
+
+        Args:
+            progress: Progress percentage (0-100)
+        """
+        # Update status bar to show scanning progress
+        self.status_bar.showMessage(f"Analyzing file sizes... {progress}%")
+        if progress >= 100:
+            self.status_bar.showMessage("Size analysis complete", STATUS_MESSAGE_TIMEOUT_MS)
+
+    def _reset_backup_ui(self) -> None:
+        """Reset UI state after backup cancellation."""
+        self.progress_bar.setVisible(False)
+        self.backup_btn.setEnabled(True)
+        self.restore_btn.setEnabled(True)
 
     def _on_browse_mirror_dir(self) -> None:
         """Handle browse mirror directory button click."""
