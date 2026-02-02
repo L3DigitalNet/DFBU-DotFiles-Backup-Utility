@@ -217,7 +217,6 @@ __marimo__/
 # DFBU config backups and migration artifacts
 DFBU/data/.dfbu-config.toml.backups/
 DFBU/data/.settings.yaml.backups/
-DFBU/data/library.yaml
 *.pre-migration
 *.bak.*
 
