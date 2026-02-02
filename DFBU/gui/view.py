@@ -1537,6 +1537,26 @@ class MainWindow(QMainWindow):
             self.viewmodel.command_update_option(
                 "max_restore_backups", self.config_max_restore_spinbox.value()
             )
+            # Verification options (v1.1.0)
+            self.viewmodel.command_update_option(
+                "verify_after_backup", self.config_verify_checkbox.isChecked()
+            )
+            self.viewmodel.command_update_option(
+                "hash_verification", self.config_hash_checkbox.isChecked()
+            )
+            # Size management options (v1.1.0)
+            self.viewmodel.command_update_option(
+                "size_check_enabled", self.config_size_check_checkbox.isChecked()
+            )
+            self.viewmodel.command_update_option(
+                "size_warning_threshold_mb", self.config_size_warning_spinbox.value()
+            )
+            self.viewmodel.command_update_option(
+                "size_alert_threshold_mb", self.config_size_alert_spinbox.value()
+            )
+            self.viewmodel.command_update_option(
+                "size_critical_threshold_mb", self.config_size_critical_spinbox.value()
+            )
 
             # Update paths
             self.viewmodel.command_update_path(
