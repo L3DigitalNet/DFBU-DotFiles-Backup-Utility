@@ -223,6 +223,8 @@ DFBU/data/.settings.yaml.backups/
 # AppImage build artifacts
 *.AppImage
 appimagetool-*
+# Allow release AppImages in DFBU directory
+!DFBU/*.AppImage
 
 # Claude Code local overrides (personal settings, not shared)
 .claude.local.md
