@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=DFBU
+GenericName=Dotfiles Backup Utility
+Comment=Backup and restore your Linux configuration files
+Exec=dfbu
+Icon=com.l3digital.dfbu
+Terminal=false
+Categories=Utility;System;Archiving;
+Keywords=dotfiles;backup;restore;configuration;
+StartupNotify=true
+StartupWMClass=dfbu
