@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.l3digital.dfbu</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>DFBU</name>
+  <summary>Dotfiles Backup Utility for Linux</summary>
+  <description>
+    <p>
+      DFBU is a desktop application for comprehensive backup and restoration of
+      Linux configuration files (dotfiles). Built with a modern MVVM architecture,
+      it provides an intuitive graphical interface for managing your configuration
+      file backups.
+    </p>
+    <p>Features include:</p>
+    <ul>
+      <li>Mirror and compressed archive backup modes with rotation</li>
+      <li>Interactive dotfile management with tags and descriptions</li>
+      <li>Backup verification with size and optional SHA-256 hash checking</li>
+      <li>Pre-restore safety backups for safe restoration</li>
+      <li>File size analysis with configurable thresholds</li>
+      <li>Hostname and date-based backup organization</li>
+    </ul>
+  </description>
+  <url type="homepage">https://github.com/L3DigitalNet/DFBU-DotFiles-Backup-Utility</url>
+  <url type="bugtracker">https://github.com/L3DigitalNet/DFBU-DotFiles-Backup-Utility/issues</url>
+  <developer_name>Chris Purcell</developer_name>
+  <launchable type="desktop-id">com.l3digital.dfbu.desktop</launchable>
+  <provides>
+    <binary>dfbu</binary>
+  </provides>
+  <releases>
+    <release version="1.0.0" date="2026-02-01">
+      <description>
+        <p>Production release with full error handling and file size management.</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1" />
+  <categories>
+    <category>Utility</category>
+    <category>System</category>
+  </categories>
+</component>
