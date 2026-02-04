@@ -295,7 +295,7 @@ class TestMainWindow:
     def test_main_window_initialization(self, qapp, viewmodel_with_config):
         """Test MainWindow initializes with ViewModel."""
         # Act
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Assert
         assert window.viewmodel == viewmodel_with_config
@@ -307,7 +307,7 @@ class TestMainWindow:
         """Test window connects to ViewModel signals."""
         # Arrange - patch before window creation to intercept connection
         with patch.object(MainWindow, "_on_config_loaded") as mock_handler:
-            window = MainWindow(viewmodel_with_config, "1.0.0")
+            window = MainWindow(viewmodel_with_config, "1.1.0")
 
             # Act - emit signal from viewmodel
             viewmodel_with_config.config_loaded.emit(5)
@@ -318,7 +318,7 @@ class TestMainWindow:
     def test_window_saves_geometry_on_close(self, qapp, viewmodel_with_config):
         """Test window saves geometry and state on close."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Mock the viewmodel save_settings method
         with patch.object(viewmodel_with_config, "save_settings") as mock_save_settings:
@@ -344,7 +344,7 @@ class TestMainWindow:
         viewmodel.save_settings(geometry=test_geometry)
 
         # Act
-        window = MainWindow(viewmodel, "1.0.0")
+        window = MainWindow(viewmodel, "1.1.0")
 
         # Assert - geometry should be restored (we can't easily verify the exact bytes)
         assert window is not None
@@ -356,7 +356,7 @@ class TestMainWindowActions:
     def test_save_config_action_triggers_command(self, qapp, viewmodel_with_config):
         """Test save config menu action triggers ViewModel command."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Mock the save command and confirmation dialog
         with patch.object(viewmodel_with_config, "command_save_config") as mock_command:
@@ -374,7 +374,7 @@ class TestMainWindowActions:
     def test_add_dotfile_opens_dialog(self, qapp, viewmodel_with_config):
         """Test add dotfile button opens AddDotfileDialog."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Mock dialog
         with patch("gui.view.AddDotfileDialog") as mock_dialog_class:
@@ -392,7 +392,7 @@ class TestMainWindowActions:
     def test_update_dotfile_requires_selection(self, qapp, viewmodel_with_config):
         """Test update dotfile returns early when no selection."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Mock the command to verify it's not called
         with patch.object(
@@ -407,7 +407,7 @@ class TestMainWindowActions:
     def test_remove_dotfile_requires_selection(self, qapp, viewmodel_with_config):
         """Test remove dotfile returns early when no selection."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Mock the command to verify it's not called
         with patch.object(
@@ -426,7 +426,7 @@ class TestMainWindowBackupRestore:
     def test_start_backup_creates_worker(self, qapp, viewmodel_with_config):
         """Test starting backup creates BackupWorker."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Mock get_dotfile_count to return > 0
         with patch.object(viewmodel_with_config, "get_dotfile_count", return_value=1):
@@ -447,7 +447,7 @@ class TestMainWindowBackupRestore:
     def test_start_restore_requires_directory(self, qapp, viewmodel_with_config):
         """Test starting restore requires backup directory selection."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Mock directory dialog - user cancels
         with patch("PySide6.QtWidgets.QFileDialog.getExistingDirectory") as mock_dialog:
@@ -465,7 +465,7 @@ class TestMainWindowBackupRestore:
     def test_progress_updated_displays_correctly(self, qapp, viewmodel_with_config):
         """Test progress updates display in UI."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Act
         window._on_progress_updated(50)
@@ -476,7 +476,7 @@ class TestMainWindowBackupRestore:
     def test_operation_finished_resets_ui(self, qapp, viewmodel_with_config):
         """Test operation finished resets progress and enables buttons."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Simulate operation in progress
         window.progress_bar.setValue(50)
@@ -514,7 +514,7 @@ class TestMainWindowDotfileDisplay:
             True,
         )
 
-        window = MainWindow(viewmodel, "1.0.0")
+        window = MainWindow(viewmodel, "1.1.0")
 
         # Act
         window._update_dotfile_table()
@@ -536,7 +536,7 @@ class TestMainWindowDotfileDisplay:
             "TestCat", "TestApp", "Test", [str(test_file)], True
         )
 
-        window = MainWindow(viewmodel, "1.0.0")
+        window = MainWindow(viewmodel, "1.1.0")
 
         # Act
         window._update_dotfile_table()
@@ -551,7 +551,7 @@ class TestMainWindowOptionsTab:
     def test_options_update_from_viewmodel(self, qapp, viewmodel_with_config):
         """Test options tab reflects ViewModel state."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Act
         window._update_options_display()
@@ -563,7 +563,7 @@ class TestMainWindowOptionsTab:
     def test_save_options_updates_viewmodel(self, qapp, viewmodel_with_config):
         """Test saving options updates ViewModel."""
         # Arrange
-        window = MainWindow(viewmodel_with_config, "1.0.0")
+        window = MainWindow(viewmodel_with_config, "1.1.0")
 
         # Mock update option command and confirmation dialog
         with patch.object(
