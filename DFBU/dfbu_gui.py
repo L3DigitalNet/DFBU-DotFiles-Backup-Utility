@@ -63,7 +63,9 @@ from typing import Final
 
 # Add DFBU directory to Python path for module imports BEFORE importing local modules
 # This ensures 'gui' is findable as a package whether running directly or via python -m DFBU
-sys.path.insert(0, str(Path(__file__).parent))
+# When frozen by PyInstaller, the import hook handles module resolution automatically
+if not getattr(sys, 'frozen', False):
+    sys.path.insert(0, str(Path(__file__).parent))
 
 # Import local modules after path is set
 from gui.logging_config import get_logger, setup_default_logging
@@ -88,11 +90,10 @@ logger = get_logger(__name__)
 __version__: Final[str] = "1.0.0"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
-# Use relative path for portability - resolve to absolute at runtime
 # Points to directory containing settings.yaml, dotfiles.yaml, session.yaml
-DEFAULT_CONFIG_PATH: Final[Path] = (
-    Path(__file__).parent / "data"
-).resolve()
+# When frozen by PyInstaller, data files are bundled under sys._MEIPASS
+_data_base = Path(sys._MEIPASS) if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS') else Path(__file__).parent
+DEFAULT_CONFIG_PATH: Final[Path] = (_data_base / "data").resolve()
 
 
 class Application:

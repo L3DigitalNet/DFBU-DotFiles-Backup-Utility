@@ -200,4 +200,5 @@ dev = [
     "pytest-qt>=4.0.0",
     "pytest-mock>=3.0.0",
     "mypy>=1.19.1",
+    "pyinstaller>=6.18.0",
 ]
