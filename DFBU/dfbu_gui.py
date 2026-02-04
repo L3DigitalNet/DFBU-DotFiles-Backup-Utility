@@ -61,8 +61,9 @@ from pathlib import Path
 from typing import Final
 
 
-# Add gui directory to Python path for module imports BEFORE importing local modules
-sys.path.insert(0, str(Path(__file__).parent / "gui"))
+# Add DFBU directory to Python path for module imports BEFORE importing local modules
+# This ensures 'gui' is findable as a package whether running directly or via python -m DFBU
+sys.path.insert(0, str(Path(__file__).parent))
 
 # Import local modules after path is set
 from gui.logging_config import get_logger, setup_default_logging
