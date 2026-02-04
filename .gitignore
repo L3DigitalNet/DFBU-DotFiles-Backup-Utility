@@ -220,6 +220,10 @@ DFBU/data/.settings.yaml.backups/
 *.pre-migration
 *.bak.*
 
+# AppImage build artifacts
+*.AppImage
+appimagetool-*
+
 # Claude Code local overrides (personal settings, not shared)
 .claude.local.md
 .claude/
