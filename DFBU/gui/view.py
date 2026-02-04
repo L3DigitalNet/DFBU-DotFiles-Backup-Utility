@@ -44,13 +44,14 @@ from typing import Any, Final
 # Local imports
 from core.common_types import LegacyDotFileDict, OperationResultDict, SizeReportDict
 from PySide6.QtCore import QFile, Qt
-from PySide6.QtGui import QAction, QCloseEvent, QColor, QTextCursor
+from PySide6.QtGui import QAction, QCloseEvent, QColor, QPixmap, QTextCursor
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
+    QGroupBox,
     QHeaderView,
     QLabel,
     QLineEdit,
@@ -60,14 +61,18 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QSpinBox,
+    QStackedWidget,
     QTableWidget,
     QTableWidgetItem,
     QTabWidget,
     QTextEdit,
+    QTreeWidget,
+    QTreeWidgetItem,
     QWidget,
 )
 
 from gui.constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
+from gui.theme import DFBUColors
 from gui.help_dialog import HelpDialog
 from gui.input_validation import InputValidator
 from gui.recovery_dialog import RecoveryDialog
@@ -476,6 +481,9 @@ class MainWindow(QMainWindow):
         self._skipped_count: int = 0
         self._last_logged_skip_count: int = 0
 
+        # Track log entries for filtering
+        self._log_entries: list[tuple[str, str]] = []
+
         # Filter input reference (set up in _setup_filter_ui)
         self._filter_input: QLineEdit | None = None
 
@@ -535,6 +543,10 @@ class MainWindow(QMainWindow):
 
         # Configure table widget properties
         self._configure_table_widget()
+
+        # Show empty state initially (before config is loaded)
+        if self._backup_stacked_widget:
+            self._backup_stacked_widget.setCurrentIndex(0)
 
         # Apply tooltips to all widgets
         self._tooltip_manager = TooltipManager()
@@ -607,6 +619,14 @@ class MainWindow(QMainWindow):
         )  # type: ignore[assignment]
         self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "logBox")  # type: ignore[assignment]
 
+        # Empty state widgets
+        self._backup_stacked_widget: QStackedWidget | None = ui_widget.findChild(
+            QStackedWidget, "backupStackedWidget"
+        )
+        self._empty_state_add_btn: QPushButton | None = ui_widget.findChild(
+            QPushButton, "emptyStateAddButton"
+        )
+
         # Validate critical widgets were found
         if not self.operation_log:
             raise RuntimeError("logBox widget not found in UI file!")
@@ -624,6 +644,23 @@ class MainWindow(QMainWindow):
         )  # type: ignore[assignment]
         # Note: Restore operation log uses the same logBox widget in the Logs tab
         self.restore_operation_log: QTextEdit = self.operation_log
+
+        # Backup preview widgets
+        self.restore_preview_group: QGroupBox = ui_widget.findChild(
+            QGroupBox, "restorePreviewGroup"
+        )  # type: ignore[assignment]
+        self.restore_preview_host_label: QLabel = ui_widget.findChild(
+            QLabel, "restorePreviewHostLabel"
+        )  # type: ignore[assignment]
+        self.restore_preview_count_label: QLabel = ui_widget.findChild(
+            QLabel, "restorePreviewCountLabel"
+        )  # type: ignore[assignment]
+        self.restore_preview_size_label: QLabel = ui_widget.findChild(
+            QLabel, "restorePreviewSizeLabel"
+        )  # type: ignore[assignment]
+        self.restore_preview_tree: QTreeWidget = ui_widget.findChild(
+            QTreeWidget, "restorePreviewTree"
+        )  # type: ignore[assignment]
 
     def _find_config_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to Configuration tab widgets."""
@@ -697,6 +734,21 @@ class MainWindow(QMainWindow):
             QPushButton, "verifyBackupButton"
         )  # type: ignore[assignment]
         self.save_log_btn: QPushButton = ui_widget.findChild(QPushButton, "pushButton")  # type: ignore[assignment]
+        self._log_filter_all_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logFilterAllButton"
+        )  # type: ignore[assignment]
+        self._log_filter_info_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logFilterInfoButton"
+        )  # type: ignore[assignment]
+        self._log_filter_warning_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logFilterWarningButton"
+        )  # type: ignore[assignment]
+        self._log_filter_error_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logFilterErrorButton"
+        )  # type: ignore[assignment]
+        self._log_clear_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logClearButton"
+        )  # type: ignore[assignment]
 
     def _find_status_widgets(self) -> None:
         """Find and store references to status bar widgets."""
@@ -758,6 +810,10 @@ class MainWindow(QMainWindow):
         if self._filter_input:
             self._filter_input.textChanged.connect(self._apply_filter)
 
+        # Empty state add button
+        if self._empty_state_add_btn:
+            self._empty_state_add_btn.clicked.connect(self._on_add_dotfile)
+
         # Restore tab connections
         self.browse_restore_btn.clicked.connect(self._on_browse_restore_source)
         self.restore_btn.clicked.connect(self._on_start_restore)
@@ -809,6 +865,13 @@ class MainWindow(QMainWindow):
         # Logs tab connections
         self.verify_backup_btn.clicked.connect(self._on_verify_backup)
         self.save_log_btn.clicked.connect(self._on_save_log)
+
+        # Log filter connections
+        self._log_filter_all_btn.clicked.connect(self._on_log_filter_all)
+        self._log_filter_info_btn.clicked.connect(self._on_log_filter_changed)
+        self._log_filter_warning_btn.clicked.connect(self._on_log_filter_changed)
+        self._log_filter_error_btn.clicked.connect(self._on_log_filter_changed)
+        self._log_clear_btn.clicked.connect(self._on_clear_log)
 
         # Menu action connections
         self.action_exit.triggered.connect(self.close)
@@ -896,7 +959,8 @@ class MainWindow(QMainWindow):
 
             # Clear operation log
             self.operation_log.clear()
-            self.operation_log.append("=== Backup Operation Started ===\n")
+            self._log_entries.clear()
+            self._append_log("=== Backup Operation Started ===", "header")
 
             # Switch to Logs tab (index 3)
             self.tab_widget.setCurrentIndex(3)
@@ -913,12 +977,12 @@ class MainWindow(QMainWindow):
 
             # Add info to log about backup mode
             if force_full:
-                self.operation_log.append(
-                    "INFO: Force Full Backup - All files will be copied\n"
+                self._append_log(
+                    "INFO: Force Full Backup - All files will be copied", "info"
                 )
             else:
-                self.operation_log.append(
-                    "INFO: Smart Backup - Only changed files will be copied\n"
+                self._append_log(
+                    "INFO: Smart Backup - Only changed files will be copied", "info"
                 )
 
             # Start backup with force full setting
@@ -928,7 +992,7 @@ class MainWindow(QMainWindow):
                 # Re-enable buttons if backup failed to start
                 self.backup_btn.setEnabled(True)
                 self.progress_bar.setVisible(False)
-                self.operation_log.append("✗ Failed to start backup operation\n")
+                self._append_log("✗ Failed to start backup operation", "error")
 
     def _on_browse_restore_source(self) -> None:
         """Handle browse restore source button click."""
@@ -942,11 +1006,61 @@ class MainWindow(QMainWindow):
             # Validate and set source
             if self.viewmodel.command_set_restore_source(Path(directory)):
                 self.restore_btn.setEnabled(True)
+
+                # Scan and show backup preview
+                metadata = self.viewmodel.command_scan_restore_source(Path(directory))
+                if metadata:
+                    self._populate_restore_preview(metadata)
             else:
                 QMessageBox.warning(
                     self, "Invalid Directory", "Selected path is not a valid directory."
                 )
                 self.restore_btn.setEnabled(False)
+
+    def _populate_restore_preview(self, metadata: dict[str, Any]) -> None:
+        """Populate the restore preview section with scan results."""
+        # Update summary labels
+        self.restore_preview_host_label.setText(
+            f"Hostname: {metadata['hostname'] or 'Unknown'}"
+        )
+        self.restore_preview_count_label.setText(
+            f"Files: {metadata['file_count']}"
+        )
+        self.restore_preview_size_label.setText(
+            f"Size: {self._format_size(metadata['total_size'])}"
+        )
+
+        # Populate tree widget
+        self.restore_preview_tree.clear()
+        for entry in metadata["entries"]:
+            file_count: int = entry["file_count"]
+            app_item = QTreeWidgetItem([
+                entry["application"],
+                f"{file_count} file{'s' if file_count != 1 else ''}",
+                self._format_size(entry["total_size"]),
+            ])
+
+            for file_info in entry["files"]:
+                QTreeWidgetItem(app_item, [
+                    file_info["name"],
+                    "",
+                    self._format_size(file_info["size"]),
+                ])
+
+            self.restore_preview_tree.addTopLevelItem(app_item)
+
+        # Expand all items and show the preview group
+        self.restore_preview_tree.expandAll()
+        self.restore_preview_group.setVisible(True)
+
+    def _format_size(self, size_bytes: int) -> str:
+        """Format a byte count as a human-readable string."""
+        if size_bytes < 1024:
+            return f"{size_bytes} B"
+        elif size_bytes < 1024 * 1024:
+            return f"{size_bytes / 1024:.1f} KB"
+        else:
+            return f"{size_bytes / (1024 * 1024):.1f} MB"
 
     def _on_start_restore(self) -> None:
         """Handle start restore button click."""
@@ -991,22 +1105,8 @@ class MainWindow(QMainWindow):
 
     def _on_item_processed(self, source: str, destination: str) -> None:
         """Handle item processed signal."""
-        log_message = f"✓ {Path(source).name} → {Path(destination).name}\n"
-
-        # Determine which log to update based on which worker is active
-        # Check viewmodel to see which operation is running
-        if self.viewmodel.backup_worker and self.viewmodel.backup_worker.isRunning():
-            # Backup operation - write to backup log
-            self.operation_log.moveCursor(QTextCursor.MoveOperation.End)
-            self.operation_log.insertPlainText(log_message)
-            self.operation_log.ensureCursorVisible()
-        elif (
-            self.viewmodel.restore_worker and self.viewmodel.restore_worker.isRunning()
-        ):
-            # Restore operation - write to restore log
-            self.restore_operation_log.moveCursor(QTextCursor.MoveOperation.End)
-            self.restore_operation_log.insertPlainText(log_message)
-            self.restore_operation_log.ensureCursorVisible()
+        log_message = f"✓ {Path(source).name} → {Path(destination).name}"
+        self._append_log(log_message, "success")
 
     def _on_item_skipped(self, path: str, reason: str) -> None:
         """
@@ -1022,12 +1122,8 @@ class MainWindow(QMainWindow):
             new_skips = self._skipped_count - self._last_logged_skip_count
             self._last_logged_skip_count = self._skipped_count
 
-            log_message = f"⊘ Skipped {new_skips} unchanged files (total: {self._skipped_count})...\n"
-
-            # Update backup operation log (skips only happen during backup)
-            self.operation_log.moveCursor(QTextCursor.MoveOperation.End)
-            self.operation_log.insertPlainText(log_message)
-            self.operation_log.ensureCursorVisible()
+            log_message = f"⊘ Skipped {new_skips} unchanged files (total: {self._skipped_count})..."
+            self._append_log(log_message, "skip")
 
     def _on_operation_finished(self, summary: str) -> None:
         """Handle operation finished signal."""
@@ -1048,12 +1144,12 @@ class MainWindow(QMainWindow):
             # Log any remaining skipped files
             if self._skipped_count > self._last_logged_skip_count:
                 remaining = self._skipped_count - self._last_logged_skip_count
-                self.operation_log.append(
-                    f"⊘ Skipped {remaining} unchanged files (total: {self._skipped_count})...\n"
+                self._append_log(
+                    f"⊘ Skipped {remaining} unchanged files (total: {self._skipped_count})...",
+                    "skip",
                 )
-            self.operation_log.append("\n=== Backup Operation Completed ===\n")
-            # Write summary statistics to log
-            self.operation_log.append(f"\n{summary}\n")
+            self._append_log("=== Backup Operation Completed ===", "header")
+            self._append_log(summary, "info")
             # Ensure log is scrolled to bottom
             self.operation_log.verticalScrollBar().setValue(
                 self.operation_log.verticalScrollBar().maximum()
@@ -1063,27 +1159,16 @@ class MainWindow(QMainWindow):
             and not self.viewmodel.restore_worker.isRunning()
         ):
             # Restore just completed
-            self.restore_operation_log.append("\n=== Restore Operation Completed ===\n")
-            # Write summary statistics to log
-            self.restore_operation_log.append(f"\n{summary}\n")
-            self.restore_operation_log.verticalScrollBar().setValue(
-                self.restore_operation_log.verticalScrollBar().maximum()
+            self._append_log("=== Restore Operation Completed ===", "header")
+            self._append_log(summary, "info")
+            self.operation_log.verticalScrollBar().setValue(
+                self.operation_log.verticalScrollBar().maximum()
             )
 
     def _on_error_occurred(self, context: str, error_message: str) -> None:
         """Handle error signal."""
-        log_message = f"✗ Error in {context}: {error_message}\n"
-
-        # Determine which log to update based on which worker is active
-        if self.viewmodel.backup_worker and self.viewmodel.backup_worker.isRunning():
-            self.operation_log.append(log_message)
-        elif (
-            self.viewmodel.restore_worker and self.viewmodel.restore_worker.isRunning()
-        ):
-            self.restore_operation_log.append(log_message)
-        else:
-            # If neither is running, it's likely a startup error - log to backup log
-            self.operation_log.append(log_message)
+        log_message = f"✗ Error in {context}: {error_message}"
+        self._append_log(log_message, "error")
 
         # Hide and reset progress bar on error
         self.progress_bar.setVisible(False)
@@ -1253,17 +1338,17 @@ class MainWindow(QMainWindow):
             Qt.ItemDataRole.UserRole, original_idx
         )  # Store original index
         if included:
-            included_item.setForeground(QColor(0, 150, 0))  # Green
+            included_item.setForeground(QColor(DFBUColors.SUCCESS))
         else:
-            included_item.setForeground(QColor(128, 128, 128))  # Gray
+            included_item.setForeground(QColor(DFBUColors.TEXT_DISABLED))
         self.dotfile_table.setItem(row_idx, 0, included_item)
 
         # Status indicator (file exists)
         status_item = QTableWidgetItem("✓" if exists else "✗")
         if exists:
-            status_item.setForeground(QColor(0, 150, 0))  # Green
+            status_item.setForeground(QColor(DFBUColors.SUCCESS))
         else:
-            status_item.setForeground(QColor(200, 0, 0))  # Red
+            status_item.setForeground(QColor(DFBUColors.CRITICAL))
         self.dotfile_table.setItem(row_idx, 1, status_item)
 
         # Application name (column 2)
@@ -1367,18 +1452,28 @@ class MainWindow(QMainWindow):
         self.viewmodel.set_archive_mode(bool(state))
 
     def _show_about(self) -> None:
-        """Show about dialog."""
-        QMessageBox.about(
-            self,
-            f"About {self.PROJECT_NAME}",
+        """Show about dialog with brand icon."""
+        about_box = QMessageBox(self)
+        about_box.setWindowTitle(f"About {self.PROJECT_NAME}")
+        about_box.setText(
             f"{self.PROJECT_NAME} v{self.version}\n\n"
             "Dotfiles Backup and Restore Utility\n\n"
             "A desktop application for backing up and restoring\n"
             "configuration files with metadata preservation.\n\n"
             "Author: Chris Purcell\n"
             "Email: chris@l3digital.net\n"
-            "GitHub: https://github.com/L3DigitalNet",
+            "GitHub: https://github.com/L3DigitalNet"
         )
+
+        icon_path = Path(__file__).resolve().parent.parent / "resources" / "icons" / "dfbu-256.png"
+        if icon_path.exists():
+            pixmap = QPixmap(str(icon_path)).scaled(
+                64, 64, Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
+            about_box.setIconPixmap(pixmap)
+
+        about_box.exec()
 
     def _show_user_guide(self) -> None:
         """Show user guide help dialog."""
@@ -1395,20 +1490,20 @@ class MainWindow(QMainWindow):
             dialog = RecoveryDialog(result, parent=self)
             dialog.exec()
         except RuntimeError as e:
-            self.operation_log.append(f"✗ Recovery dialog error: {e}\n")
+            self._append_log(f"✗ Recovery dialog error: {e}", "error")
             return
 
         if dialog.action == "retry":
             # Get retryable paths and trigger retry
             paths_to_retry = dialog.get_retryable_paths()
-            self.operation_log.append(
-                f"↻ Retrying {len(paths_to_retry)} failed item(s)...\n"
+            self._append_log(
+                f"↻ Retrying {len(paths_to_retry)} failed item(s)...", "info"
             )
             # TODO: Implement retry logic in v0.9.1
         elif dialog.action == "continue":
-            self.operation_log.append("⊘ Skipping failed items, operation complete.\n")
+            self._append_log("⊘ Skipping failed items, operation complete.", "skip")
         else:  # abort
-            self.operation_log.append("✗ Operation aborted by user.\n")
+            self._append_log("✗ Operation aborted by user.", "error")
 
     def _show_size_warning_dialog(self, report: SizeReportDict) -> None:
         """Show size warning dialog before backup when large files detected.
@@ -1420,18 +1515,19 @@ class MainWindow(QMainWindow):
             dialog = SizeWarningDialog(report, parent=self)
             dialog.exec()
         except RuntimeError as e:
-            self.operation_log.append(f"✗ Size warning dialog error: {e}\n")
+            self._append_log(f"✗ Size warning dialog error: {e}", "error")
             self._reset_backup_ui()
             return
 
         if dialog.action == "continue":
             # User acknowledged warning, proceed with backup
-            self.operation_log.append(
-                f"⚠️ Size warning acknowledged: {report['total_size_mb']:.1f} MB total\n"
+            self._append_log(
+                f"⚠️ Size warning acknowledged: {report['total_size_mb']:.1f} MB total",
+                "warning",
             )
             self.viewmodel.command_proceed_after_size_warning()
         else:  # cancel
-            self.operation_log.append("✗ Backup cancelled due to size concerns.\n")
+            self._append_log("✗ Backup cancelled due to size concerns.", "error")
             self._reset_backup_ui()
 
     def _on_size_scan_progress(self, progress: int) -> None:
@@ -1576,11 +1672,7 @@ class MainWindow(QMainWindow):
 
             # Save to file
             if self.viewmodel.command_save_config():
-                QMessageBox.information(
-                    self,
-                    "Configuration Saved",
-                    "Configuration has been saved successfully.",
-                )
+                self.status_bar.showMessage("✓ Configuration saved", STATUS_MESSAGE_TIMEOUT_MS)
 
                 # Update backup tab checkboxes to reflect changes
                 self.mirror_checkbox.setChecked(self.config_mirror_checkbox.isChecked())
@@ -1607,11 +1699,7 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Save to file
             if self.viewmodel.command_save_config():
-                QMessageBox.information(
-                    self,
-                    "Configuration Saved",
-                    "Dotfile configuration has been saved successfully.",
-                )
+                self.status_bar.showMessage("✓ Dotfile configuration saved", STATUS_MESSAGE_TIMEOUT_MS)
             else:
                 QMessageBox.critical(
                     self,
@@ -1681,9 +1769,7 @@ class MainWindow(QMainWindow):
             )
 
             if success:
-                QMessageBox.information(
-                    self, "Dotfile Added", "Dotfile entry has been added successfully."
-                )
+                self.status_bar.showMessage("✓ Dotfile added", STATUS_MESSAGE_TIMEOUT_MS)
             else:
                 QMessageBox.critical(self, "Add Failed", "Failed to add dotfile entry.")
 
@@ -1736,11 +1822,7 @@ class MainWindow(QMainWindow):
             )
 
             if success:
-                QMessageBox.information(
-                    self,
-                    "Dotfile Updated",
-                    "Dotfile entry has been updated successfully.",
-                )
+                self.status_bar.showMessage("✓ Dotfile updated", STATUS_MESSAGE_TIMEOUT_MS)
             else:
                 QMessageBox.critical(
                     self, "Update Failed", "Failed to update dotfile entry."
@@ -1778,11 +1860,7 @@ class MainWindow(QMainWindow):
             success = self.viewmodel.command_remove_dotfile(original_idx)
 
             if success:
-                QMessageBox.information(
-                    self,
-                    "Dotfile Removed",
-                    "Dotfile entry has been removed successfully.",
-                )
+                self.status_bar.showMessage("✓ Dotfile removed", STATUS_MESSAGE_TIMEOUT_MS)
             else:
                 QMessageBox.critical(
                     self, "Remove Failed", "Failed to remove dotfile entry."
@@ -1826,6 +1904,10 @@ class MainWindow(QMainWindow):
         """Handle dotfiles updated signal."""
         # Update the dotfile table
         self._update_dotfile_table()
+
+        # Toggle empty state vs content
+        if self._backup_stacked_widget:
+            self._backup_stacked_widget.setCurrentIndex(0 if dotfile_count == 0 else 1)
 
         # Update status bar
         self.status_bar.showMessage(f"Configuration updated: {dotfile_count} dotfiles")
@@ -1871,6 +1953,93 @@ class MainWindow(QMainWindow):
 
             self.dotfile_table.setRowHidden(row, not matches)
 
+    def _append_log(self, message: str, level: str = "info") -> None:
+        """Append a color-coded log entry to the operation log.
+
+        Args:
+            message: The log message text
+            level: Log level for color coding (success, error, warning, skip, info, header)
+        """
+        from html import escape
+
+        color_map = {
+            "success": DFBUColors.SUCCESS,
+            "error": DFBUColors.CRITICAL,
+            "warning": DFBUColors.WARNING,
+            "skip": DFBUColors.TEXT_DISABLED,
+            "info": DFBUColors.TEXT_SECONDARY,
+            "header": DFBUColors.PRIMARY,
+        }
+        color = color_map.get(level, DFBUColors.TEXT_PRIMARY)
+        escaped = escape(message.rstrip("\n"))
+        html = f'<span style="color: {color};">{escaped}</span><br>'
+        self.operation_log.moveCursor(QTextCursor.MoveOperation.End)
+        self.operation_log.insertHtml(html)
+        self.operation_log.ensureCursorVisible()
+
+        # Track entry for filtering
+        self._log_entries.append((message, level))
+
+    def _on_log_filter_all(self) -> None:
+        """Handle All filter button toggle."""
+        checked = self._log_filter_all_btn.isChecked()
+        self._log_filter_info_btn.setChecked(checked)
+        self._log_filter_warning_btn.setChecked(checked)
+        self._log_filter_error_btn.setChecked(checked)
+        self._rebuild_log_display()
+
+    def _on_log_filter_changed(self) -> None:
+        """Handle individual filter button toggle."""
+        all_checked = (
+            self._log_filter_info_btn.isChecked()
+            and self._log_filter_warning_btn.isChecked()
+            and self._log_filter_error_btn.isChecked()
+        )
+        self._log_filter_all_btn.setChecked(all_checked)
+        self._rebuild_log_display()
+
+    def _on_clear_log(self) -> None:
+        """Clear the log display and entries list."""
+        self.operation_log.clear()
+        self._log_entries.clear()
+
+    def _rebuild_log_display(self) -> None:
+        """Rebuild the log display based on current filter state."""
+        from html import escape
+
+        show_info = self._log_filter_info_btn.isChecked()
+        show_warning = self._log_filter_warning_btn.isChecked()
+        show_error = self._log_filter_error_btn.isChecked()
+
+        level_visible: dict[str, bool] = {
+            "info": show_info,
+            "success": show_info,
+            "header": show_info,
+            "skip": show_info,
+            "warning": show_warning,
+            "error": show_error,
+        }
+
+        color_map = {
+            "success": DFBUColors.SUCCESS,
+            "error": DFBUColors.CRITICAL,
+            "warning": DFBUColors.WARNING,
+            "skip": DFBUColors.TEXT_DISABLED,
+            "info": DFBUColors.TEXT_SECONDARY,
+            "header": DFBUColors.PRIMARY,
+        }
+
+        self.operation_log.clear()
+        for message, level in self._log_entries:
+            if level_visible.get(level, True):
+                color = color_map.get(level, DFBUColors.TEXT_PRIMARY)
+                escaped = escape(message.rstrip("\n"))
+                html = f'<span style="color: {color};">{escaped}</span><br>'
+                self.operation_log.moveCursor(QTextCursor.MoveOperation.End)
+                self.operation_log.insertHtml(html)
+
+        self.operation_log.ensureCursorVisible()
+
     def _on_verify_backup(self) -> None:
         """Handle verify backup button/menu action click."""
         # Get verification report from viewmodel
@@ -1889,8 +2058,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.setCurrentIndex(3)
 
         # Append verification report to log
-        self.operation_log.append("\n")
-        self.operation_log.append(report)
+        self._append_log(report, "info")
         self.operation_log.verticalScrollBar().setValue(
             self.operation_log.verticalScrollBar().maximum()
         )

@@ -223,6 +223,10 @@ For comprehensive testing documentation, see [DFBU/tests/README.md](DFBU/tests/R
 - `DFBU/core/common_types.py` - Shared TypedDict definitions
 - `DFBU/core/yaml_config.py` - YAML config loading/saving with schema validation
 - `DFBU/gui/input_validation.py` - Input validation framework
+- `DFBU/gui/theme.py` - Centralized color palette (DFBUColors), spacing, and typography constants
+- `DFBU/gui/theme_loader.py` - QSS stylesheet loader (applies dfbu_light.qss to QApplication)
+- `DFBU/gui/styles/dfbu_light.qss` - Qt Style Sheet for branded light theme
+- `DFBU/resources/help/` - Externalized help content (quick_start.html, config_reference.html)
 - `DFBU/tests/conftest.py` - Pytest fixtures for Qt and file testing
 - `docs/plans/` - Implementation plans for production readiness features
 - `docs/INDEX.md` - Complete documentation index

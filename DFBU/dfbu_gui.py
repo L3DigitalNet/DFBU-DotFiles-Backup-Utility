@@ -70,12 +70,14 @@ if not getattr(sys, "frozen", False):
 # Import local modules after path is set
 from gui.logging_config import get_logger, setup_default_logging
 from gui.model import DFBUModel
+from gui.theme_loader import load_theme
 from gui.view import MainWindow
 from gui.viewmodel import DFBUViewModel
 
 
 # External dependency: PySide6 required for desktop GUI framework (Qt bindings for Python)
 try:
+    from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QApplication
 except ImportError:
     print("PySide6 is required but not installed.")
@@ -126,6 +128,11 @@ class Application:
         self.app.setApplicationName(PROJECT_NAME)
         self.app.setApplicationVersion(__version__)
         self.app.setOrganizationName("L3DigitalNet")
+        load_theme(self.app)
+
+        icon_path = Path(__file__).parent / "resources" / "icons" / "dfbu.svg"
+        if icon_path.exists():
+            self.app.setWindowIcon(QIcon(str(icon_path)))
 
         self._initialize_config_directory()
 

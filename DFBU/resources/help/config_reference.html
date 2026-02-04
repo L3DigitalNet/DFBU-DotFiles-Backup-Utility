@@ -1,0 +1,93 @@
+
+    <h2>Configuration Reference</h2>
+    <p>All settings are saved to <code>settings.yaml</code> in the DFBU data directory.</p>
+
+    <h3>Backup Paths</h3>
+    <table border="0" cellpadding="4" width="100%">
+        <tr>
+            <td width="30%"><b>Mirror Directory</b></td>
+            <td>Directory where uncompressed mirror backups are stored.
+                Files are copied preserving their original folder structure
+                relative to your home directory.</td>
+        </tr>
+        <tr>
+            <td><b>Archive Directory</b></td>
+            <td>Directory where compressed archive backups (.tar.gz) are stored.
+                Archives contain all selected files in a single compressed file.</td>
+        </tr>
+    </table>
+
+    <h3>Backup Modes</h3>
+    <table border="0" cellpadding="4" width="100%">
+        <tr>
+            <td width="30%"><b>Mirror Backup</b></td>
+            <td>Enable copying files to the mirror directory. Creates an
+                uncompressed copy you can browse like regular folders.
+                <br/><i>Default: Enabled</i></td>
+        </tr>
+        <tr>
+            <td><b>Archive Backup</b></td>
+            <td>Enable creating compressed archives. Creates a single .tar.gz
+                file containing all selected files.
+                <br/><i>Default: Enabled</i></td>
+        </tr>
+    </table>
+
+    <h3>Directory Structure</h3>
+    <table border="0" cellpadding="4" width="100%">
+        <tr>
+            <td width="30%"><b>Hostname Subdir</b></td>
+            <td>Create a subdirectory named after this computer's hostname.
+                Useful when backing up multiple machines to the same location.
+                <br/><i>Default: Enabled</i></td>
+        </tr>
+        <tr>
+            <td><b>Date Subdir</b></td>
+            <td>Create a subdirectory with today's date (YYYY-MM-DD) for each
+                backup. Creates separate snapshots instead of overwriting.
+                <br/><i>Default: Disabled</i></td>
+        </tr>
+    </table>
+
+    <h3>Archive Options</h3>
+    <table border="0" cellpadding="4" width="100%">
+        <tr>
+            <td width="30%"><b>Compression Level</b></td>
+            <td>Gzip compression level for archives. 0 = no compression (fastest),
+                9 = maximum compression (smallest files, slowest).
+                <br/><i>Default: 9</i></td>
+        </tr>
+        <tr>
+            <td><b>Rotate Archives</b></td>
+            <td>Automatically delete the oldest archives when the maximum
+                number is reached. Prevents unlimited archive accumulation.
+                <br/><i>Default: Enabled</i></td>
+        </tr>
+        <tr>
+            <td><b>Max Archives</b></td>
+            <td>Maximum number of archive files to keep when rotation is enabled.
+                Oldest archives are deleted first.
+                <br/><i>Default: 5</i></td>
+        </tr>
+    </table>
+
+    <h3>Pre-Restore Safety</h3>
+    <table border="0" cellpadding="4" width="100%">
+        <tr>
+            <td width="30%"><b>Enable Pre-Restore Backup</b></td>
+            <td>Before restoring files, create a backup of any existing files
+                that would be overwritten. Allows recovery if restore goes wrong.
+                <br/><i>Default: Enabled</i></td>
+        </tr>
+        <tr>
+            <td><b>Max Restore Backups</b></td>
+            <td>Maximum number of pre-restore backup sets to keep.
+                Oldest sets are deleted when limit is reached.
+                <br/><i>Default: 5</i></td>
+        </tr>
+        <tr>
+            <td><b>Restore Backup Dir</b></td>
+            <td>Directory where pre-restore backups are stored.
+                <br/><i>Default: ~/.local/share/dfbu/restore-backups</i></td>
+        </tr>
+    </table>

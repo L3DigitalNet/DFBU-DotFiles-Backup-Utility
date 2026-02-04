@@ -1,0 +1,423 @@
+/*
+ * DFBU Light Theme
+ *
+ * Comprehensive QSS stylesheet for the DFBU desktop application.
+ * Color values are derived from the brand palette defined in
+ * DFBU/gui/theme.py (DFBUColors).
+ *
+ * Palette Reference:
+ *   Primary Blue:    #2563EB
+ *   Primary Dark:    #1D4ED8
+ *   Primary Light:   #3B82F6
+ *   Primary Subtle:  #EFF6FF
+ *   Success Green:   #10B981
+ *   Warning Amber:   #F59E0B
+ *   Critical Red:    #EF4444
+ *   Neutral 50:      #F8FAFC
+ *   Neutral 100:     #F1F5F9
+ *   Neutral 200:     #E2E8F0  (borders)
+ *   Neutral 300:     #CBD5E1
+ *   Neutral 400:     #94A3B8
+ *   Neutral 500:     #64748B
+ *   Neutral 600:     #475569
+ *   Neutral 700:     #334155
+ *   Neutral 800:     #1E293B  (dark bg)
+ *   Neutral 900:     #0F172A
+ *   Background:      #FFFFFF
+ */
+
+
+/* ==========================================================================
+   1. Base — QMainWindow & QWidget
+   ========================================================================== */
+
+QMainWindow,
+QWidget {
+    background-color: #FFFFFF;
+    font-family: "Segoe UI", "Ubuntu", "Cantarell", sans-serif;
+    font-size: 13px;
+    color: #1E293B;
+}
+
+
+/* ==========================================================================
+   2. Tabs — QTabWidget & QTabBar
+   ========================================================================== */
+
+QTabWidget::pane {
+    border: none;
+    background-color: #FFFFFF;
+}
+
+QTabBar::tab {
+    padding: 12px;
+    border: none;
+    background-color: transparent;
+    color: #475569;
+}
+
+QTabBar::tab:selected {
+    border-bottom: 3px solid #2563EB;
+    font-weight: bold;
+    color: #2563EB;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #EFF6FF;
+}
+
+
+/* ==========================================================================
+   3. Buttons — QPushButton (default, primary, danger)
+   ========================================================================== */
+
+/* Default button */
+QPushButton {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    padding: 8px 16px;
+    color: #1E293B;
+}
+
+QPushButton:hover {
+    background-color: #F8FAFC;
+}
+
+QPushButton:pressed {
+    background-color: #F1F5F9;
+}
+
+QPushButton:disabled {
+    opacity: 0.5;
+    color: #94A3B8;
+}
+
+/* Primary action buttons (start/Start) */
+QPushButton[objectName*="start"],
+QPushButton[objectName*="Start"] {
+    background-color: #2563EB;
+    border: 1px solid #2563EB;
+    color: #FFFFFF;
+}
+
+QPushButton[objectName*="start"]:hover,
+QPushButton[objectName*="Start"]:hover {
+    background-color: #1D4ED8;
+    border-color: #1D4ED8;
+}
+
+QPushButton[objectName*="start"]:pressed,
+QPushButton[objectName*="Start"]:pressed {
+    background-color: #1D4ED8;
+}
+
+QPushButton[objectName*="start"]:disabled,
+QPushButton[objectName*="Start"]:disabled {
+    opacity: 0.5;
+}
+
+/* Danger buttons (remove/Remove/delete) */
+QPushButton[objectName*="remove"],
+QPushButton[objectName*="Remove"],
+QPushButton[objectName*="delete"] {
+    background-color: #EF4444;
+    border: 1px solid #EF4444;
+    color: #FFFFFF;
+}
+
+QPushButton[objectName*="remove"]:hover,
+QPushButton[objectName*="Remove"]:hover,
+QPushButton[objectName*="delete"]:hover {
+    background-color: #DC2626;
+    border-color: #DC2626;
+}
+
+QPushButton[objectName*="remove"]:pressed,
+QPushButton[objectName*="Remove"]:pressed,
+QPushButton[objectName*="delete"]:pressed {
+    background-color: #DC2626;
+}
+
+QPushButton[objectName*="remove"]:disabled,
+QPushButton[objectName*="Remove"]:disabled,
+QPushButton[objectName*="delete"]:disabled {
+    opacity: 0.5;
+}
+
+
+/* ==========================================================================
+   4. Table — QTableWidget & QHeaderView
+   ========================================================================== */
+
+QTableWidget {
+    alternate-background-color: #F8FAFC;
+    background-color: #FFFFFF;
+    gridline-color: #E2E8F0;
+    border: 1px solid #E2E8F0;
+    selection-background-color: rgba(37, 99, 235, 0.15);
+    selection-color: #1E293B;
+}
+
+QTableWidget::item {
+    padding: 6px 8px;
+}
+
+QTableWidget::item:selected {
+    background-color: rgba(37, 99, 235, 0.15);
+    color: #1E293B;
+}
+
+QHeaderView::section {
+    background-color: #2563EB;
+    color: #FFFFFF;
+    font-weight: bold;
+    padding: 8px;
+    border: none;
+}
+
+
+/* ==========================================================================
+   5. Text Inputs — QLineEdit & QSpinBox
+   ========================================================================== */
+
+QLineEdit,
+QSpinBox {
+    border: 1px solid #E2E8F0;
+    border-radius: 4px;
+    padding: 8px;
+    background-color: #FFFFFF;
+    color: #1E293B;
+}
+
+QLineEdit:focus,
+QSpinBox:focus {
+    border: 2px solid #2563EB;
+    padding: 7px;
+}
+
+QLineEdit::placeholder {
+    color: #94A3B8;
+}
+
+
+/* ==========================================================================
+   6. Checkboxes — QCheckBox
+   ========================================================================== */
+
+QCheckBox {
+    spacing: 8px;
+    color: #1E293B;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid #CBD5E1;
+    background-color: #FFFFFF;
+}
+
+QCheckBox::indicator:hover {
+    border-color: #94A3B8;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #2563EB;
+    border-color: #2563EB;
+    image: url(none);
+}
+
+
+/* ==========================================================================
+   7. Progress Bar — QProgressBar
+   ========================================================================== */
+
+QProgressBar {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #E2E8F0;
+    border: none;
+    text-align: center;
+}
+
+QProgressBar::chunk {
+    background-color: #2563EB;
+    border-radius: 4px;
+}
+
+
+/* ==========================================================================
+   8. Terminal / Log — QTextEdit
+   ========================================================================== */
+
+QTextEdit {
+    background-color: #1E293B;
+    color: #E2E8F0;
+    font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+    font-size: 13px;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 8px;
+    selection-background-color: rgba(59, 130, 246, 0.4);
+    selection-color: #FFFFFF;
+}
+
+
+/* ==========================================================================
+   9. Menus — QMenuBar & QMenu
+   ========================================================================== */
+
+QMenuBar {
+    background-color: #FFFFFF;
+    padding: 4px;
+    border-bottom: 1px solid #E2E8F0;
+    color: #1E293B;
+}
+
+QMenuBar::item {
+    padding: 6px 12px;
+    background-color: transparent;
+    border-radius: 4px;
+}
+
+QMenuBar::item:selected {
+    background-color: #EFF6FF;
+}
+
+QMenu {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    padding: 4px 0;
+}
+
+QMenu::item {
+    padding: 8px 24px;
+    color: #1E293B;
+}
+
+QMenu::item:selected {
+    background-color: #2563EB;
+    color: #FFFFFF;
+}
+
+QMenu::separator {
+    height: 1px;
+    background-color: #E2E8F0;
+    margin: 4px 8px;
+}
+
+
+/* ==========================================================================
+   10. Status Bar — QStatusBar
+   ========================================================================== */
+
+QStatusBar {
+    border-top: 1px solid #E2E8F0;
+    color: #64748B;
+    background-color: #FFFFFF;
+    padding: 4px;
+}
+
+QStatusBar::item {
+    border: none;
+}
+
+
+/* ==========================================================================
+   11. Group Box — QGroupBox
+   ========================================================================== */
+
+QGroupBox {
+    font-weight: bold;
+    border: 1px solid #E2E8F0;
+    border-radius: 6px;
+    margin-top: 12px;
+    padding-top: 8px;
+    color: #1E293B;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 8px;
+    color: #1E293B;
+}
+
+
+/* ==========================================================================
+   12. Scroll Bars — QScrollBar (vertical & horizontal)
+   ========================================================================== */
+
+/* Vertical */
+QScrollBar:vertical {
+    width: 8px;
+    background: transparent;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical {
+    background-color: #CBD5E1;
+    border-radius: 4px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #94A3B8;
+}
+
+QScrollBar::add-line:vertical,
+QScrollBar::sub-line:vertical {
+    height: 0;
+    background: none;
+    border: none;
+}
+
+QScrollBar::add-page:vertical,
+QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+/* Horizontal */
+QScrollBar:horizontal {
+    height: 8px;
+    background: transparent;
+    margin: 0;
+}
+
+QScrollBar::handle:horizontal {
+    background-color: #CBD5E1;
+    border-radius: 4px;
+    min-width: 30px;
+}
+
+QScrollBar::handle:horizontal:hover {
+    background-color: #94A3B8;
+}
+
+QScrollBar::add-line:horizontal,
+QScrollBar::sub-line:horizontal {
+    width: 0;
+    background: none;
+    border: none;
+}
+
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background: none;
+}
+
+
+/* ==========================================================================
+   13. Tooltips — QToolTip
+   ========================================================================== */
+
+QToolTip {
+    background-color: #1E293B;
+    color: #FFFFFF;
+    border-radius: 4px;
+    border: 1px solid #334155;
+    padding: 6px 10px;
+    font-size: 12px;
+}

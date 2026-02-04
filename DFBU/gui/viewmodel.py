@@ -1236,6 +1236,75 @@ class DFBUViewModel(QObject):
             return True
         return False
 
+    def command_scan_restore_source(self, path: Path) -> dict[str, Any] | None:
+        """Scan a backup directory and return metadata preview.
+
+        Walks the backup directory structure to gather information about
+        what would be restored. Expects the hostname subfolder pattern.
+
+        Args:
+            path: Path to the backup source directory
+
+        Returns:
+            Dictionary with hostname, file_count, total_size, entries list,
+            or None if the directory is invalid.
+        """
+        if not path.exists() or not path.is_dir():
+            return None
+
+        # Try to detect hostname directory
+        hostname = ""
+        scan_root = path
+        subdirs = [d for d in path.iterdir() if d.is_dir()]
+
+        # If there's a single subdirectory, it's likely the hostname folder
+        if len(subdirs) == 1:
+            hostname = subdirs[0].name
+            scan_root = subdirs[0]
+        elif len(subdirs) > 1:
+            # Multiple subdirs -- could be date-based or multiple hostnames
+            # Use the directory as-is
+            hostname = path.name
+
+        entries: list[dict[str, Any]] = []
+        total_size = 0
+        total_files = 0
+
+        # Walk the scan root and group by top-level application directories
+        for app_dir in sorted(scan_root.iterdir()):
+            if not app_dir.is_dir():
+                continue
+
+            app_files: list[dict[str, str | int]] = []
+            app_size = 0
+
+            for file_path in app_dir.rglob("*"):
+                if file_path.is_file():
+                    size = file_path.stat().st_size
+                    app_files.append({
+                        "name": file_path.name,
+                        "path": str(file_path.relative_to(scan_root)),
+                        "size": size,
+                    })
+                    app_size += size
+                    total_files += 1
+
+            if app_files:
+                entries.append({
+                    "application": app_dir.name,
+                    "files": app_files,
+                    "file_count": len(app_files),
+                    "total_size": app_size,
+                })
+                total_size += app_size
+
+        return {
+            "hostname": hostname,
+            "file_count": total_files,
+            "total_size": total_size,
+            "entries": entries,
+        }
+
     def command_add_dotfile(
         self,
         category: str,

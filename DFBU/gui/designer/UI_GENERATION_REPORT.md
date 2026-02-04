@@ -24,30 +24,45 @@ The UI file was created following these principles:
 
 ### Main Window Hierarchy
 
+> **Updated February 2026** — UI overhaul (feature/ui-overhaul branch) restructured
+> all four tabs with branded theme, grouped sections, and enhanced UX.
+
 ```
 MainWindow (QMainWindow)
 ├── central_widget (QWidget)
 │   └── tab_widget (QTabWidget)
 │       ├── Backup Tab
-│       │   ├── Configuration File Section (QGroupBox)
-│       │   ├── Configured Dotfiles Section (QGroupBox)
-│       │   │   └── dotfile_table (QTableWidget - 8 columns)
-│       │   ├── Backup Options Section (QGroupBox)
-│       │   └── Operation Log Section (QGroupBox)
+│       │   └── backupStackedWidget (QStackedWidget)
+│       │       ├── Page 0: Empty State (icon, title, description, Add button)
+│       │       └── Page 1: Normal Content
+│       │           ├── Config file row (path + Load button)
+│       │           ├── Dotfile table + filter + action buttons
+│       │           └── Options strip (mirror, archive, Start Backup)
 │       ├── Restore Tab
-│       │   ├── Restore Source Section (QGroupBox)
-│       │   ├── Restore Information Section (QGroupBox)
-│       │   └── Operation Log Section (QGroupBox)
-│       └── Configuration Tab
-│           └── Configuration Settings Section (QGroupBox)
-│               └── Form Layout with all config options
+│       │   ├── Restore Source Section (path + Browse + Start Restore)
+│       │   ├── Backup Preview (QGroupBox, hidden until scan)
+│       │   │   ├── Summary labels (hostname, file count, size)
+│       │   │   └── restorePreviewTree (QTreeWidget)
+│       │   └── Restore Information Section
+│       ├── Configuration Tab
+│       │   └── QScrollArea
+│       │       ├── Backup Paths (QGroupBox)
+│       │       ├── Backup Modes (QGroupBox)
+│       │       ├── Archive Options (QGroupBox)
+│       │       ├── Pre-Restore Safety (QGroupBox)
+│       │       ├── Verification (QGroupBox)
+│       │       ├── Size Management (QGroupBox)
+│       │       └── Save Configuration button bar
+│       └── Logs Tab
+│           ├── Filter toolbar (All, Info, Warnings, Errors, Clear, Save, Verify)
+│           └── logBox (QTextEdit with HTML color-coded entries)
 ├── menubar (QMenuBar)
 │   ├── File Menu
 │   ├── Operations Menu
 │   └── Help Menu
 ├── status_bar (QStatusBar)
 │   └── progress_bar (QProgressBar)
-└── Actions (5 total)
+└── Actions (5 total: Ctrl+Q, Ctrl+B, Ctrl+R, Ctrl+V, F1)
 ```
 
 ## Widget Inventory

@@ -1,0 +1,39 @@
+
+    <h2>DFBU - DotFiles Backup Utility</h2>
+    <p>DFBU backs up your Linux configuration files (dotfiles) to keep them
+    safe and portable across machines.</p>
+
+    <h3>Backing Up Files</h3>
+    <ol>
+        <li>On the <b>Backup</b> tab, check the files you want to include</li>
+        <li>Choose <b>Mirror</b> (uncompressed) and/or <b>Archive</b> (compressed) options</li>
+        <li>Click <b>Start Backup</b></li>
+    </ol>
+    <p>Your files are copied to the configured backup directories, organized
+    by hostname.</p>
+
+    <h3>Restoring Files</h3>
+    <ol>
+        <li>Go to the <b>Restore</b> tab</li>
+        <li>Click <b>Browse...</b> and select your backup directory
+            (the folder containing your hostname subdirectory)</li>
+        <li>Click <b>Start Restore</b></li>
+    </ol>
+    <p><b>Warning:</b> Restore overwrites existing files at their original locations.
+    Enable pre-restore backups in Configuration to keep safety copies.</p>
+
+    <h3>Where Are My Backups?</h3>
+    <p>View and change backup locations on the <b>Configuration</b> tab:</p>
+    <ul>
+        <li><b>Mirror Directory:</b> Uncompressed copies preserving folder structure</li>
+        <li><b>Archive Directory:</b> Compressed .tar.gz archives</li>
+    </ul>
+
+    <h3>Keyboard Shortcuts</h3>
+    <table border="0" cellpadding="4">
+        <tr><td><code>Ctrl+B</code></td><td>Start Backup</td></tr>
+        <tr><td><code>Ctrl+R</code></td><td>Start Restore</td></tr>
+        <tr><td><code>Ctrl+V</code></td><td>Verify Backup</td></tr>
+        <tr><td><code>F1</code></td><td>Open this User Guide</td></tr>
+        <tr><td><code>Ctrl+Q</code></td><td>Exit</td></tr>
+    </table>

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Final
 
 from core.common_types import SizeReportDict
+from gui.theme import DFBUColors
 from PySide6.QtCore import QFile
 from PySide6.QtGui import QColor
 from PySide6.QtUiTools import QUiLoader
@@ -26,9 +27,9 @@ UI_FILE: Final[Path] = Path(__file__).parent / "designer" / "size_warning_dialog
 
 # Level colors for visual indication
 LEVEL_COLORS: Final[dict[str, QColor]] = {
-    "warning": QColor(255, 193, 7),  # Yellow/amber
-    "alert": QColor(255, 152, 0),  # Orange
-    "critical": QColor(244, 67, 54),  # Red
+    "warning": QColor(DFBUColors.WARNING),
+    "alert": QColor(DFBUColors.ALERT),
+    "critical": QColor(DFBUColors.CRITICAL),
 }
 
 # Level icons for visual indication
@@ -156,13 +157,13 @@ class SizeWarningDialog(QDialog):
         # Update title based on severity
         if report["has_critical"]:
             self.title_label.setText("Critical: Very large files detected")
-            self.title_label.setStyleSheet("color: red;")
+            self.title_label.setStyleSheet(f"color: {DFBUColors.CRITICAL};")
         elif report["has_alert"]:
             self.title_label.setText("Alert: Large files detected")
-            self.title_label.setStyleSheet("color: orange;")
+            self.title_label.setStyleSheet(f"color: {DFBUColors.ALERT};")
         else:
             self.title_label.setText("Warning: Some large files detected")
-            self.title_label.setStyleSheet("color: #FFC107;")
+            self.title_label.setStyleSheet(f"color: {DFBUColors.WARNING};")
 
         # Populate large items tree
         self.large_items_tree.clear()
@@ -190,7 +191,7 @@ class SizeWarningDialog(QDialog):
             # Set background color for level column
             if level in LEVEL_COLORS:
                 tree_item.setBackground(0, LEVEL_COLORS[level])
-                tree_item.setForeground(0, QColor(0, 0, 0))  # Black text
+                tree_item.setForeground(0, QColor(DFBUColors.NEUTRAL_900))
 
             self.large_items_tree.addTopLevelItem(tree_item)
 
