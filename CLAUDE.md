@@ -56,7 +56,8 @@ Components (implement Protocol interfaces):
     ├── StatisticsTracker (statistics_tracker.py)   # Operation metrics
     ├── RestoreBackupManager (restore_backup_manager.py) # Pre-restore safety backups
     ├── VerificationManager (verification_manager.py)    # Backup integrity verification
-    └── ErrorHandler (error_handler.py)          # Structured error handling
+    ├── ErrorHandler (error_handler.py)          # Structured error handling
+    └── SizeAnalyzer (size_analyzer.py)          # File size analysis, .dfbuignore
 ```
 
 ### Layer Responsibilities
@@ -128,7 +129,7 @@ class ConfigLoadWorker(QThread):
 
 ### Configuration
 
-YAML config split across three files in `DFBU/data/`:
+YAML config split across files in `DFBU/data/`:
 
 **settings.yaml** - Application settings:
 
@@ -177,6 +178,10 @@ excluded:
   - Steam
 ```
 
+**library.yaml** - Alternate dotfile library format (application catalog):
+
+Also in `DFBU/data/`: `.dfbuignore` - patterns for files to skip during size analysis.
+
 ## Testing Patterns
 
 Tests use AAA pattern (Arrange-Act-Assert) with pytest-qt for signal testing:
@@ -206,7 +211,7 @@ For comprehensive testing documentation, see [DFBU/tests/README.md](DFBU/tests/R
 - `DFBU/gui/config_workers.py` - Worker thread implementations
 - `DFBU/core/common_types.py` - Shared TypedDict definitions
 - `DFBU/core/yaml_config.py` - YAML config loading/saving with schema validation
-- `DFBU/core/validation.py` - Configuration validation rules
+- `DFBU/gui/input_validation.py` - Input validation framework
 - `DFBU/tests/conftest.py` - Pytest fixtures for Qt and file testing
 - `docs/plans/` - Implementation plans for production readiness features
 - `docs/INDEX.md` - Complete documentation index

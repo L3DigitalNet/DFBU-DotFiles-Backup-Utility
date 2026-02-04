@@ -36,14 +36,12 @@ For contributors and developers working on DFBU.
 |----------|-------------|
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | Development setup, code standards, and PR process |
 | [BRANCH_PROTECTION.md](BRANCH_PROTECTION.md) | Branch protection rules (read before committing) |
-| [BRANCH_PROTECTION_QUICK.md](BRANCH_PROTECTION_QUICK.md) | Quick reference for branch rules |
 
 ### Architecture & Design
 
 | Document | Description |
 |----------|-------------|
 | [ARCHITECTURE.md](../DFBU/docs/ARCHITECTURE.md) | Comprehensive MVVM architecture documentation |
-| [PROJECT-DOC.md](../DFBU/docs/PROJECT-DOC.md) | Technical project overview |
 | [PERFORMANCE_OPTIMIZATIONS.md](PERFORMANCE_OPTIMIZATIONS.md) | Threading and performance improvements |
 
 ### Testing

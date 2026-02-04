@@ -1,10 +1,27 @@
 # Branch Protection System
 
+## Quick Reference
+
+1. **ALL development happens on `testing` branch**
+2. **NEVER commit directly to `main` branch**
+3. **ONLY merge to `main` after testing and approval**
+4. **ALWAYS switch back to `testing` after merging**
+
+```bash
+# Check before modifications
+python .agents/branch_protection.py
+
+# If on wrong branch
+git checkout testing
+```
+
+---
+
 ## Overview
 
 This repository implements branch protection to prevent accidental modifications to the `main` branch. The protection applies primarily to AI coding agents via a Python script.
 
-For setting up branch protection on new repositories, see `create-branch-protections.prompt.md`.
+For setting up branch protection on new repositories, see `.github/prompts/create-branch-protections.prompt.md`.
 
 ## Protection Layers
 

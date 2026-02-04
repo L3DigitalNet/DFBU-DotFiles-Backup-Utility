@@ -1,9 +1,9 @@
 # DFBU Architecture Documentation
 
-**Version:** 0.9.1
+**Version:** 1.0.0
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
-**Last Updated:** February 1, 2026
+**Last Updated:** February 4, 2026
 **License:** MIT
 
 ---
@@ -125,21 +125,14 @@ def copy_file(src: Path, dest: Path) -> tuple[Path | None, bool]:
     return dest, True
 ```
 
-### Version-Aware Error Handling
+### Error Handling Philosophy
 
-**Pre-v1.0.0 (Current)**:
+DFBU v1.0.0 implements comprehensive error handling with:
 
-- Focus on clean architecture and core functionality
-- Minimal error handling in non-critical paths
-- Errors logged but not always recovered
-- Acceptable for development and testing
-
-**Post-v1.0.0 (Planned)**:
-
-- Comprehensive error handling with recovery strategies
-- User-friendly error messages and guidance
+- Structured error categorization and recovery strategies
+- User-friendly error messages and guidance via RecoveryDialog
 - Graceful degradation where possible
-- Production-ready robustness
+- Production-ready robustness with retry logic for transient failures
 
 ---
 
@@ -603,9 +596,9 @@ class RestoreBackupManager:
 
 4. Component Processing
    └─> ConfigManager.load_config()
-       ├─> Read TOML file
-       ├─> Parse configuration
-       ├─> Validate with ConfigValidator
+       ├─> Read YAML files (settings.yaml, dotfiles.yaml, session.yaml)
+       ├─> Parse configuration with ruamel.yaml
+       ├─> Validate configuration
        └─> Return (success, message)
 
 5. ViewModel Response
@@ -1009,7 +1002,7 @@ This architecture supports both current development needs and future extensibili
 
 **See Also**:
 
-- [GUI-PROJECT-DOC.md](GUI-PROJECT-DOC.md) - Detailed implementation documentation
 - [README.md](../../README.md) - Project overview
 - [CONTRIBUTING.md](../../CONTRIBUTING.md) - Development guidelines
 - [Test Suite README](../tests/README.md) - Testing documentation
+- [Documentation Index](../../docs/INDEX.md) - Complete documentation guide

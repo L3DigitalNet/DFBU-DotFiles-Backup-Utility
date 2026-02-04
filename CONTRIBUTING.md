@@ -79,7 +79,7 @@ python .agents/branch_protection.py
 git checkout testing
 ```
 
-See [docs/BRANCH_PROTECTION_QUICK.md](docs/BRANCH_PROTECTION_QUICK.md) for quick reference or [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for full details.
+See [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for full details.
 
 ### 1. Create a Feature Branch
 
@@ -190,16 +190,6 @@ MAX_SIZE: Final[int] = 1000
 from typing import List, Dict, Optional
 
 def process_data(items: List[str], config: Optional[Dict] = None) -> bool:
-    return True
-```
-
-### Type Hints
-
-Always use type hints:
-
-```python
-def process_data(items: list[str], config: dict[str, Any] | None = None) -> bool:
-    """Process data with optional configuration."""
     return True
 ```
 
@@ -329,12 +319,19 @@ DFBU-DotFiles-Backup-Utility/
 │   │   ├── file_operations.py      # File system operations
 │   │   ├── backup_orchestrator.py  # Backup/restore coordination
 │   │   ├── statistics_tracker.py   # Operation metrics
+│   │   ├── error_handler.py        # Structured error handling
+│   │   ├── verification_manager.py # Backup integrity verification
+│   │   ├── restore_backup_manager.py # Pre-restore safety backups
+│   │   ├── size_analyzer.py        # File size analysis
+│   │   ├── protocols.py            # Protocol interfaces for DI
 │   │   ├── input_validation.py     # Input validation framework
+│   │   ├── config_workers.py       # QThread workers
 │   │   ├── logging_config.py       # Logging configuration
-│   │   └── constants.py            # Application constants
+│   │   ├── constants.py            # Application constants
+│   │   └── designer/               # Qt Designer .ui files
 │   ├── core/                       # Shared utilities
 │   │   ├── common_types.py         # TypedDict definitions
-│   │   └── validation.py           # Configuration validation
+│   │   └── yaml_config.py          # YAML config loading/saving
 │   ├── tests/                      # Test suite
 │   │   ├── README.md               # Testing documentation
 │   │   ├── conftest.py             # Pytest fixtures

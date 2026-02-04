@@ -1,40 +1,52 @@
-# GitHub Copilot Instructions - PySide6 Desktop Application Template
+# GitHub Copilot Instructions - DFBU Desktop Application
 
 ## Project Overview
-This is a template for desktop applications built with PySide6, Python 3.14, following MVVM architecture and SOLID principles, with Pytest for testing.
 
-**Platform:** Linux only (no Windows or macOS compatibility required)
-**Python Version:** 3.14
-**PySide6 Version:** Latest compatible with Python 3.14 (6.8.0+)
-**Virtual Environment Manager:** UV (fast Python package installer)
+DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux desktop application for configuration file backup/restoration with a PySide6 GUI interface.
+
+**Platform:** Linux only
+**Python Version:** 3.14+
+**PySide6 Version:** 6.8.0+
+**Package Manager:** UV
 **UI Design Tool:** Qt Designer (.ui files - NO hardcoded UI)
+
+For comprehensive architecture documentation, see [DFBU/docs/ARCHITECTURE.md](../DFBU/docs/ARCHITECTURE.md).
+For development setup and contribution guidelines, see [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Core Architecture
 
 ### MVVM Pattern
-- **Model**: Business logic and data management (no UI dependencies)
-- **View**: PySide6 UI components (QWidget, QMainWindow, etc.)
-- **ViewModel**: Mediates between View and Model, handles presentation logic
+- **Model** (`DFBU/gui/model.py` + components): Business logic, data management (no UI dependencies)
+- **View** (`DFBU/gui/view.py`): PySide6 UI components loaded from .ui files
+- **ViewModel** (`DFBU/gui/viewmodel.py`): Mediates between View and Model
   - Uses Qt signals/slots for reactive binding
-  - No direct Qt imports in ViewModels when possible
+  - Manages QThread workers for non-blocking operations
   - ViewModels should be testable without UI instantiation
 
 ### Directory Structure
 ```
-src/
-├── models/           # Business logic, data classes, domain entities
-├── viewmodels/       # Presentation logic, state management
-├── views/            # PySide6 UI components
-│   ├── ui/           # Qt Designer .ui files (MANDATORY)
-│   └── *.py          # Python files that LOAD .ui files
-├── services/         # External integrations, APIs, file I/O
-├── utils/            # Helper functions, constants
-└── main.py           # Application entry point
-
-tests/
-├── unit/             # Unit tests for models, viewmodels
-├── integration/      # Integration tests
-└── conftest.py       # Pytest fixtures and configuration
+DFBU/
+├── dfbu_gui.py               # Application entry point
+├── core/                     # Shared utilities (no Qt imports)
+│   ├── common_types.py       # TypedDict definitions
+│   └── yaml_config.py        # YAML config loading/saving
+├── gui/                      # MVVM presentation layer
+│   ├── model.py              # Model facade
+│   ├── viewmodel.py          # Presentation logic
+│   ├── view.py               # PySide6 UI
+│   ├── protocols.py          # Protocol interfaces for DI
+│   ├── config_manager.py     # Configuration management
+│   ├── file_operations.py    # File system operations
+│   ├── backup_orchestrator.py # Backup/restore coordination
+│   ├── error_handler.py      # Structured error handling
+│   ├── verification_manager.py # Backup integrity
+│   ├── restore_backup_manager.py # Pre-restore safety
+│   ├── size_analyzer.py      # File size analysis
+│   ├── statistics_tracker.py # Operation metrics
+│   ├── config_workers.py     # QThread workers
+│   └── designer/             # Qt Designer .ui files (MANDATORY)
+├── data/                     # YAML configuration files
+└── tests/                    # Test suite (pytest + pytest-qt)
 ```
 
 ## UI Design Standards (CRITICAL)
@@ -229,7 +241,7 @@ class DataServiceProtocol(Protocol):
 ```
 
 **Type checking:**
-- Run `mypy src/` regularly to verify type correctness
+- Run `mypy DFBU/` regularly to verify type correctness
 - Fix ALL type checking errors before committing
 - Use `# type: ignore[error-code]` sparingly with justification comments
 
@@ -269,60 +281,14 @@ def calculate_total(items: List[float]) -> float:
 
 ## Testing with Pytest
 
-### Test Structure
-```python
-# tests/unit/test_model.py
-import pytest
-from src.models.my_model import MyModel
+For comprehensive testing documentation, fixtures, and coverage details, see [DFBU/tests/README.md](../DFBU/tests/README.md).
 
-class TestMyModel:
-    @pytest.fixture
-    def model(self):
-        return MyModel()
+Tests use AAA pattern (Arrange-Act-Assert) with pytest-qt for signal testing:
 
-    def test_basic_functionality(self, model):
-        # Arrange
-        expected = "value"
-
-        # Act
-        result = model.process(expected)
-
-        # Assert
-        assert result == expected
-```
-
-### Testing ViewModels
-```python
-# tests/unit/test_viewmodel.py
-import pytest
-from pytestqt.qtbot import QtBot
-from src.viewmodels.my_viewmodel import MyViewModel
-
-def test_signal_emission(qtbot):
-    vm = MyViewModel()
-
-    with qtbot.waitSignal(vm.data_changed, timeout=1000):
-        vm.update_data("test")
-```
-
-### Mocking
-- Use `pytest-mock` for mocking dependencies
-- Mock external services and file I/O
-- Test ViewModels without instantiating Views
-
-### Fixtures
-```python
-# tests/conftest.py
-import pytest
-from PySide6.QtWidgets import QApplication
-
-@pytest.fixture(scope="session")
-def qapp():
-    """Create QApplication instance for tests."""
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication([])
-    yield app
+```bash
+pytest DFBU/tests/                    # All tests
+pytest DFBU/tests/ -m unit            # Unit tests only
+pytest DFBU/tests/ --cov=DFBU         # With coverage
 ```
 
 ## Dependency Injection Pattern
@@ -457,11 +423,8 @@ logging.basicConfig(
 
 ## Project Documentation
 
-For comprehensive documentation specific to this project:
-
 - [docs/INDEX.md](../docs/INDEX.md) - Complete documentation index
 - [DFBU/docs/ARCHITECTURE.md](../DFBU/docs/ARCHITECTURE.md) - Detailed architecture documentation
 - [DFBU/tests/README.md](../DFBU/tests/README.md) - Testing documentation and fixtures
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - Development setup and contribution guidelines
-- [CLAUDE.md](../CLAUDE.md) - Claude Code / AI assistant instructions
-- [AGENTS.md](../AGENTS.md) - General AI agent reference
+- [docs/BRANCH_PROTECTION.md](../docs/BRANCH_PROTECTION.md) - Branch protection rules
