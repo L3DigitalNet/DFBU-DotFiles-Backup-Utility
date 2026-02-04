@@ -34,7 +34,7 @@ Classes:
     - SizeReportDict: TypedDict for backup size analysis report
 """
 
-from typing import TypedDict
+from typing import Required, TypedDict
 
 
 class PathsDict(TypedDict):
@@ -49,12 +49,12 @@ class PathsDict(TypedDict):
     restore_backup_dir: str
 
 
-class OptionsDict(TypedDict, total=False):
+class OptionsDict(TypedDict):
     """
     Type definition for backup options configuration dictionary.
 
     Contains all backup operation settings and preferences.
-    All fields are optional (total=False) to support partial updates.
+    All fields are required to ensure type safety.
     """
 
     mirror: bool
@@ -103,7 +103,7 @@ class DotFileDict(TypedDict, total=False):
         tags: Comma-separated tags for categorization (optional)
     """
 
-    description: str
+    description: Required[str]
     path: str
     paths: list[str]
     tags: str

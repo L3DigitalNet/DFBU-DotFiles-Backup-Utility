@@ -1,9 +1,11 @@
 """Tests for YAML configuration loading and saving."""
 
 from pathlib import Path
+from typing import cast
 
 import pytest
 
+from core.common_types import DotFileDict, SessionDict, SettingsDict
 from core.yaml_config import YAMLConfigLoader
 
 
@@ -62,9 +64,9 @@ Konsole:
 
         assert "Bash" in dotfiles
         assert dotfiles["Bash"]["description"] == "Shell configuration"
-        assert dotfiles["Bash"]["path"] == "~/.bashrc"
+        assert dotfiles["Bash"].get("path") == "~/.bashrc"
         assert "Konsole" in dotfiles
-        assert dotfiles["Konsole"]["tags"] == "kde, terminal"
+        assert dotfiles["Konsole"].get("tags") == "kde, terminal"
 
     @pytest.mark.unit
     def test_load_session(self, tmp_path: Path) -> None:
@@ -92,7 +94,8 @@ excluded:
     def test_save_settings(self, tmp_path: Path) -> None:
         """Save settings to YAML file."""
         loader = YAMLConfigLoader(tmp_path)
-        settings = {
+        # Cast needed: test uses partial OptionsDict (missing v1.0.0 size fields)
+        settings = cast(SettingsDict, {
             "paths": {
                 "mirror_dir": "~/test/mirror",
                 "archive_dir": "~/test/archives",
@@ -112,7 +115,7 @@ excluded:
                 "verify_after_backup": False,
                 "hash_verification": False,
             },
-        }
+        })
         loader.save_settings(settings)
 
         content = (tmp_path / "settings.yaml").read_text()
@@ -123,7 +126,7 @@ excluded:
     def test_save_session(self, tmp_path: Path) -> None:
         """Save session exclusions to YAML file."""
         loader = YAMLConfigLoader(tmp_path)
-        session = {"excluded": ["Wine", "MAME"]}
+        session: SessionDict = {"excluded": ["Wine", "MAME"]}
         loader.save_session(session)
 
         content = (tmp_path / "session.yaml").read_text()
@@ -134,7 +137,7 @@ excluded:
     def test_save_dotfiles(self, tmp_path: Path) -> None:
         """Save dotfiles library to YAML file."""
         loader = YAMLConfigLoader(tmp_path)
-        dotfiles = {
+        dotfiles: dict[str, DotFileDict] = {
             "Bash": {
                 "description": "Shell configuration",
                 "path": "~/.bashrc",

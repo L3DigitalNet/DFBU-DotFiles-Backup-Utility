@@ -40,13 +40,15 @@ Functions:
 """
 
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Protocol
+from typing import Protocol
 
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.common_types import (
     DotFileDict,
+    LegacyDotFileDict,
     OperationResultDict,
     OptionsDict,
     PathResultDict,
@@ -188,22 +190,34 @@ class FileOperationsProtocol(Protocol):
         ...
 
     def create_archive(
-        self, dotfiles_to_archive: list[tuple[Path, bool, bool]]
+        self,
+        dotfiles_to_archive: list[tuple[Path, bool, bool]],
+        archive_base_dir: Path,
+        hostname_subdir: bool,
     ) -> Path | None:
         """
         Create compressed TAR.GZ archive of existing dotfiles.
 
         Args:
             dotfiles_to_archive: List of (path, exists, is_dir) tuples
+            archive_base_dir: Base directory for archives
+            hostname_subdir: Include hostname subdirectory in archive path
 
         Returns:
             Path to created archive file, or None if operation failed
         """
         ...
 
-    def rotate_archives(self) -> list[Path]:
+    def rotate_archives(
+        self, archive_base_dir: Path, hostname_subdir: bool, max_archives: int
+    ) -> list[Path]:
         """
         Delete oldest archives exceeding maximum retention limit.
+
+        Args:
+            archive_base_dir: Base directory for archives
+            hostname_subdir: Whether archives are in hostname subdirectory
+            max_archives: Maximum number of archives to retain
 
         Returns:
             List of deleted archive paths
@@ -261,7 +275,7 @@ class ConfigManagerProtocol(Protocol):
         ...
 
     @property
-    def dotfiles(self) -> list[DotFileDict]:
+    def dotfiles(self) -> list[LegacyDotFileDict]:
         """Get current dotfiles list."""
         ...
 
@@ -401,7 +415,7 @@ class ConfigManagerProtocol(Protocol):
         """
         ...
 
-    def get_dotfile_by_index(self, index: int) -> DotFileDict | None:
+    def get_dotfile_by_index(self, index: int) -> LegacyDotFileDict | None:
         """
         Get dotfile metadata by index.
 

@@ -42,13 +42,12 @@ from pathlib import Path
 from typing import Any, Final
 
 # Local imports
-from core.common_types import DotFileDict, OperationResultDict, SizeReportDict
+from core.common_types import LegacyDotFileDict, OperationResultDict, SizeReportDict
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtGui import QAction, QCloseEvent, QColor, QTextCursor
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QCheckBox,
-    QComboBox,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
@@ -70,9 +69,9 @@ from PySide6.QtWidgets import (
 
 from gui.constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
 from gui.help_dialog import HelpDialog
+from gui.input_validation import InputValidator
 from gui.recovery_dialog import RecoveryDialog
 from gui.size_warning_dialog import SizeWarningDialog
-from gui.input_validation import InputValidator
 from gui.tooltip_manager import TooltipManager
 from gui.viewmodel import DFBUViewModel
 
@@ -497,9 +496,7 @@ class MainWindow(QMainWindow):
 
         # Extract components from loaded QMainWindow to avoid nesting
         # Qt doesn't allow QMainWindow within QMainWindow, so we extract and reparent
-        if hasattr(loaded_window, "centralWidget") and callable(
-            getattr(loaded_window, "centralWidget", None)
-        ):
+        if isinstance(loaded_window, QMainWindow):
             central = loaded_window.centralWidget()
             if isinstance(central, QWidget):
                 ui_widget = central
@@ -507,22 +504,16 @@ class MainWindow(QMainWindow):
                 self.setCentralWidget(ui_widget)
 
             # Extract and set menubar if present
-            if hasattr(loaded_window, "menuBar") and callable(
-                getattr(loaded_window, "menuBar", None)
-            ):
-                menu = loaded_window.menuBar()
-                if menu is not None:
-                    # Set menubar without reparenting to avoid object lifecycle issues
-                    self.setMenuBar(menu)
+            menu = loaded_window.menuBar()
+            if menu is not None:
+                # Set menubar without reparenting to avoid object lifecycle issues
+                self.setMenuBar(menu)
 
             # Extract and set statusbar if present
-            if hasattr(loaded_window, "statusBar") and callable(
-                getattr(loaded_window, "statusBar", None)
-            ):
-                status = loaded_window.statusBar()
-                if status is not None:
-                    status.setParent(self)
-                    self.setStatusBar(status)
+            status = loaded_window.statusBar()
+            if status is not None:
+                status.setParent(self)
+                self.setStatusBar(status)
         # Fallback for non-QMainWindow UI files
         elif isinstance(loaded_window, QWidget):
             ui_widget = loaded_window
@@ -583,9 +574,7 @@ class MainWindow(QMainWindow):
             QTableWidget, "fileGroupFileTable"
         )  # type: ignore[assignment]
         # Filter input for searching dotfiles
-        self._filter_input = ui_widget.findChild(
-            QLineEdit, "filterLineEdit"
-        )  # type: ignore[assignment]
+        self._filter_input = ui_widget.findChild(QLineEdit, "filterLineEdit")
         self.total_size_label: QLabel = ui_widget.findChild(
             QLabel, "fileGroupTotalSizeLabel"
         )  # type: ignore[assignment]
@@ -704,7 +693,9 @@ class MainWindow(QMainWindow):
 
     def _find_logs_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to Logs tab widgets."""
-        self.verify_backup_btn: QPushButton = ui_widget.findChild(QPushButton, "verifyBackupButton")  # type: ignore[assignment]
+        self.verify_backup_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "verifyBackupButton"
+        )  # type: ignore[assignment]
         self.save_log_btn: QPushButton = ui_widget.findChild(QPushButton, "pushButton")  # type: ignore[assignment]
 
     def _find_status_widgets(self) -> None:
@@ -732,7 +723,9 @@ class MainWindow(QMainWindow):
             QAction, "actionVerifyBackup"
         )  # type: ignore[assignment]
         self.action_about: QAction = loaded_window.findChild(QAction, "actionAbout")  # type: ignore[assignment]
-        self.action_user_guide: QAction = loaded_window.findChild(QAction, "actionUserGuide")  # type: ignore[assignment]
+        self.action_user_guide: QAction = loaded_window.findChild(
+            QAction, "actionUserGuide"
+        )  # type: ignore[assignment]
 
         # Fix Qt object ownership: Reparent actions to prevent deletion
         for action in [
@@ -797,7 +790,9 @@ class MainWindow(QMainWindow):
         self.config_pre_restore_checkbox.stateChanged.connect(self._on_config_changed)
         self.config_max_restore_spinbox.valueChanged.connect(self._on_config_changed)
         self.config_restore_path_edit.textChanged.connect(self._on_config_changed)
-        self.browse_restore_backup_btn.clicked.connect(self._on_browse_restore_backup_dir)
+        self.browse_restore_backup_btn.clicked.connect(
+            self._on_browse_restore_backup_dir
+        )
         self.save_config_btn.clicked.connect(self._on_save_config)
         # Verification options signal connections (v1.1.0)
         self.config_verify_checkbox.stateChanged.connect(self._on_config_changed)
@@ -836,9 +831,15 @@ class MainWindow(QMainWindow):
         """
         # Set column resize modes
         header = self.dotfile_table.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)  # Included
-        header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)  # Status
-        header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)  # Application
+        header.setSectionResizeMode(
+            0, QHeaderView.ResizeMode.ResizeToContents
+        )  # Included
+        header.setSectionResizeMode(
+            1, QHeaderView.ResizeMode.ResizeToContents
+        )  # Status
+        header.setSectionResizeMode(
+            2, QHeaderView.ResizeMode.ResizeToContents
+        )  # Application
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)  # Tags
         header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)  # Size
         header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)  # Path
@@ -1167,7 +1168,7 @@ class MainWindow(QMainWindow):
 
     def _populate_dotfile_table(
         self,
-        dotfiles: list[DotFileDict],
+        dotfiles: list[LegacyDotFileDict],
         validation: dict[int, tuple[bool, bool, str]],
         sizes: dict[int, int],
     ) -> None:
@@ -1218,7 +1219,7 @@ class MainWindow(QMainWindow):
         self,
         row_idx: int,
         original_idx: int,
-        dotfile: DotFileDict,
+        dotfile: LegacyDotFileDict,
         exists: bool,
         size: int,
     ) -> None:
@@ -1241,7 +1242,7 @@ class MainWindow(QMainWindow):
             size: Total size in bytes
         """
         # Get application name for exclusion check
-        application = dotfile.get("application", "")
+        application = dotfile["application"]
 
         # Included indicator (checked = included, unchecked = excluded)
         # In the legacy format, "enabled" reflects "not excluded"
@@ -1270,7 +1271,7 @@ class MainWindow(QMainWindow):
 
         # Tags (column 3) - use category as tags for legacy format
         # In legacy format, category serves as tags
-        tags = dotfile.get("category", "")
+        tags = dotfile["category"]
         self.dotfile_table.setItem(row_idx, 3, QTableWidgetItem(tags))
 
         # Size - format to human readable with custom numeric sorting (column 4)
@@ -1285,7 +1286,7 @@ class MainWindow(QMainWindow):
         self.dotfile_table.setItem(row_idx, 4, size_item)
 
         # Path - show first path with count indicator if multiple (column 5)
-        paths = dotfile["paths"]
+        paths = dotfile.get("paths", [])
         if len(paths) == 1:
             path_display = paths[0]
         else:
@@ -1293,7 +1294,7 @@ class MainWindow(QMainWindow):
 
         path_item = QTableWidgetItem(path_display)
         # Tooltip shows description and all paths
-        tooltip_text = f"{dotfile['description']}\n\nPaths:\n{'\n'.join(paths)}"
+        tooltip_text = f"{dotfile.get('description', '')}\n\nPaths:\n{'\n'.join(paths)}"
         path_item.setToolTip(tooltip_text)
         self.dotfile_table.setItem(row_idx, 5, path_item)
 
@@ -1328,7 +1329,9 @@ class MainWindow(QMainWindow):
         self.config_max_restore_spinbox.setEnabled(options["pre_restore_backup"])
 
         # Verification options (v1.1.0)
-        self.config_verify_checkbox.setChecked(options.get("verify_after_backup", False))
+        self.config_verify_checkbox.setChecked(
+            options.get("verify_after_backup", False)
+        )
         self.config_hash_checkbox.setChecked(options.get("hash_verification", False))
 
         # Size management options (v1.1.0)
@@ -1440,7 +1443,9 @@ class MainWindow(QMainWindow):
         # Update status bar to show scanning progress
         self.status_bar.showMessage(f"Analyzing file sizes... {progress}%")
         if progress >= 100:
-            self.status_bar.showMessage("Size analysis complete", STATUS_MESSAGE_TIMEOUT_MS)
+            self.status_bar.showMessage(
+                "Size analysis complete", STATUS_MESSAGE_TIMEOUT_MS
+            )
 
     def _reset_backup_ui(self) -> None:
         """Reset UI state after backup cancellation."""
@@ -1756,12 +1761,12 @@ class MainWindow(QMainWindow):
         dotfile = self.viewmodel.get_dotfile_list()[original_idx]
 
         # Format paths display
-        paths_display = "\n".join(dotfile["paths"])
+        paths_display = "\n".join(dotfile.get("paths", []))
 
         reply = QMessageBox.question(
             self,
             "Confirm Remove",
-            f"Remove dotfile entry for {dotfile['application']}?\n\n"
+            f"Remove dotfile entry for {dotfile.get('application', 'Unknown')}?\n\n"
             f"Paths:\n{paths_display}\n\n"
             "This will not delete the actual files, only the configuration entry.",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -1800,7 +1805,7 @@ class MainWindow(QMainWindow):
 
         # Get current dotfile
         dotfile = self.viewmodel.get_dotfile_list()[original_idx]
-        application = dotfile.get("application", "")
+        application = dotfile["application"]
 
         if not application:
             return

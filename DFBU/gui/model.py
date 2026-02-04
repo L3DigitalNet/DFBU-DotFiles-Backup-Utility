@@ -36,12 +36,16 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 from socket import gethostname
-from typing import Any, cast
 
 
 # Local imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from core.common_types import DotFileDict, OptionsDict, SizeReportDict
+from core.common_types import (
+    DotFileDict,
+    LegacyDotFileDict,
+    OptionsDict,
+    SizeReportDict,
+)
 
 from gui.backup_orchestrator import BackupOrchestrator
 from gui.config_manager import ConfigManager
@@ -186,27 +190,27 @@ class DFBUModel:
     @property
     def config_path(self) -> Path:
         """Get current configuration file path."""
-        return cast(Path, self._config_manager.config_path)
+        return self._config_manager.config_path
 
     @property
     def options(self) -> OptionsDict:
         """Get current options configuration."""
-        return cast(OptionsDict, self._config_manager.options)
+        return self._config_manager.options
 
     @property
-    def dotfiles(self) -> list[DotFileDict]:
+    def dotfiles(self) -> list[LegacyDotFileDict]:
         """Get current dotfiles list."""
-        return cast(list[DotFileDict], self._config_manager.dotfiles)
+        return self._config_manager.dotfiles
 
     @property
     def statistics(self) -> BackupStatistics:
         """Get current operation statistics."""
-        return cast(BackupStatistics, self._stats_tracker.statistics)
+        return self._stats_tracker.statistics
 
     @property
     def mirror_base_dir(self) -> Path:
         """Get mirror backup base directory."""
-        return cast(Path, self._config_manager.mirror_base_dir)
+        return self._config_manager.mirror_base_dir
 
     @mirror_base_dir.setter
     def mirror_base_dir(self, path: Path) -> None:
@@ -217,7 +221,7 @@ class DFBUModel:
     @property
     def archive_base_dir(self) -> Path:
         """Get archive backup base directory."""
-        return cast(Path, self._config_manager.archive_base_dir)
+        return self._config_manager.archive_base_dir
 
     @archive_base_dir.setter
     def archive_base_dir(self, path: Path) -> None:
@@ -228,7 +232,7 @@ class DFBUModel:
     @property
     def restore_backup_dir(self) -> Path:
         """Get pre-restore backup directory."""
-        return cast(Path, self._config_manager.restore_backup_dir)
+        return self._config_manager.restore_backup_dir
 
     @restore_backup_dir.setter
     def restore_backup_dir(self, path: Path) -> None:
@@ -301,8 +305,8 @@ class DFBUModel:
             self._size_analyzer.alert_threshold_mb = self._config_manager.options.get(
                 "size_alert_threshold_mb", 100
             )
-            self._size_analyzer.critical_threshold_mb = self._config_manager.options.get(
-                "size_critical_threshold_mb", 1024
+            self._size_analyzer.critical_threshold_mb = (
+                self._config_manager.options.get("size_critical_threshold_mb", 1024)
             )
 
         return success, error
@@ -314,7 +318,7 @@ class DFBUModel:
         Returns:
             Tuple of (success, error_message). error_message is empty on success.
         """
-        return cast(tuple[bool, str], self._config_manager.save_config())
+        return self._config_manager.save_config()
 
     def add_dotfile(
         self,
@@ -337,11 +341,8 @@ class DFBUModel:
         Returns:
             True if dotfile was added successfully
         """
-        return cast(
-            bool,
-            self._config_manager.add_dotfile(
-                category, application, description, paths, enabled
-            ),
+        return self._config_manager.add_dotfile(
+            category, application, description, paths, enabled
         )
 
     def update_dotfile(
@@ -367,11 +368,8 @@ class DFBUModel:
         Returns:
             True if dotfile was updated successfully
         """
-        return cast(
-            bool,
-            self._config_manager.update_dotfile(
-                index, category, application, description, paths, enabled
-            ),
+        return self._config_manager.update_dotfile(
+            index, category, application, description, paths, enabled
         )
 
     def remove_dotfile(self, index: int) -> bool:
@@ -384,7 +382,7 @@ class DFBUModel:
         Returns:
             True if dotfile was removed successfully
         """
-        return cast(bool, self._config_manager.remove_dotfile(index))
+        return self._config_manager.remove_dotfile(index)
 
     def toggle_dotfile_enabled(self, index: int) -> bool:
         """
@@ -396,7 +394,7 @@ class DFBUModel:
         Returns:
             New enabled status if successful, current status otherwise
         """
-        return cast(bool, self._config_manager.toggle_dotfile_enabled(index))
+        return self._config_manager.toggle_dotfile_enabled(index)
 
     def update_option(self, key: str, value: bool | int | str) -> bool:
         """
@@ -409,7 +407,7 @@ class DFBUModel:
         Returns:
             True if option was updated successfully
         """
-        return cast(bool, self._config_manager.update_option(key, value))
+        return self._config_manager.update_option(key, value)
 
     def update_path(self, path_type: str, value: str) -> bool:
         """
@@ -439,7 +437,7 @@ class DFBUModel:
 
         return success
 
-    def get_dotfile_by_index(self, index: int) -> DotFileDict | None:
+    def get_dotfile_by_index(self, index: int) -> LegacyDotFileDict | None:
         """
         Get dotfile metadata by index.
 
@@ -449,7 +447,7 @@ class DFBUModel:
         Returns:
             Dotfile dictionary or None if invalid index
         """
-        return cast(DotFileDict | None, self._config_manager.get_dotfile_by_index(index))
+        return self._config_manager.get_dotfile_by_index(index)
 
     def get_dotfile_count(self) -> int:
         """
@@ -458,7 +456,7 @@ class DFBUModel:
         Returns:
             Number of dotfiles in configuration
         """
-        return cast(int, self._config_manager.get_dotfile_count())
+        return self._config_manager.get_dotfile_count()
 
     # =========================================================================
     # File Operations (Delegate to FileOperations)
@@ -474,7 +472,7 @@ class DFBUModel:
         Returns:
             Expanded Path object
         """
-        return cast(Path, self._file_ops.expand_path(path_str))
+        return self._file_ops.expand_path(path_str)
 
     def check_readable(self, path: Path) -> bool:
         """
@@ -486,7 +484,7 @@ class DFBUModel:
         Returns:
             True if readable, False otherwise
         """
-        return cast(bool, self._file_ops.check_readable(path))
+        return self._file_ops.check_readable(path)
 
     def create_directory(self, path: Path, mode: int = 0o755) -> None:
         """
@@ -509,7 +507,7 @@ class DFBUModel:
         Returns:
             True if files are identical (same size and mtime), False otherwise
         """
-        return cast(bool, self._file_ops.files_are_identical(src_path, dest_path))
+        return self._file_ops.files_are_identical(src_path, dest_path)
 
     def copy_file(
         self,
@@ -530,9 +528,8 @@ class DFBUModel:
         Returns:
             True if copied successfully or skipped due to identical files
         """
-        return cast(
-            bool,
-            self._file_ops.copy_file(src_path, dest_path, create_parent, skip_identical),
+        return self._file_ops.copy_file(
+            src_path, dest_path, create_parent, skip_identical
         )
 
     def copy_directory(
@@ -549,10 +546,7 @@ class DFBUModel:
         Returns:
             List of (src_file, dest_file, success, skipped) tuples for each file
         """
-        return cast(
-            list[tuple[Path, Path | None, bool, bool]],
-            self._file_ops.copy_directory(src_path, dest_base, skip_identical),
-        )
+        return self._file_ops.copy_directory(src_path, dest_base, skip_identical)
 
     def calculate_path_size(self, path: Path) -> int:
         """
@@ -564,7 +558,7 @@ class DFBUModel:
         Returns:
             Total size in bytes, 0 if path doesn't exist or permission denied
         """
-        return cast(int, self._file_ops.calculate_path_size(path))
+        return self._file_ops.calculate_path_size(path)
 
     def get_dotfile_sizes(self) -> dict[int, int]:
         """
@@ -604,11 +598,8 @@ class DFBUModel:
         Returns:
             Assembled destination path
         """
-        return cast(
-            Path,
-            self._file_ops.assemble_dest_path(
-                base_path, src_path, hostname_subdir, date_subdir
-            ),
+        return self._file_ops.assemble_dest_path(
+            base_path, src_path, hostname_subdir, date_subdir
         )
 
     def create_archive(
@@ -623,11 +614,10 @@ class DFBUModel:
         Returns:
             Path to created archive file, or None if operation failed
         """
-        return cast(
-            Path | None,
-            self._file_ops.create_archive(
-                dotfiles_to_archive, self.archive_base_dir, self.options["hostname_subdir"]
-            ),
+        return self._file_ops.create_archive(
+            dotfiles_to_archive,
+            self.archive_base_dir,
+            self.options["hostname_subdir"],
         )
 
     def rotate_archives(self) -> list[Path]:
@@ -637,13 +627,10 @@ class DFBUModel:
         Returns:
             List of deleted archive paths
         """
-        return cast(
-            list[Path],
-            self._file_ops.rotate_archives(
-                self.archive_base_dir,
-                self.options["hostname_subdir"],
-                self.options["max_archives"],
-            ),
+        return self._file_ops.rotate_archives(
+            self.archive_base_dir,
+            self.options["hostname_subdir"],
+            self.options["max_archives"],
         )
 
     def discover_restore_files(self, src_dir: Path) -> list[Path]:
@@ -656,7 +643,7 @@ class DFBUModel:
         Returns:
             List of all file paths found
         """
-        return cast(list[Path], self._file_ops.discover_restore_files(src_dir))
+        return self._file_ops.discover_restore_files(src_dir)
 
     def reconstruct_restore_paths(
         self, src_files: list[Path]
@@ -670,10 +657,7 @@ class DFBUModel:
         Returns:
             List of (src_path, dest_path) tuples
         """
-        return cast(
-            list[tuple[Path, Path | None]],
-            self._file_ops.reconstruct_restore_paths(src_files),
-        )
+        return self._file_ops.reconstruct_restore_paths(src_files)
 
     # =========================================================================
     # Backup/Restore Operations (Delegate to BackupOrchestrator)
@@ -686,10 +670,9 @@ class DFBUModel:
         Returns:
             Dict mapping dotfile index to (exists, is_dir, type_str) tuple
         """
-        return cast(
-            dict[int, tuple[bool, bool, str]],
-            self._backup_orchestrator.validate_dotfile_paths(self.dotfiles),
-        )
+        # Cast to list[DotFileDict] as LegacyDotFileDict is compatible for validation
+        dotfiles_for_validation: list[DotFileDict] = self.dotfiles  # type: ignore[assignment]  # Compatible structure
+        return self._backup_orchestrator.validate_dotfile_paths(dotfiles_for_validation)
 
     def execute_restore(
         self,
@@ -711,15 +694,14 @@ class DFBUModel:
         Returns:
             Tuple of (successful_items, total_items)
         """
-        pre_restore_enabled = self._config_manager.options.get("pre_restore_backup", True)
-        return cast(
-            tuple[int, int],
-            self._backup_orchestrator.execute_restore(
-                src_dir,
-                pre_restore_enabled=pre_restore_enabled,
-                progress_callback=progress_callback,
-                item_processed_callback=item_processed_callback,
-            ),
+        pre_restore_enabled = self._config_manager.options.get(
+            "pre_restore_backup", True
+        )
+        return self._backup_orchestrator.execute_restore(
+            src_dir,
+            pre_restore_enabled=pre_restore_enabled,
+            progress_callback=progress_callback,
+            item_processed_callback=item_processed_callback,
         )
 
     # =========================================================================
@@ -769,7 +751,7 @@ class DFBUModel:
             source_paths=self._last_backup_files,
             backup_type="mirror",
         )
-        return cast(str, self._verification_manager.format_report_for_log(report))
+        return self._verification_manager.format_report_for_log(report)
 
     def get_last_backup_file_count(self) -> int:
         """
@@ -834,14 +816,13 @@ class DFBUModel:
 
         # Filter to enabled dotfiles only
         enabled_dotfiles = [df for df in self.dotfiles if df.get("enabled", True)]
+        # Cast to list[DotFileDict] as LegacyDotFileDict is compatible for size analysis
+        dotfiles_for_analysis: list[DotFileDict] = enabled_dotfiles  # type: ignore[assignment]  # Compatible structure
 
-        return cast(
-            SizeReportDict,
-            self._size_analyzer.analyze_dotfiles(
-                dotfiles=enabled_dotfiles,
-                progress_callback=progress_callback,
-                ignore_patterns=patterns,
-            ),
+        return self._size_analyzer.analyze_dotfiles(
+            dotfiles=dotfiles_for_analysis,
+            progress_callback=progress_callback,
+            ignore_patterns=patterns,
         )
 
     def is_size_check_enabled(self) -> bool:
@@ -851,7 +832,7 @@ class DFBUModel:
         Returns:
             True if size checking is enabled
         """
-        return cast(bool, self._size_analyzer.size_check_enabled)
+        return self._size_analyzer.size_check_enabled
 
     def set_size_check_enabled(self, enabled: bool) -> None:
         """
@@ -872,4 +853,4 @@ class DFBUModel:
         Returns:
             Human-readable formatted string for log output
         """
-        return cast(str, self._size_analyzer.format_report_for_log(report))
+        return self._size_analyzer.format_report_for_log(report)

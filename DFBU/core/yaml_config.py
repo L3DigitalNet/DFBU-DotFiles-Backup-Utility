@@ -34,13 +34,12 @@ Classes:
 from pathlib import Path
 from typing import Any
 
-from ruamel.yaml import YAML
-
 from core.common_types import (
     DotFileDict,
     SessionDict,
     SettingsDict,
 )
+from ruamel.yaml import YAML
 
 
 class YAMLConfigLoader:
@@ -121,7 +120,7 @@ class YAMLConfigLoader:
 
         self._validate_settings(data)
 
-        return data  # type: ignore[return-value]
+        return data  # type: ignore[no-any-return]  # ruamel.yaml returns Any
 
     def load_dotfiles(self) -> dict[str, DotFileDict]:
         """
@@ -261,6 +260,4 @@ class YAMLConfigLoader:
             raise ValueError(f"Dotfile '{app_name}' missing required 'description'")
 
         if "path" not in data and "paths" not in data:
-            raise ValueError(
-                f"Dotfile '{app_name}' must have either 'path' or 'paths'"
-            )
+            raise ValueError(f"Dotfile '{app_name}' must have either 'path' or 'paths'")

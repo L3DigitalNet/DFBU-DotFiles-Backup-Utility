@@ -4,7 +4,6 @@ Comprehensive tests for worker thread signals and lifecycle.
 Tests BackupWorker and RestoreWorker signal emissions and cleanup.
 """
 
-import sys
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
@@ -12,12 +11,8 @@ from unittest.mock import patch
 import pytest
 from PySide6.QtCore import QThread
 
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from model import DFBUModel
-from viewmodel import DFBUViewModel
+from gui.model import DFBUModel
+from gui.viewmodel import DFBUViewModel
 
 
 def create_yaml_config(config_dir: Path, dotfiles: list[dict[str, Any]] | None = None) -> Path:

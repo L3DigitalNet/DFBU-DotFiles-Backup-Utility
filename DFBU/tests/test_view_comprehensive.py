@@ -13,23 +13,18 @@ Date Created: 11-01-2025
 License: MIT
 """
 
-import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from model import DFBUModel
+from gui.model import DFBUModel
 
 # Import Qt modules for testing
 from PySide6.QtCore import QByteArray, Qt
 from PySide6.QtWidgets import QApplication, QMessageBox
-from view import AddDotfileDialog, MainWindow, NumericTableWidgetItem
-from viewmodel import DFBUViewModel
+from gui.view import AddDotfileDialog, MainWindow, NumericTableWidgetItem
+from gui.viewmodel import DFBUViewModel
 
 
 @pytest.fixture
@@ -382,7 +377,7 @@ class TestMainWindowActions:
         window = MainWindow(viewmodel_with_config, "1.0.0")
 
         # Mock dialog
-        with patch("view.AddDotfileDialog") as mock_dialog_class:
+        with patch("gui.view.AddDotfileDialog") as mock_dialog_class:
             mock_dialog = Mock()
             mock_dialog.exec.return_value = False  # Dialog cancelled
             mock_dialog_class.return_value = mock_dialog

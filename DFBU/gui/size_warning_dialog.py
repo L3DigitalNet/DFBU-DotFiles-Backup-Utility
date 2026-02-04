@@ -7,7 +7,8 @@ Loaded from Qt Designer .ui file.
 from pathlib import Path
 from typing import Final
 
-from PySide6.QtCore import QFile, Qt
+from core.common_types import SizeReportDict
+from PySide6.QtCore import QFile
 from PySide6.QtGui import QColor
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
@@ -19,24 +20,22 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from core.common_types import SizeReportDict
-
 
 # Path to UI file relative to this module
 UI_FILE: Final[Path] = Path(__file__).parent / "designer" / "size_warning_dialog.ui"
 
 # Level colors for visual indication
 LEVEL_COLORS: Final[dict[str, QColor]] = {
-    "warning": QColor(255, 193, 7),   # Yellow/amber
-    "alert": QColor(255, 152, 0),     # Orange
+    "warning": QColor(255, 193, 7),  # Yellow/amber
+    "alert": QColor(255, 152, 0),  # Orange
     "critical": QColor(244, 67, 54),  # Red
 }
 
 # Level icons for visual indication
 LEVEL_ICONS: Final[dict[str, str]] = {
-    "warning": "\u26a0\ufe0f",      # Warning sign
-    "alert": "\U0001f536",           # Orange diamond
-    "critical": "\U0001f534",        # Red circle
+    "warning": "\u26a0\ufe0f",  # Warning sign
+    "alert": "\U0001f536",  # Orange diamond
+    "critical": "\U0001f534",  # Red circle
 }
 
 
@@ -83,7 +82,7 @@ class SizeWarningDialog(QDialog):
         loaded = loader.load(ui_file, self)
         ui_file.close()
 
-        if loaded is None:
+        if loaded is None:  # QUiLoader may return None on error
             raise RuntimeError(f"Failed to load UI file: {UI_FILE}")
 
         # Set window properties from loaded UI
@@ -102,16 +101,18 @@ class SizeWarningDialog(QDialog):
         cancel_btn = loaded.findChild(QPushButton, "cancelBtn")
 
         # Validate all required widgets were found
-        if not all([
-            title_label,
-            total_size_label,
-            file_count_label,
-            large_items_tree,
-            recommendation_label,
-            critical_warning_label,
-            continue_btn,
-            cancel_btn,
-        ]):
+        if not all(
+            [
+                title_label,
+                total_size_label,
+                file_count_label,
+                large_items_tree,
+                recommendation_label,
+                critical_warning_label,
+                continue_btn,
+                cancel_btn,
+            ]
+        ):
             raise RuntimeError(f"Missing required widgets in UI file: {UI_FILE}")
 
         # Assign to instance attributes (assertions for type narrowing)
@@ -177,12 +178,14 @@ class SizeWarningDialog(QDialog):
                 size_text = f"{size_mb:.1f} MB"
 
             # Create tree item
-            tree_item = QTreeWidgetItem([
-                f"{icon} {level.upper()}",
-                size_text,
-                item["path"],
-                item["application"],
-            ])
+            tree_item = QTreeWidgetItem(
+                [
+                    f"{icon} {level.upper()}",
+                    size_text,
+                    item["path"],
+                    item["application"],
+                ]
+            )
 
             # Set background color for level column
             if level in LEVEL_COLORS:

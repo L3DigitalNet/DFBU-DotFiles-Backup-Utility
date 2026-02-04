@@ -129,8 +129,9 @@ pytest DFBU/tests/test_your_feature.py -v
 ### 5. Code Quality Checks
 
 ```bash
-# Type checking (primary check)
+# Type checking (MANDATORY - conservative configuration)
 mypy DFBU/
+# See .mypy-strict-config.md for details on strict settings
 
 # Optional: Format code
 black DFBU/

@@ -10,15 +10,13 @@ Covers:
     - Log formatting
 """
 
-import sys
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-sys.path.insert(0, str(Path(__file__).parent.parent / "core"))
-from size_analyzer import (
+from core.common_types import DotFileDict
+from gui.size_analyzer import (
     DEFAULT_ALERT_THRESHOLD_MB,
     DEFAULT_CRITICAL_THRESHOLD_MB,
     DEFAULT_WARNING_THRESHOLD_MB,
@@ -237,7 +235,7 @@ class TestAnalyzeDotfiles:
         mock_file_ops.expand_path.return_value = test_path
         mock_file_ops.calculate_path_size.return_value = 1 * BYTES_PER_MB
 
-        dotfiles = [{"description": "Bash", "paths": [str(test_path)]}]
+        dotfiles: list[DotFileDict] = [{"description": "Bash", "paths": [str(test_path)]}]
         report = size_analyzer.analyze_dotfiles(dotfiles)
 
         assert report["total_files"] == 1
@@ -256,7 +254,7 @@ class TestAnalyzeDotfiles:
         mock_file_ops.expand_path.return_value = test_path
         mock_file_ops.calculate_path_size.return_value = 50 * BYTES_PER_MB
 
-        dotfiles = [{"description": "BigApp", "paths": [str(test_path)]}]
+        dotfiles: list[DotFileDict] = [{"description": "BigApp", "paths": [str(test_path)]}]
         report = size_analyzer.analyze_dotfiles(dotfiles)
 
         assert report["has_warning"] is True
@@ -275,7 +273,7 @@ class TestAnalyzeDotfiles:
         mock_file_ops.expand_path.return_value = test_path
         mock_file_ops.calculate_path_size.return_value = 2048 * BYTES_PER_MB
 
-        dotfiles = [{"description": "Firefox", "paths": [str(test_path)]}]
+        dotfiles: list[DotFileDict] = [{"description": "Firefox", "paths": [str(test_path)]}]
         report = size_analyzer.analyze_dotfiles(dotfiles)
 
         assert report["has_critical"] is True
@@ -294,7 +292,7 @@ class TestAnalyzeDotfiles:
         progress_values: list[int] = []
         callback = lambda p: progress_values.append(p)
 
-        dotfiles = [{"description": "Bash", "paths": [str(test_path)]}]
+        dotfiles: list[DotFileDict] = [{"description": "Bash", "paths": [str(test_path)]}]
         size_analyzer.analyze_dotfiles(dotfiles, progress_callback=callback)
 
         assert len(progress_values) > 0
@@ -319,7 +317,7 @@ class TestAnalyzeDotfiles:
         mock_file_ops.expand_path.side_effect = lambda p: Path(p)
         mock_file_ops.calculate_path_size.side_effect = mock_size
 
-        dotfiles = [
+        dotfiles: list[DotFileDict] = [
             {"description": "Small", "paths": [str(path1)]},
             {"description": "Large", "paths": [str(path2)]},
         ]
@@ -354,7 +352,7 @@ class TestFormatReport:
         mock_file_ops.expand_path.return_value = test_path
         mock_file_ops.calculate_path_size.return_value = 150 * BYTES_PER_MB
 
-        dotfiles = [{"description": "BigDir", "paths": [str(test_path)]}]
+        dotfiles: list[DotFileDict] = [{"description": "BigDir", "paths": [str(test_path)]}]
         report = size_analyzer.analyze_dotfiles(dotfiles)
         formatted = size_analyzer.format_report_for_log(report)
 
@@ -388,7 +386,7 @@ class TestEdgeCases:
         mock_file_ops.expand_path.return_value = Path("/nonexistent/path")
         mock_file_ops.calculate_path_size.return_value = 0
 
-        dotfiles = [{"description": "Missing", "paths": ["/nonexistent/path"]}]
+        dotfiles: list[DotFileDict] = [{"description": "Missing", "paths": ["/nonexistent/path"]}]
         report = size_analyzer.analyze_dotfiles(dotfiles)
 
         # Should not crash, just skip
@@ -405,7 +403,7 @@ class TestEdgeCases:
         mock_file_ops.calculate_path_size.return_value = 1000
 
         # Use 'path' instead of 'paths'
-        dotfiles = [{"description": "Bash", "path": str(test_path)}]
+        dotfiles: list[DotFileDict] = [{"description": "Bash", "path": str(test_path)}]
         report = size_analyzer.analyze_dotfiles(dotfiles)
 
         assert report["total_files"] == 1

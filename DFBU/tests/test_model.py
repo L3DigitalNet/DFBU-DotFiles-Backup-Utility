@@ -13,14 +13,9 @@ Date Changed: 10-31-2025
 License: MIT
 """
 
-import sys
 from pathlib import Path
 
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from model import DFBUModel
+from gui.model import DFBUModel
 
 
 class TestDFBUModelInitialization:
@@ -590,7 +585,6 @@ class TestModelRestoreBackupIntegration:
     def test_model_has_restore_backup_manager(self) -> None:
         """Test DFBUModel creates RestoreBackupManager."""
         # Arrange & Act
-        from model import DFBUModel
         model = DFBUModel(Path("/tmp/test_config.toml"))
 
         # Assert

@@ -54,6 +54,19 @@ if [ "$BRANCH" = "main" ]; then
     exit 1
 fi
 
+# Run mypy type checking on staged Python files
+STAGED_PY=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' | grep '^DFBU/' || true)
+if [ -n "$STAGED_PY" ]; then
+    echo "Running mypy type check..."
+    if ! python -m mypy DFBU/ 2>/dev/null; then
+        echo ""
+        echo "❌ mypy type check failed. Fix type errors before committing."
+        echo "   Run 'mypy DFBU/' to see the full error output."
+        exit 1
+    fi
+    echo "✓ mypy type check passed"
+fi
+
 exit 0
 EOF
 

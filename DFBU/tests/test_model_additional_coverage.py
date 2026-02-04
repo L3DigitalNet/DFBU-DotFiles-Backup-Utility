@@ -12,20 +12,15 @@ Date Created: 11-01-2025
 License: MIT
 """
 
-import sys
 import tarfile
 from pathlib import Path
 
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from file_operations import (
+from gui.file_operations import (
     create_rotating_backup,
     get_backup_files,
     rotate_old_backups,
 )
-from model import DFBUModel
+from gui.model import DFBUModel
 
 
 class TestModelBackupUtilities:

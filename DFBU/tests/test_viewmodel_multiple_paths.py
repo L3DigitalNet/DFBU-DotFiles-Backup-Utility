@@ -12,17 +12,12 @@ Date Created: 10-31-2025
 License: MIT
 """
 
-import sys
 from pathlib import Path
 
 import pytest
 
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from model import DFBUModel
-from viewmodel import DFBUViewModel
+from gui.model import DFBUModel
+from gui.viewmodel import DFBUViewModel
 
 
 class TestViewModelCategories:
@@ -232,8 +227,8 @@ class TestViewModelBackupProcessing:
         )
 
         # Enable archive backup
-        viewmodel.model.options["mirror_enabled"] = False
-        viewmodel.model.options["archive_enabled"] = True
+        viewmodel.model.options["mirror"] = False
+        viewmodel.model.options["archive"] = True
 
         # Run archive backup
         archive_path = viewmodel.model.create_archive(

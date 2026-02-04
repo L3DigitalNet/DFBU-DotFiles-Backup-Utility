@@ -12,20 +12,15 @@ Date Created: 11-01-2025
 License: MIT
 """
 
-import sys
 from pathlib import Path
 
 import pytest
 
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from model import DFBUModel
+from gui.model import DFBUModel
 
 # Import Qt for signal testing
 from PySide6.QtWidgets import QApplication
-from viewmodel import BackupWorker, RestoreWorker
+from gui.viewmodel import BackupWorker, RestoreWorker
 
 
 @pytest.fixture

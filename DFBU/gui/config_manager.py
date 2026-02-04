@@ -41,11 +41,11 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, cast
+
 
 # Local imports - import from parent DFBU directory
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from core.common_types import DotFileDict, LegacyDotFileDict, OptionsDict
+from core.common_types import DotFileDict, LegacyDotFileDict, OptionsDict, SettingsDict
 from core.yaml_config import YAMLConfigLoader
 
 from gui.input_validation import InputValidator
@@ -86,7 +86,7 @@ def create_rotating_backup(
 
     try:
         backup_dir.mkdir(parents=True, exist_ok=True)
-    except (OSError, PermissionError):
+    except OSError, PermissionError:
         return None
 
     timestamp = datetime.now(UTC).strftime(timestamp_format)
@@ -116,7 +116,7 @@ def create_rotating_backup(
 
         return backup_path
 
-    except (OSError, PermissionError):
+    except OSError, PermissionError:
         return None
 
 
@@ -277,7 +277,9 @@ class ConfigManager:
         with ThreadPoolExecutor(max_workers=4) as executor:
             # Submit all dotfiles for processing
             future_to_app = {
-                executor.submit(self._process_dotfile_paths, app_name, dotfile): app_name
+                executor.submit(
+                    self._process_dotfile_paths, app_name, dotfile
+                ): app_name
                 for app_name, dotfile in self._dotfiles.items()
             }
 
@@ -350,9 +352,9 @@ class ConfigManager:
             List of path strings
         """
         if "paths" in dotfile:
-            return cast(list[str], dotfile["paths"])
+            return dotfile["paths"]
         if "path" in dotfile:
-            return [cast(str, dotfile["path"])]
+            return [dotfile["path"]]
         return []
 
     def save_config(self) -> tuple[bool, str]:
@@ -382,7 +384,7 @@ class ConfigManager:
                 # Continue with save even if backup fails
 
             # Build settings dictionary
-            settings = {
+            settings: SettingsDict = {
                 "paths": {
                     "mirror_dir": self._path_to_tilde_notation(self.mirror_base_dir),
                     "archive_dir": self._path_to_tilde_notation(self.archive_base_dir),
@@ -390,7 +392,7 @@ class ConfigManager:
                         self.restore_backup_dir
                     ),
                 },
-                "options": dict(self.options),
+                "options": self.options,
             }
 
             # Save settings
@@ -495,10 +497,9 @@ class ConfigManager:
                 # Remove from exclusions if present
                 if application in self._exclusions:
                     self._exclusions.remove(application)
-            else:
-                # Add to exclusions if not present
-                if application not in self._exclusions:
-                    self._exclusions.append(application)
+            # Add to exclusions if not present
+            elif application not in self._exclusions:
+                self._exclusions.append(application)
 
             return True
         return False
@@ -653,7 +654,9 @@ class ConfigManager:
             result.append(self._to_legacy_format(app_name, dotfile))
         return result
 
-    def _to_legacy_format(self, app_name: str, dotfile: DotFileDict) -> LegacyDotFileDict:
+    def _to_legacy_format(
+        self, app_name: str, dotfile: DotFileDict
+    ) -> LegacyDotFileDict:
         """
         Convert YAML dotfile format to legacy format for View compatibility.
 
@@ -776,6 +779,10 @@ class ConfigManager:
             "max_restore_backups": 5,
             "verify_after_backup": False,
             "hash_verification": False,
+            "size_check_enabled": False,
+            "size_warning_threshold_mb": 1000,
+            "size_alert_threshold_mb": 5000,
+            "size_critical_threshold_mb": 10000,
         }
 
     def _path_to_tilde_notation(self, path: Path) -> str:

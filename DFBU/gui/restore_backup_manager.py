@@ -235,11 +235,15 @@ class RestoreBackupManager:
                     shutil.copy2(src_path, dest_path)
                     logger.debug(f"Backed up file: {src_path} -> {dest_path}")
 
-                backed_up_files.append({
-                    "original_path": str(src_path),
-                    "backup_path": str(rel_path),
-                    "size_bytes": src_path.stat().st_size if src_path.is_file() else 0,
-                })
+                backed_up_files.append(
+                    {
+                        "original_path": str(src_path),
+                        "backup_path": str(rel_path),
+                        "size_bytes": src_path.stat().st_size
+                        if src_path.is_file()
+                        else 0,
+                    }
+                )
 
             except OSError as e:
                 logger.error(f"Failed to backup {src_path}: {e}")

@@ -41,10 +41,15 @@ Functions:
 
 import time
 from pathlib import Path
-from typing import Any, Final, cast
+from typing import Any, Final
 
 # Local imports
-from core.common_types import DotFileDict, OperationResultDict, OptionsDict, SizeReportDict
+from core.common_types import (
+    LegacyDotFileDict,
+    OperationResultDict,
+    OptionsDict,
+    SizeReportDict,
+)
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
 
 from gui.config_workers import ConfigLoadWorker, ConfigSaveWorker
@@ -158,8 +163,11 @@ class BackupWorker(QThread):
                 # Track in operation result (v0.9.0)
                 if self.operation_result:
                     result = error_handler.create_path_result(
-                        str(src_path), str(dest_path), "skipped",
-                        error_type="not_found", error_message="File not found"
+                        str(src_path),
+                        str(dest_path),
+                        "skipped",
+                        error_type="not_found",
+                        error_message="File not found",
                     )
                     self.operation_result["skipped"].append(result)
                 return False
@@ -173,10 +181,12 @@ class BackupWorker(QThread):
                 # Track in operation result (v0.9.0)
                 if self.operation_result:
                     result = error_handler.create_path_result(
-                        str(src_path), str(dest_path), "skipped",
+                        str(src_path),
+                        str(dest_path),
+                        "skipped",
                         error_type="permission",
                         error_message="Permission denied (no read access)",
-                        can_retry=True
+                        can_retry=True,
                     )
                     self.operation_result["skipped"].append(result)
                 return False
@@ -220,9 +230,11 @@ class BackupWorker(QThread):
                 # Track in operation result (v0.9.0)
                 if self.operation_result:
                     result = error_handler.create_path_result(
-                        str(src_path), str(dest_path), "failed",
+                        str(src_path),
+                        str(dest_path),
+                        "failed",
                         error_type="unknown",
-                        error_message="Failed to copy file (unknown error)"
+                        error_message="Failed to copy file (unknown error)",
                     )
                     self.operation_result["failed"].append(result)
 
@@ -233,7 +245,9 @@ class BackupWorker(QThread):
             self.model.record_item_skipped()
             # Track in operation result (v0.9.0)
             if self.operation_result:
-                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                result = error_handler.handle_exception(
+                    e, str(src_path), str(dest_path)
+                )
                 self.operation_result["failed"].append(result)
             return False
         except FileNotFoundError as e:
@@ -241,7 +255,9 @@ class BackupWorker(QThread):
             self.model.record_item_skipped()
             # Track in operation result (v0.9.0)
             if self.operation_result:
-                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                result = error_handler.handle_exception(
+                    e, str(src_path), str(dest_path)
+                )
                 self.operation_result["failed"].append(result)
             return False
         except OSError as e:
@@ -250,7 +266,9 @@ class BackupWorker(QThread):
             self.model.record_item_failed()
             # Track in operation result (v0.9.0)
             if self.operation_result:
-                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                result = error_handler.handle_exception(
+                    e, str(src_path), str(dest_path)
+                )
                 self.operation_result["failed"].append(result)
             return False
         except Exception as e:
@@ -261,7 +279,9 @@ class BackupWorker(QThread):
             self.model.record_item_failed()
             # Track in operation result (v0.9.0)
             if self.operation_result:
-                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                result = error_handler.handle_exception(
+                    e, str(src_path), str(dest_path)
+                )
                 self.operation_result["failed"].append(result)
             return False
 
@@ -296,8 +316,11 @@ class BackupWorker(QThread):
                 # Track in operation result (v0.9.0)
                 if self.operation_result:
                     result = error_handler.create_path_result(
-                        str(src_path), str(dest_path), "skipped",
-                        error_type="not_found", error_message="Directory not found"
+                        str(src_path),
+                        str(dest_path),
+                        "skipped",
+                        error_type="not_found",
+                        error_message="Directory not found",
                     )
                     self.operation_result["skipped"].append(result)
                 return 0
@@ -309,8 +332,11 @@ class BackupWorker(QThread):
                 # Track in operation result (v0.9.0)
                 if self.operation_result:
                     result = error_handler.create_path_result(
-                        str(src_path), str(dest_path), "skipped",
-                        error_type="invalid_path", error_message="Not a directory"
+                        str(src_path),
+                        str(dest_path),
+                        "skipped",
+                        error_type="invalid_path",
+                        error_message="Not a directory",
                     )
                     self.operation_result["skipped"].append(result)
                 return 0
@@ -324,10 +350,12 @@ class BackupWorker(QThread):
                 # Track in operation result (v0.9.0)
                 if self.operation_result:
                     result = error_handler.create_path_result(
-                        str(src_path), str(dest_path), "skipped",
+                        str(src_path),
+                        str(dest_path),
+                        "skipped",
                         error_type="permission",
                         error_message="Permission denied (no read access)",
-                        can_retry=True
+                        can_retry=True,
                     )
                     self.operation_result["skipped"].append(result)
                 return 0
@@ -374,10 +402,12 @@ class BackupWorker(QThread):
                     # Track in operation result (v0.9.0)
                     if self.operation_result:
                         result = error_handler.create_path_result(
-                            str(src_file), dest_str, "skipped",
+                            str(src_file),
+                            dest_str,
+                            "skipped",
                             error_type="permission",
                             error_message="Permission denied or read error",
-                            can_retry=True
+                            can_retry=True,
                         )
                         self.operation_result["skipped"].append(result)
                 else:
@@ -385,9 +415,11 @@ class BackupWorker(QThread):
                     # Track in operation result (v0.9.0)
                     if self.operation_result:
                         result = error_handler.create_path_result(
-                            str(src_file), dest_str, "failed",
+                            str(src_file),
+                            dest_str,
+                            "failed",
                             error_type="unknown",
-                            error_message="Failed to copy file"
+                            error_message="Failed to copy file",
                         )
                         self.operation_result["failed"].append(result)
 
@@ -398,7 +430,9 @@ class BackupWorker(QThread):
             self.model.record_item_skipped()
             # Track in operation result (v0.9.0)
             if self.operation_result:
-                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                result = error_handler.handle_exception(
+                    e, str(src_path), str(dest_path)
+                )
                 self.operation_result["failed"].append(result)
             return 0
         except FileNotFoundError as e:
@@ -406,7 +440,9 @@ class BackupWorker(QThread):
             self.model.record_item_skipped()
             # Track in operation result (v0.9.0)
             if self.operation_result:
-                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                result = error_handler.handle_exception(
+                    e, str(src_path), str(dest_path)
+                )
                 self.operation_result["failed"].append(result)
             return 0
         except OSError as e:
@@ -415,7 +451,9 @@ class BackupWorker(QThread):
             self.model.record_item_failed()
             # Track in operation result (v0.9.0)
             if self.operation_result:
-                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                result = error_handler.handle_exception(
+                    e, str(src_path), str(dest_path)
+                )
                 self.operation_result["failed"].append(result)
             return 0
         except Exception as e:
@@ -426,7 +464,9 @@ class BackupWorker(QThread):
             self.model.record_item_failed()
             # Track in operation result (v0.9.0)
             if self.operation_result:
-                result = error_handler.handle_exception(e, str(src_path), str(dest_path))
+                result = error_handler.handle_exception(
+                    e, str(src_path), str(dest_path)
+                )
                 self.operation_result["failed"].append(result)
             return 0
 
@@ -727,7 +767,9 @@ class RestoreWorker(QThread):
                 )
             # Still finalize and emit result
             if self.operation_result:
-                self.operation_result = error_handler.finalize_result(self.operation_result)
+                self.operation_result = error_handler.finalize_result(
+                    self.operation_result
+                )
                 self.restore_finished_with_result.emit(self.operation_result)
             return
 
@@ -736,14 +778,18 @@ class RestoreWorker(QThread):
             if self.operation_result:
                 # Mark as completely failed
                 result = error_handler.create_path_result(
-                    str(self.source_directory), None, "failed",
+                    str(self.source_directory),
+                    None,
+                    "failed",
                     error_type="unknown",
-                    error_message="Restore operation failed"
+                    error_message="Restore operation failed",
                 )
                 self.operation_result["failed"].append(result)
             # Finalize and emit result
             if self.operation_result:
-                self.operation_result = error_handler.finalize_result(self.operation_result)
+                self.operation_result = error_handler.finalize_result(
+                    self.operation_result
+                )
                 self.restore_finished_with_result.emit(self.operation_result)
             return
 
@@ -988,7 +1034,7 @@ class DFBUViewModel(QObject):
             return False
 
         # Type is already narrowed by function signature (bool | int | str)
-        return cast(bool, self.model.update_option(key, value))
+        return self.model.update_option(key, value)
 
     def command_update_path(self, path_type: str, value: str) -> bool:
         """
@@ -1001,7 +1047,7 @@ class DFBUViewModel(QObject):
         Returns:
             True if path updated successfully
         """
-        return cast(bool, self.model.update_path(path_type, value))
+        return self.model.update_path(path_type, value)
 
     def command_start_backup(self, force_full_backup: bool = False) -> bool:
         """
@@ -1028,9 +1074,8 @@ class DFBUViewModel(QObject):
         if self.model.is_size_check_enabled():
             # Start size scan first
             return self._start_size_scan()
-        else:
-            # Skip size check, start backup directly
-            return self._start_backup_directly(force_full_backup)
+        # Skip size check, start backup directly
+        return self._start_backup_directly(force_full_backup)
 
     def _start_size_scan(self) -> bool:
         """
@@ -1289,7 +1334,7 @@ class DFBUViewModel(QObject):
         # Note: Don't emit dotfiles_updated here - the list hasn't changed,
         # only the enabled status of one entry. The View will update locally.
 
-        return cast(bool, self.model.toggle_dotfile_enabled(index))
+        return self.model.toggle_dotfile_enabled(index)
 
     def command_toggle_exclusion(self, application: str) -> None:
         """Toggle exclusion status for a dotfile.
@@ -1310,7 +1355,7 @@ class DFBUViewModel(QObject):
         file_count = self.model.get_last_backup_file_count()
         if file_count == 0:
             return None
-        return cast(str | None, self.model.verify_last_backup())
+        return self.model.verify_last_backup()
 
     def get_exclusions(self) -> list[str]:
         """Get current exclusion list.
@@ -1318,7 +1363,7 @@ class DFBUViewModel(QObject):
         Returns:
             List of excluded application names
         """
-        return cast(list[str], self.model.get_config_manager().get_exclusions())
+        return self.model.get_config_manager().get_exclusions()
 
     def is_excluded(self, application: str) -> bool:
         """Check if application is excluded.
@@ -1329,7 +1374,7 @@ class DFBUViewModel(QObject):
         Returns:
             True if excluded
         """
-        return cast(bool, self.model.get_config_manager().is_excluded(application))
+        return self.model.get_config_manager().is_excluded(application)
 
     def get_dotfile_count(self) -> int:
         """
@@ -1338,16 +1383,16 @@ class DFBUViewModel(QObject):
         Returns:
             Dotfile count
         """
-        return cast(int, self.model.get_dotfile_count())
+        return self.model.get_dotfile_count()
 
-    def get_dotfile_list(self) -> list[DotFileDict]:
+    def get_dotfile_list(self) -> list[LegacyDotFileDict]:
         """
         Get list of dotfile metadata.
 
         Returns:
             List of dotfile dictionaries
         """
-        return cast(list[DotFileDict], self.model.dotfiles.copy())
+        return self.model.dotfiles.copy()
 
     def get_dotfile_validation(self) -> dict[int, tuple[bool, bool, str]]:
         """
@@ -1356,7 +1401,7 @@ class DFBUViewModel(QObject):
         Returns:
             Dict mapping index to (exists, is_dir, type_str) tuple
         """
-        return cast(dict[int, tuple[bool, bool, str]], self.model.validate_dotfile_paths())
+        return self.model.validate_dotfile_paths()
 
     def get_dotfile_sizes(self) -> dict[int, int]:
         """
@@ -1365,7 +1410,7 @@ class DFBUViewModel(QObject):
         Returns:
             Dict mapping index to size in bytes
         """
-        return cast(dict[int, int], self.model.get_dotfile_sizes())
+        return self.model.get_dotfile_sizes()
 
     def get_unique_categories(self) -> list[str]:
         """

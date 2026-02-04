@@ -12,13 +12,10 @@ Covers:
 """
 
 import errno
-import sys
-from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-from error_handler import (
+from gui.error_handler import (
     ERRNO_TO_ERROR_TYPE,
     ErrorHandler,
     NON_RETRYABLE_ERROR_TYPES,

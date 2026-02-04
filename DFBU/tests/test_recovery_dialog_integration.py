@@ -5,15 +5,11 @@ Tests verify that the ViewModel correctly emits the recovery_dialog_requested
 signal when backup operations complete with recoverable failures.
 """
 
-import sys
-from pathlib import Path
-
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
 from core.common_types import OperationResultDict
-from viewmodel import DFBUViewModel
-from model import DFBUModel
+from gui.viewmodel import DFBUViewModel
+from gui.model import DFBUModel
 
 
 @pytest.fixture

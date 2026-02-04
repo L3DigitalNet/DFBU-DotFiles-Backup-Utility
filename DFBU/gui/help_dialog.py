@@ -4,7 +4,6 @@ This module provides the HelpDialog class which displays user documentation
 in a tabbed interface with Quick Start and Configuration Reference sections.
 """
 
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,

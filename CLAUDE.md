@@ -28,8 +28,19 @@ pytest DFBU/tests/ -m "not slow"      # Skip slow tests
 pytest DFBU/tests/ --cov=DFBU --cov-report=html  # With coverage
 
 # Type Checking
-mypy DFBU/                            # Run type checker
+mypy DFBU/                            # Run type checker (must pass with 0 errors)
 ```
+
+### Post-Change Verification (Required)
+
+After modifying any Python files, run these checks before committing:
+
+```bash
+mypy DFBU/                            # Must pass with 0 errors
+pytest DFBU/tests/ -m unit            # Quick validation
+```
+
+The pre-commit hook enforces mypy compliance automatically. CI also runs mypy on push to `main`/`testing` and on PRs to `main`.
 
 ## Critical: Branch Protection
 

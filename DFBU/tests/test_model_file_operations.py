@@ -12,17 +12,12 @@ Date Created: 10-31-2025
 License: MIT
 """
 
-import sys
 import time
 from pathlib import Path
 
 import pytest
 
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from model import DFBUModel
+from gui.model import DFBUModel
 
 
 class TestModelFileIdentity:
@@ -449,7 +444,7 @@ class TestModelConfidentCodePaths:
         backup_dir = tmp_path / "backups"
 
         # Act
-        from file_operations import create_rotating_backup
+        from gui.file_operations import create_rotating_backup
 
         result = create_rotating_backup(source_file, backup_dir, max_backups=5)
 

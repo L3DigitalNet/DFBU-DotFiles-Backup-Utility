@@ -1,13 +1,7 @@
 """Tests for common type definitions."""
 
-import sys
-from pathlib import Path
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "core"))
-
 import pytest
-from common_types import (
+from core.common_types import (
     DotFileDict,
     SettingsDict,
     PathsDict,
@@ -76,6 +70,10 @@ class TestSettingsDict:
                 "max_restore_backups": 5,
                 "verify_after_backup": False,
                 "hash_verification": False,
+                "size_check_enabled": True,
+                "size_warning_threshold_mb": 10,
+                "size_alert_threshold_mb": 100,
+                "size_critical_threshold_mb": 1024,
             },
         }
         assert settings["paths"]["mirror_dir"] == "~/backups/mirror"
@@ -117,6 +115,10 @@ class TestOptionsDict:
             "max_restore_backups": 5,
             "verify_after_backup": False,
             "hash_verification": False,
+            "size_check_enabled": True,
+            "size_warning_threshold_mb": 10,
+            "size_alert_threshold_mb": 100,
+            "size_critical_threshold_mb": 1024,
         }
         assert options["mirror"] is True
         assert options["archive_format"] == "tar.gz"

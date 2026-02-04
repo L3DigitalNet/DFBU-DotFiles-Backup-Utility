@@ -42,7 +42,7 @@ import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 
 # Setup logger for this module
@@ -56,10 +56,10 @@ from core.common_types import DotFileDict, OptionsDict, VerificationReportDict
 
 # Type checking imports to avoid circular dependencies
 if TYPE_CHECKING:
-    from file_operations import FileOperations
-    from statistics_tracker import StatisticsTracker
-    from restore_backup_manager import RestoreBackupManager
-    from verification_manager import VerificationManager
+    from gui.file_operations import FileOperations
+    from gui.restore_backup_manager import RestoreBackupManager
+    from gui.statistics_tracker import StatisticsTracker
+    from gui.verification_manager import VerificationManager
 
 
 # =============================================================================
@@ -142,7 +142,7 @@ class BackupOrchestrator:
             any_is_dir = False
 
             # Check all paths in this dotfile entry
-            for path_str in dotfile["paths"]:
+            for path_str in dotfile.get("paths", []):
                 if not path_str:
                     continue
 
@@ -207,7 +207,7 @@ class BackupOrchestrator:
                 continue
 
             # Process each path in dotfile entry
-            for path_str in dotfile["paths"]:
+            for path_str in dotfile.get("paths", []):
                 # Skip empty path strings
                 if not path_str:
                     continue
@@ -283,7 +283,7 @@ class BackupOrchestrator:
                 continue
 
             # Process each path in dotfile entry
-            for path_str in dotfile["paths"]:
+            for path_str in dotfile.get("paths", []):
                 # Skip empty path strings
                 if not path_str:
                     continue
@@ -403,7 +403,9 @@ class BackupOrchestrator:
             - No files were tracked during backup
         """
         if self._verification_manager is None:
-            logger.warning("Verification requested but no VerificationManager configured")
+            logger.warning(
+                "Verification requested but no VerificationManager configured"
+            )
             return None
 
         if not self._last_backup_files:

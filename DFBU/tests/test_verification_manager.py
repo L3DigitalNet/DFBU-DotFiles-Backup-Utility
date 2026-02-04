@@ -10,13 +10,11 @@ Covers:
 """
 
 import hashlib
-import sys
 from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-from verification_manager import VerificationManager
+from gui.verification_manager import VerificationManager
 
 
 class TestVerificationManagerInit:

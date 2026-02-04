@@ -1,17 +1,14 @@
 """Tests for the RecoveryDialog component."""
 
-import sys
-from pathlib import Path
-
 import pytest
 from PySide6.QtWidgets import QApplication, QDialog
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-from recovery_dialog import RecoveryDialog
+from core.common_types import OperationResultDict
+from gui.recovery_dialog import RecoveryDialog
 
 
 @pytest.fixture
-def sample_operation_result():
+def sample_operation_result() -> OperationResultDict:
     """Sample OperationResultDict with mixed results."""
     return {
         "status": "partial",
@@ -71,7 +68,7 @@ class TestRecoveryDialogInit:
     @pytest.mark.gui
     def test_retry_button_disabled_when_no_retryable(self, qapp):
         """Retry button disabled when no items can be retried."""
-        result = {
+        result: OperationResultDict = {
             "status": "failed",
             "operation_type": "mirror_backup",
             "total_items": 1,

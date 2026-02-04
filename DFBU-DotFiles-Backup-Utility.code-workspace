@@ -7,20 +7,42 @@
 	"settings": {
 		// Python Configuration
 		"python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+		"python.languageServer": "Pylance",
 		"python.analysis.typeCheckingMode": "strict",
+		"python.analysis.pythonVersion": "3.14",
 		"python.analysis.autoImportCompletions": true,
+		"python.analysis.diagnosticMode": "workspace",
+		"python.analysis.extraPaths": [
+			"${workspaceFolder}/DFBU"
+		],
+		"python.analysis.include": [
+			"DFBU"
+		],
+		"python.analysis.exclude": [
+			"**/node_modules",
+			"**/__pycache__",
+			".venv",
+			"build",
+			"dist",
+			"htmlcov"
+		],
 		"python.analysis.diagnosticSeverityOverrides": {
 			"reportUnusedImport": "warning",
 			"reportUnusedVariable": "warning",
 			"reportMissingTypeStubs": "none"
 		},
+		// MyPy Type Checker (integrates with strict config in pyproject.toml)
+		"mypy-type-checker.importStrategy": "fromEnvironment",
+		"mypy-type-checker.args": [
+			"--config-file=${workspaceFolder}/pyproject.toml"
+		],
 		// Ruff Configuration (Linter & Formatter)
 		"[python]": {
 			"editor.defaultFormatter": "charliermarsh.ruff",
 			"editor.formatOnSave": true,
 			"editor.codeActionsOnSave": {
-				"source.organizeImports": "explicit",
-				"source.fixAll": "explicit"
+				"source.organizeImports.ruff": "explicit",
+				"source.fixAll.ruff": "explicit"
 			}
 		},
 		// Ruff Extension Settings
@@ -29,7 +51,12 @@
 		"ruff.importStrategy": "fromEnvironment",
 		// File Associations
 		"files.associations": {
-			"*.toml": "toml"
+			"*.toml": "toml",
+			"*.ui": "xml",
+			"*.yaml": "yaml",
+			"*.yml": "yaml",
+			".mypy-strict-config.md": "markdown",
+			"requirements.txt": "pip-requirements"
 		},
 		// Editor Settings for Python
 		"editor.rulers": [
@@ -41,12 +68,31 @@
 		"files.trimTrailingWhitespace": true,
 		"files.insertFinalNewline": true,
 		"files.trimFinalNewlines": true,
+		// UV Toolkit Configuration
+		"uvToolkit.uvPath": "${workspaceFolder}/.venv/bin/uv",
+		"uvToolkit.autoActivate": true,
+		"uvToolkit.showNotifications": true,
+		// Even Better TOML Configuration
+		"evenBetterToml.formatter.alignEntries": false,
+		"evenBetterToml.formatter.allowedBlankLines": 1,
+		"evenBetterToml.formatter.columnWidth": 88,
+		"evenBetterToml.schema.associations": {
+			"pyproject.toml": "https://json.schemastore.org/pyproject.json"
+		},
+		"[toml]": {
+			"editor.defaultFormatter": "tamasfe.even-better-toml",
+			"editor.formatOnSave": true
+		},
+		// Python Test Explorer Configuration
+		"pythonTestExplorer.testFramework": "pytest",
+		"pythonTestExplorer.testplanEnabled": false,
 		// Test Configuration
 		"python.testing.pytestEnabled": true,
 		"python.testing.unittestEnabled": false,
 		"python.testing.pytestArgs": [
-			"tests",
-			"-v"
+			"DFBU/tests",
+			"-v",
+			"--tb=short"
 		],
 		// File Exclusions
 		"files.exclude": {
@@ -66,6 +112,9 @@
 			"**/.mypy_cache": true,
 			"**/venv": true,
 			"**/.venv": true
+		},
+		"chat.tools.terminal.autoApprove": {
+			"pytest": true
 		}
 	}
 }

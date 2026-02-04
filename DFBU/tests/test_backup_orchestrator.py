@@ -15,17 +15,14 @@ Date Changed: 11-01-2025
 License: MIT
 """
 
-import sys
 from pathlib import Path
+from typing import Any, cast
 from unittest.mock import Mock
 
-
-# Add gui directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from backup_orchestrator import BackupOrchestrator
-from file_operations import FileOperations
-from statistics_tracker import StatisticsTracker
+from core.common_types import DotFileDict, OptionsDict
+from gui.backup_orchestrator import BackupOrchestrator
+from gui.file_operations import FileOperations
+from gui.statistics_tracker import StatisticsTracker
 
 
 class TestBackupOrchestratorInitialization:
@@ -68,9 +65,9 @@ class TestValidateDotfilePaths:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [
-            {"paths": [str(test_file)]},
-            {"paths": [str(test_dir)]},
+        dotfiles: list[DotFileDict] = [
+            {"description": "Test file", "paths": [str(test_file)]},
+            {"description": "Test dir", "paths": [str(test_dir)]},
         ]
 
         # Act
@@ -90,7 +87,7 @@ class TestValidateDotfilePaths:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [{"paths": ["/nonexistent/path"]}]
+        dotfiles: list[DotFileDict] = [{"description": "Nonexistent", "paths": ["/nonexistent/path"]}]
 
         # Act
         results = orchestrator.validate_dotfile_paths(dotfiles)
@@ -106,7 +103,7 @@ class TestValidateDotfilePaths:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [{"paths": [""]}]
+        dotfiles: list[DotFileDict] = [{"description": "Empty path", "paths": [""]}]
 
         # Act
         results = orchestrator.validate_dotfile_paths(dotfiles)
@@ -128,7 +125,7 @@ class TestValidateDotfilePaths:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [{"paths": [str(file1), str(dir1)]}]
+        dotfiles: list[DotFileDict] = [{"description": "Multi-path", "paths": [str(file1), str(dir1)]}]
 
         # Act
         results = orchestrator.validate_dotfile_paths(dotfiles)
@@ -149,8 +146,8 @@ class TestExecuteMirrorBackup:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [{"paths": ["/nonexistent"], "enabled": True}]
-        options = {"hostname_subdir": True, "date_subdir": False}
+        dotfiles: list[DotFileDict] = [{"description": "Nonexistent", "paths": ["/nonexistent"]}]
+        options = cast(OptionsDict, {"hostname_subdir": True, "date_subdir": False})
 
         # Act
         processed, total = orchestrator.execute_mirror_backup(dotfiles, options)
@@ -171,8 +168,9 @@ class TestExecuteMirrorBackup:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [{"paths": [str(test_file)], "enabled": False}]
-        options = {"hostname_subdir": True, "date_subdir": False}
+        # "enabled" is not in DotFileDict but used at runtime via .get()
+        dotfiles = cast(list[DotFileDict], [{"paths": [str(test_file)], "enabled": False}])
+        options = cast(OptionsDict, {"hostname_subdir": True, "date_subdir": False})
 
         # Act
         processed, total = orchestrator.execute_mirror_backup(dotfiles, options)
@@ -203,8 +201,8 @@ class TestExecuteMirrorBackup:
             file_ops, stats_tracker, tmp_path / "mirror", tmp_path / "archive"
         )
 
-        dotfiles = [{"paths": [str(src_file)], "enabled": True}]
-        options = {"hostname_subdir": False, "date_subdir": False}
+        dotfiles: list[DotFileDict] = [{"description": "Test file", "paths": [str(src_file)]}]
+        options = cast(OptionsDict, {"hostname_subdir": False, "date_subdir": False})
 
         # Act
         processed, total = orchestrator.execute_mirror_backup(dotfiles, options)
@@ -241,8 +239,8 @@ class TestExecuteMirrorBackup:
             file_ops, stats_tracker, tmp_path / "mirror", tmp_path / "archive"
         )
 
-        dotfiles = [{"paths": [str(src_dir)], "enabled": True}]
-        options = {"hostname_subdir": False, "date_subdir": False}
+        dotfiles: list[DotFileDict] = [{"description": "Test dir", "paths": [str(src_dir)]}]
+        options = cast(OptionsDict, {"hostname_subdir": False, "date_subdir": False})
 
         # Act
         processed, total = orchestrator.execute_mirror_backup(dotfiles, options)
@@ -269,8 +267,8 @@ class TestExecuteMirrorBackup:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [{"paths": [str(src_file)], "enabled": True}]
-        options = {"hostname_subdir": False, "date_subdir": False}
+        dotfiles: list[DotFileDict] = [{"description": "Test file", "paths": [str(src_file)]}]
+        options = cast(OptionsDict, {"hostname_subdir": False, "date_subdir": False})
 
         progress_callback = Mock()
 
@@ -299,8 +297,8 @@ class TestExecuteMirrorBackup:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [{"paths": [str(src_file)], "enabled": True}]
-        options = {"hostname_subdir": False, "date_subdir": False}
+        dotfiles: list[DotFileDict] = [{"description": "Test file", "paths": [str(src_file)]}]
+        options = cast(OptionsDict, {"hostname_subdir": False, "date_subdir": False})
 
         processed_callback = Mock()
         skipped_callback = Mock()
@@ -328,12 +326,13 @@ class TestExecuteArchiveBackup:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [{"paths": ["/nonexistent"], "enabled": False}]
-        options = {
+        # "enabled" is not in DotFileDict but used at runtime via .get()
+        dotfiles = cast(list[DotFileDict], [{"paths": ["/nonexistent"], "enabled": False}])
+        options = cast(OptionsDict, {
             "hostname_subdir": False,
             "rotate_archives": False,
             "max_archives": 10,
-        }
+        })
 
         # Act
         result = orchestrator.execute_archive_backup(dotfiles, options)
@@ -359,12 +358,12 @@ class TestExecuteArchiveBackup:
             file_ops, stats_tracker, tmp_path / "mirror", tmp_path / "archive"
         )
 
-        dotfiles = [{"paths": [str(src_file)], "enabled": True}]
-        options = {
+        dotfiles: list[DotFileDict] = [{"description": "Test file", "paths": [str(src_file)]}]
+        options = cast(OptionsDict, {
             "hostname_subdir": False,
             "rotate_archives": False,
             "max_archives": 10,
-        }
+        })
 
         # Act
         result = orchestrator.execute_archive_backup(dotfiles, options)
@@ -392,12 +391,12 @@ class TestExecuteArchiveBackup:
             file_ops, stats_tracker, tmp_path / "mirror", tmp_path / "archive"
         )
 
-        dotfiles = [{"paths": [str(src_file)], "enabled": True}]
-        options = {
+        dotfiles: list[DotFileDict] = [{"description": "Test file", "paths": [str(src_file)]}]
+        options = cast(OptionsDict, {
             "hostname_subdir": True,
             "rotate_archives": True,
             "max_archives": 5,
-        }
+        })
 
         # Act
         result = orchestrator.execute_archive_backup(dotfiles, options)
@@ -414,12 +413,12 @@ class TestExecuteArchiveBackup:
 
         orchestrator = BackupOrchestrator(file_ops, stats_tracker, tmp_path, tmp_path)
 
-        dotfiles = [{"paths": [""], "enabled": True}]
-        options = {
+        dotfiles: list[DotFileDict] = [{"description": "Empty path", "paths": [""]}]
+        options = cast(OptionsDict, {
             "hostname_subdir": False,
             "rotate_archives": False,
             "max_archives": 10,
-        }
+        })
 
         # Act
         result = orchestrator.execute_archive_backup(dotfiles, options)

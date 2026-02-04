@@ -9,15 +9,12 @@ Description:
 Author: Chris Purcell
 """
 
-import sys
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from protocols import RestoreBackupManagerProtocol
+from gui.protocols import RestoreBackupManagerProtocol
 
 
 class TestRestoreBackupManagerProtocol:
@@ -42,7 +39,7 @@ class TestRestoreBackupManagerInitialization:
     def test_initialization_default_path(self) -> None:
         """Test RestoreBackupManager initializes with default backup path."""
         # Arrange & Act
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager()
 
@@ -54,7 +51,7 @@ class TestRestoreBackupManagerInitialization:
     def test_initialization_custom_path(self, tmp_path: Path) -> None:
         """Test RestoreBackupManager with custom backup path."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         custom_path = tmp_path / "custom-backups"
 
@@ -68,7 +65,7 @@ class TestRestoreBackupManagerInitialization:
     def test_max_backups_setter(self, tmp_path: Path) -> None:
         """Test max_backups can be updated."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path)
 
@@ -90,7 +87,7 @@ class TestBackupListing:
     def test_get_backup_count_empty(self, tmp_path: Path) -> None:
         """Test count is 0 when no backups exist."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path)
 
@@ -103,7 +100,7 @@ class TestBackupListing:
     def test_get_backup_count_with_backups(self, tmp_path: Path) -> None:
         """Test count matches number of backup directories."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path)
         (tmp_path / "2026-01-31_100000").mkdir()
@@ -119,7 +116,7 @@ class TestBackupListing:
     def test_get_backup_count_ignores_files(self, tmp_path: Path) -> None:
         """Test count ignores regular files, only counts directories."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path)
         (tmp_path / "2026-01-31_100000").mkdir()
@@ -134,7 +131,7 @@ class TestBackupListing:
     def test_get_backup_count_nonexistent_dir(self, tmp_path: Path) -> None:
         """Test count is 0 when backup directory doesn't exist."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         nonexistent = tmp_path / "does_not_exist"
         manager = RestoreBackupManager(backup_base_dir=nonexistent)
@@ -148,7 +145,7 @@ class TestBackupListing:
     def test_list_backups_empty(self, tmp_path: Path) -> None:
         """Test list returns empty when no backups exist."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path)
 
@@ -161,7 +158,7 @@ class TestBackupListing:
     def test_list_backups_sorted_newest_first(self, tmp_path: Path) -> None:
         """Test list returns backups sorted by timestamp, newest first."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path)
         (tmp_path / "2026-01-30_100000").mkdir()
@@ -180,7 +177,7 @@ class TestBackupListing:
     def test_list_backups_nonexistent_dir(self, tmp_path: Path) -> None:
         """Test list returns empty when backup directory doesn't exist."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         nonexistent = tmp_path / "does_not_exist"
         manager = RestoreBackupManager(backup_base_dir=nonexistent)
@@ -194,7 +191,7 @@ class TestBackupListing:
     def test_list_backups_ignores_files(self, tmp_path: Path) -> None:
         """Test list ignores regular files, only lists directories."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path)
         (tmp_path / "2026-01-31_100000").mkdir()
@@ -220,7 +217,7 @@ class TestCleanupOldBackups:
     def test_cleanup_no_action_under_limit(self, tmp_path: Path) -> None:
         """Test cleanup does nothing when under max_backups limit."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path, max_backups=5)
         (tmp_path / "2026-01-31_100000").mkdir()
@@ -236,7 +233,7 @@ class TestCleanupOldBackups:
     def test_cleanup_removes_oldest_over_limit(self, tmp_path: Path) -> None:
         """Test cleanup removes oldest backups when over limit."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path, max_backups=2)
         dir1 = tmp_path / "2026-01-29_100000"
@@ -259,7 +256,7 @@ class TestCleanupOldBackups:
     def test_cleanup_removes_multiple_oldest(self, tmp_path: Path) -> None:
         """Test cleanup removes multiple backups when far over limit."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path, max_backups=1)
         for i in range(5):
@@ -277,7 +274,7 @@ class TestCleanupOldBackups:
     def test_cleanup_handles_nonexistent_dir(self, tmp_path: Path) -> None:
         """Test cleanup handles nonexistent backup directory gracefully."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         nonexistent = tmp_path / "does_not_exist"
         manager = RestoreBackupManager(backup_base_dir=nonexistent)
@@ -302,7 +299,7 @@ class TestBackupBeforeRestore:
         # Arrange
         import re
 
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path)
         file_to_backup = tmp_path / "original" / "test.txt"
@@ -326,7 +323,7 @@ class TestBackupBeforeRestore:
     def test_backup_creates_base_directory_if_missing(self, tmp_path: Path) -> None:
         """Test backup creates base directory if it doesn't exist."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         backup_base = tmp_path / "new" / "nested" / "backup"
         manager = RestoreBackupManager(backup_base_dir=backup_base)
@@ -346,7 +343,7 @@ class TestBackupBeforeRestore:
     def test_backup_empty_list_succeeds(self, tmp_path: Path) -> None:
         """Test backup with empty file list succeeds with no backup created."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path)
 
@@ -365,7 +362,7 @@ class TestBackupBeforeRestore:
     def test_backup_copies_files_preserving_structure(self, tmp_path: Path) -> None:
         """Test backup copies files preserving relative directory structure."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         mock_home = tmp_path / "home"
         mock_home.mkdir()
@@ -404,7 +401,7 @@ class TestBackupBeforeRestore:
     def test_backup_skips_nonexistent_files(self, tmp_path: Path) -> None:
         """Test backup skips files that don't exist."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path / "backups")
 
@@ -420,6 +417,7 @@ class TestBackupBeforeRestore:
 
         # Assert
         assert success is True
+        assert backup_dir is not None
         # Only the existing file should be backed up
         backed_up = backup_dir / "exists.txt"
         assert backed_up.exists()
@@ -428,7 +426,7 @@ class TestBackupBeforeRestore:
     def test_backup_handles_directories(self, tmp_path: Path) -> None:
         """Test backup handles directories by copying all contents."""
         # Arrange
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         mock_home = tmp_path / "home"
         mock_home.mkdir()
@@ -451,6 +449,7 @@ class TestBackupBeforeRestore:
 
         # Assert
         assert success is True
+        assert backup_dir is not None
         backed_up_dir = backup_dir / ".config" / "nvim"
         assert backed_up_dir.is_dir()
         assert (backed_up_dir / "init.lua").read_text() == "vim.opt.number = true"
@@ -470,7 +469,7 @@ class TestManifestCreation:
         # Arrange
         import tomllib
 
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path / "backups")
 
@@ -485,6 +484,7 @@ class TestManifestCreation:
         )
 
         # Assert
+        assert backup_dir is not None
         manifest_path = backup_dir / "manifest.toml"
         assert manifest_path.exists()
 
@@ -502,7 +502,7 @@ class TestManifestCreation:
         # Arrange
         import tomllib
 
-        from restore_backup_manager import RestoreBackupManager
+        from gui.restore_backup_manager import RestoreBackupManager
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path / "backups")
 
@@ -519,6 +519,7 @@ class TestManifestCreation:
         )
 
         # Assert
+        assert backup_dir is not None
         with open(backup_dir / "manifest.toml", "rb") as f:
             manifest = tomllib.load(f)
 

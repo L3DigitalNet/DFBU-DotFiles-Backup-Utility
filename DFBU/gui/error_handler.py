@@ -35,7 +35,8 @@ import errno
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Final, cast
+from typing import Final
+
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.common_types import OperationResultDict, PathResultDict
@@ -46,22 +47,26 @@ from core.common_types import OperationResultDict, PathResultDict
 # =============================================================================
 
 # Error types that are potentially recoverable with retry
-RETRYABLE_ERROR_TYPES: Final[frozenset[str]] = frozenset({
-    "permission",
-    "locked",
-    "busy",
-    "timeout",
-    "temp_failure",
-})
+RETRYABLE_ERROR_TYPES: Final[frozenset[str]] = frozenset(
+    {
+        "permission",
+        "locked",
+        "busy",
+        "timeout",
+        "temp_failure",
+    }
+)
 
 # Error types that are definitely not recoverable
-NON_RETRYABLE_ERROR_TYPES: Final[frozenset[str]] = frozenset({
-    "not_found",
-    "invalid_path",
-    "disk_full",
-    "read_only",
-    "config_corrupt",
-})
+NON_RETRYABLE_ERROR_TYPES: Final[frozenset[str]] = frozenset(
+    {
+        "not_found",
+        "invalid_path",
+        "disk_full",
+        "read_only",
+        "config_corrupt",
+    }
+)
 
 # Mapping of errno codes to error categories
 ERRNO_TO_ERROR_TYPE: Final[dict[int, str]] = {
@@ -115,8 +120,7 @@ USER_MESSAGE_TEMPLATES: Final[dict[str, str]] = {
         "This may resolve if you retry the operation."
     ),
     "already_exists": (
-        "'{path}' already exists. "
-        "The file was not overwritten to prevent data loss."
+        "'{path}' already exists. The file was not overwritten to prevent data loss."
     ),
     "invalid_path": (
         "'{path}' is not a valid path. "
@@ -134,10 +138,7 @@ USER_MESSAGE_TEMPLATES: Final[dict[str, str]] = {
         "Too many files open while processing '{path}'. "
         "Close some applications and try again."
     ),
-    "unknown": (
-        "Error processing '{path}': {error}. "
-        "Check the log for more details."
-    ),
+    "unknown": ("Error processing '{path}': {error}. Check the log for more details."),
 }
 
 
@@ -249,9 +250,7 @@ class ErrorHandler:
         """
         error_type = self._categorize_exception(exception)
         can_retry = self._is_retryable(error_type)
-        error_message = self.format_user_message(
-            error_type, path, str(exception)
-        )
+        error_message = self.format_user_message(error_type, path, str(exception))
 
         return self.create_path_result(
             path=path,
@@ -302,9 +301,7 @@ class ErrorHandler:
         """
         # Update total items count
         result["total_items"] = (
-            len(result["completed"])
-            + len(result["failed"])
-            + len(result["skipped"])
+            len(result["completed"]) + len(result["failed"]) + len(result["skipped"])
         )
 
         # Collect retryable paths
@@ -377,9 +374,7 @@ class ErrorHandler:
 
         # Retry suggestion
         if result["can_retry"]:
-            lines.append(
-                f"\n{len(result['can_retry'])} items may succeed if retried."
-            )
+            lines.append(f"\n{len(result['can_retry'])} items may succeed if retried.")
 
         return "\n".join(lines)
 
@@ -396,7 +391,7 @@ class ErrorHandler:
         Returns:
             List of path strings that might succeed on retry
         """
-        return cast(list[str], result["can_retry"].copy())
+        return result["can_retry"].copy()
 
     def _categorize_exception(self, exception: Exception) -> str:
         """

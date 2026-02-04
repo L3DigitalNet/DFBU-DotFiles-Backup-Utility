@@ -4,20 +4,15 @@ Comprehensive tests for table sorting functionality.
 Tests NumericTableWidgetItem custom sorting and dotfile table operations.
 """
 
-import sys
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
 from PySide6.QtCore import Qt
 
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
-
-from model import DFBUModel
-from view import MainWindow, NumericTableWidgetItem
-from viewmodel import DFBUViewModel
+from gui.model import DFBUModel
+from gui.view import MainWindow, NumericTableWidgetItem
+from gui.viewmodel import DFBUViewModel
 
 
 def create_yaml_config(

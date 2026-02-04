@@ -21,6 +21,7 @@ See [docs/BRANCH_PROTECTION.md](../docs/BRANCH_PROTECTION.md) for full rules and
 
 - **MVVM separation is sacred** — see [DFBU/docs/ARCHITECTURE.md](../DFBU/docs/ARCHITECTURE.md)
 - **Type hints are mandatory** — modern Python 3.10+ syntax (`list[str]`, `str | None`)
+- **Conservative MyPy enabled** — strict type checking enforced (see `.mypy-strict-config.md`)
 - **Tests must pass before commit** — `pytest DFBU/tests/` and `mypy DFBU/`
 - **Inject dependencies, don't create them** — use Protocol interfaces
 - **Signals for cross-layer communication** — never direct method calls between layers
@@ -32,6 +33,6 @@ See [docs/BRANCH_PROTECTION.md](../docs/BRANCH_PROTECTION.md) for full rules and
 ```bash
 pytest DFBU/tests/                    # All tests
 pytest DFBU/tests/ --cov=DFBU         # With coverage
-mypy DFBU/                            # Type check
+mypy DFBU/                            # Type check (strict mode)
 python DFBU/dfbu_gui.py               # Run GUI
 ```

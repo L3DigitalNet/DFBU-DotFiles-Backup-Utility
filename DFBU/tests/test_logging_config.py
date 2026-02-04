@@ -12,14 +12,9 @@ License: MIT
 """
 
 import logging
-import sys
 from pathlib import Path
 
 import pytest
-
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from gui.logging_config import get_logger, setup_default_logging, setup_logging
 
@@ -51,30 +46,24 @@ class TestLoggingSetup:
         assert len(logging.root.handlers) == 1
         assert isinstance(logging.root.handlers[0], logging.StreamHandler)
 
-    def test_setup_logging_with_file_output(self, tmp_path: Path) -> None:
+    def test_setup_logging_with_file_output(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test setup with file output."""
         # Arrange
         logging.root.handlers.clear()
-        # Monkey patch LOG_DIR for testing
         import gui.logging_config as log_config
 
-        original_log_dir = log_config.LOG_DIR
-        original_log_file = log_config.LOG_FILE
-        log_config.LOG_DIR = tmp_path
-        log_config.LOG_FILE = tmp_path / "test.log"
+        monkeypatch.setattr(log_config, "LOG_DIR", tmp_path)
+        monkeypatch.setattr(log_config, "LOG_FILE", tmp_path / "test.log")
 
-        try:
-            # Act
-            setup_logging(level=logging.INFO, console_output=False, file_output=True)
+        # Act
+        setup_logging(level=logging.INFO, console_output=False, file_output=True)
 
-            # Assert
-            assert len(logging.root.handlers) > 0
-            assert (tmp_path / "test.log").exists()
-        finally:
-            # Restore
-            log_config.LOG_DIR = original_log_dir
-            log_config.LOG_FILE = original_log_file
-            logging.root.handlers.clear()
+        # Assert
+        assert len(logging.root.handlers) > 0
+        assert (tmp_path / "test.log").exists()
+        logging.root.handlers.clear()
 
     def test_setup_logging_clears_existing_handlers(self) -> None:
         """Test that setup_logging removes existing handlers."""
@@ -211,69 +200,61 @@ class TestLoggingFunctionality:
 class TestLogRotation:
     """Test log rotation functionality (file handler specific)."""
 
-    def test_rotating_file_handler_created(self, tmp_path: Path) -> None:
+    def test_rotating_file_handler_created(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that rotating file handler is created when file_output=True."""
         # Arrange
         logging.root.handlers.clear()
         import gui.logging_config as log_config
 
-        original_log_dir = log_config.LOG_DIR
-        original_log_file = log_config.LOG_FILE
-        log_config.LOG_DIR = tmp_path
-        log_config.LOG_FILE = tmp_path / "test.log"
+        monkeypatch.setattr(log_config, "LOG_DIR", tmp_path)
+        monkeypatch.setattr(log_config, "LOG_FILE", tmp_path / "test.log")
 
-        try:
-            # Act
-            setup_logging(level=logging.INFO, console_output=False, file_output=True)
+        # Act
+        setup_logging(level=logging.INFO, console_output=False, file_output=True)
 
-            # Assert
-            handlers = logging.root.handlers
-            assert len(handlers) > 0
-            # Check for rotating file handler
-            from logging.handlers import RotatingFileHandler
+        # Assert
+        handlers = logging.root.handlers
+        assert len(handlers) > 0
+        # Check for rotating file handler
+        from logging.handlers import RotatingFileHandler
 
-            rotating_handlers = [
-                h for h in handlers if isinstance(h, RotatingFileHandler)
-            ]
-            assert len(rotating_handlers) > 0
-        finally:
-            # Restore
-            log_config.LOG_DIR = original_log_dir
-            log_config.LOG_FILE = original_log_file
-            logging.root.handlers.clear()
+        rotating_handlers = [
+            h for h in handlers if isinstance(h, RotatingFileHandler)
+        ]
+        assert len(rotating_handlers) > 0
+        logging.root.handlers.clear()
 
-    def test_log_file_is_created(self, tmp_path: Path) -> None:
+    def test_log_file_is_created(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Test that log file is created in specified directory."""
         # Arrange
         logging.root.handlers.clear()
         import gui.logging_config as log_config
 
-        original_log_dir = log_config.LOG_DIR
-        original_log_file = log_config.LOG_FILE
-        log_config.LOG_DIR = tmp_path
-        log_config.LOG_FILE = tmp_path / "test.log"
+        monkeypatch.setattr(log_config, "LOG_DIR", tmp_path)
+        monkeypatch.setattr(log_config, "LOG_FILE", tmp_path / "test.log")
 
-        try:
-            # Act
-            setup_logging(level=logging.INFO, console_output=False, file_output=True)
-            logger = get_logger("test")
-            logger.info("Test message")
+        # Act
+        setup_logging(level=logging.INFO, console_output=False, file_output=True)
+        logger = get_logger("test")
+        logger.info("Test message")
 
-            # Flush handlers to ensure write
-            for handler in logging.root.handlers:
-                handler.flush()
+        # Flush handlers to ensure write
+        for handler in logging.root.handlers:
+            handler.flush()
 
-            # Assert
-            assert (tmp_path / "test.log").exists()
-            log_content = (tmp_path / "test.log").read_text()
-            assert "Test message" in log_content
-        finally:
-            # Cleanup
-            for handler in logging.root.handlers:
-                handler.close()
-            logging.root.handlers.clear()
-            log_config.LOG_DIR = original_log_dir
-            log_config.LOG_FILE = original_log_file
+        # Assert
+        assert (tmp_path / "test.log").exists()
+        log_content = (tmp_path / "test.log").read_text()
+        assert "Test message" in log_content
+
+        # Cleanup handlers
+        for handler in logging.root.handlers:
+            handler.close()
+        logging.root.handlers.clear()
 
 
 class TestLoggingErrorHandling:
@@ -292,27 +273,22 @@ class TestLoggingErrorHandling:
         read_only_dir.mkdir()
         read_only_dir.chmod(0o444)  # Read-only
 
-        original_log_dir = log_config.LOG_DIR
-        original_log_file = log_config.LOG_FILE
-        log_config.LOG_DIR = read_only_dir
-        log_config.LOG_FILE = read_only_dir / "test.log"
+        monkeypatch.setattr(log_config, "LOG_DIR", read_only_dir)
+        monkeypatch.setattr(log_config, "LOG_FILE", read_only_dir / "test.log")
 
-        try:
-            # Act - should not raise exception
-            setup_logging(level=logging.INFO, console_output=True, file_output=True)
+        # Act - should not raise exception
+        setup_logging(level=logging.INFO, console_output=True, file_output=True)
 
-            # Assert - should have console handler even if file failed
-            assert len(logging.root.handlers) > 0
-            stream_handlers = [
-                h for h in logging.root.handlers if isinstance(h, logging.StreamHandler)
-            ]
-            assert len(stream_handlers) > 0
-        finally:
-            # Cleanup
-            logging.root.handlers.clear()
-            read_only_dir.chmod(0o755)  # Restore permissions for cleanup
-            log_config.LOG_DIR = original_log_dir
-            log_config.LOG_FILE = original_log_file
+        # Assert - should have console handler even if file failed
+        assert len(logging.root.handlers) > 0
+        stream_handlers = [
+            h for h in logging.root.handlers if isinstance(h, logging.StreamHandler)
+        ]
+        assert len(stream_handlers) > 0
+
+        # Cleanup
+        logging.root.handlers.clear()
+        read_only_dir.chmod(0o755)  # Restore permissions for cleanup
 
 
 if __name__ == "__main__":

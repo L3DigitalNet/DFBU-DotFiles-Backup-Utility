@@ -36,8 +36,6 @@ Requirements:
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 from typing import Any, Protocol, cast
 from unittest.mock import MagicMock
 
@@ -45,10 +43,6 @@ import pytest
 from PySide6.QtCore import QObject, Signal, Slot
 from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
-
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
 
 
 # =============================================================================
@@ -223,6 +217,7 @@ class TestExampleViewModelSignals:
             viewmodel.load_data()
 
         # Assert - Check signal arguments
+        assert blocker.args is not None
         assert blocker.args[0] == expected_data
         mock_data_service.fetch.assert_called_once()
 
@@ -242,6 +237,7 @@ class TestExampleViewModelSignals:
             viewmodel.load_data()
 
         # Assert - Check error message
+        assert blocker.args is not None
         assert error_message in blocker.args[0]
 
     def test_add_item_emits_data_loaded_signal(
@@ -259,6 +255,7 @@ class TestExampleViewModelSignals:
             viewmodel.add_item(new_item)
 
         # Assert
+        assert blocker.args is not None
         assert new_item in blocker.args[0]
         mock_data_service.save.assert_called_once()
 
@@ -274,6 +271,7 @@ class TestExampleViewModelSignals:
             viewmodel.add_item(empty_item)
 
         # Assert
+        assert blocker.args is not None
         assert "empty" in blocker.args[0].lower()
 
 

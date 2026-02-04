@@ -326,7 +326,7 @@ enabled = true
 
 
 @pytest.fixture
-def mock_file_service(mocker: Any) -> Any:  # type: ignore[misc]
+def mock_file_service(mocker: Any) -> Any:
     """
     Provide mock file service for testing ViewModels.
 
@@ -349,11 +349,11 @@ def mock_file_service(mocker: Any) -> Any:  # type: ignore[misc]
     mock_service.load_files.return_value = []
     mock_service.save_file.return_value = True
     mock_service.exists.return_value = True
-    return mock_service  # type: ignore[no-any-return]
+    return mock_service
 
 
 @pytest.fixture
-def mock_config_service(mocker: Any) -> Any:  # type: ignore[misc]
+def mock_config_service(mocker: Any) -> Any:
     """
     Provide mock configuration service for testing.
 
@@ -371,7 +371,7 @@ def mock_config_service(mocker: Any) -> Any:  # type: ignore[misc]
     mock_service = mocker.Mock()
     mock_service.load.return_value = {}
     mock_service.save.return_value = True
-    return mock_service  # type: ignore[no-any-return]
+    return mock_service
 
 
 # =============================================================================

@@ -55,6 +55,7 @@ For contributors and developers working on DFBU.
 | Document | Description |
 |----------|-------------|
 | [scripts/README.md](../scripts/README.md) | Setup scripts and development utilities |
+| [.mypy-strict-config.md](../.mypy-strict-config.md) | Conservative MyPy type checking configuration |
 
 ---
 
