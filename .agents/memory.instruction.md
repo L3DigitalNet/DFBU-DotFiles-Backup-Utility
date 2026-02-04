@@ -96,7 +96,7 @@ def test_viewmodel_updates_state(qtbot, mocker):
 pytest DFBU/tests/                    # All tests
 pytest DFBU/tests/ --cov=DFBU         # With coverage
 mypy DFBU/                            # Type check
-python DFBU/dfbu-gui.py               # Run GUI
+python DFBU/dfbu_gui.py               # Run GUI
 ```
 
 ## Key Principles

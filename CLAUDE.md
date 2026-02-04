@@ -16,7 +16,7 @@ DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux desktop application for c
 source .venv/bin/activate             # Activate virtual environment
 
 # Run Application
-python DFBU/dfbu-gui.py               # Run the GUI application
+python DFBU/dfbu_gui.py               # Run the GUI application
 
 # Testing
 pytest DFBU/tests/                    # All tests

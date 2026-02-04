@@ -27,7 +27,7 @@
 
 DFBU implements a clean, modern architecture based on established design patterns and SOLID principles.
 
-- **GUI Application** (`dfbu-gui.py`): Desktop application using MVVM pattern with PySide6
+- **GUI Application** (`dfbu_gui.py`): Desktop application using MVVM pattern with PySide6
 
 This document covers the GUI architecture.
 

@@ -307,7 +307,7 @@ pylint DFBU/
 
 # Run GUI application
 cd DFBU
-python dfbu-gui.py
+python dfbu_gui.py
 ```
 
 ## Directory Structure
@@ -315,7 +315,7 @@ python dfbu-gui.py
 ```text
 DFBU-DotFiles-Backup-Utility/
 ├── DFBU/                           # Main application directory
-│   ├── dfbu-gui.py                 # GUI application entry point
+│   ├── dfbu_gui.py                 # GUI application entry point
 │   ├── requirements.txt            # Python dependencies
 │   ├── data/
 │   │   ├── settings.yaml           # Application settings

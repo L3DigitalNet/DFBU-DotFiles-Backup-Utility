@@ -234,7 +234,7 @@ This guide covers common issues and their solutions. For quick answers, see the 
    ```bash
    rm ~/.config/dfbu/window_state.json
    ```
-2. Force X11 mode: `QT_QPA_PLATFORM=xcb python DFBU/dfbu-gui.py`
+2. Force X11 mode: `QT_QPA_PLATFORM=xcb python DFBU/dfbu_gui.py`
 3. Check for error messages in terminal
 
 ### UI elements look broken or missing
@@ -251,11 +251,11 @@ This guide covers common issues and their solutions. For quick answers, see the 
 
 1. Try different Qt style:
    ```bash
-   QT_STYLE_OVERRIDE=Fusion python DFBU/dfbu-gui.py
+   QT_STYLE_OVERRIDE=Fusion python DFBU/dfbu_gui.py
    ```
 2. For high DPI displays:
    ```bash
-   QT_SCALE_FACTOR=1.5 python DFBU/dfbu-gui.py
+   QT_SCALE_FACTOR=1.5 python DFBU/dfbu_gui.py
    ```
 
 ### Progress bar stuck

@@ -41,7 +41,7 @@ cd DFBU-DotFiles-Backup-Utility
 
 # 3. Launch DFBU
 source .venv/bin/activate
-python DFBU/dfbu-gui.py
+python DFBU/dfbu_gui.py
 ```
 
 ### Requirements
