@@ -1,6 +1,6 @@
 # DFBU Architecture Documentation
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Author:** Chris Purcell
 **Email:** <chris@l3digital.net>
 **Last Updated:** February 4, 2026

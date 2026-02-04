@@ -89,7 +89,7 @@ setup_default_logging()
 logger = get_logger(__name__)
 
 # Application version
-__version__: Final[str] = "1.0.0"
+__version__: Final[str] = "1.1.0"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
 # Points to directory containing settings.yaml, dotfiles.yaml, session.yaml

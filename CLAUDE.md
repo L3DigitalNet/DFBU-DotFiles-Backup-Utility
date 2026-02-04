@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux desktop application for configuration file backup/restoration with a PySide6 GUI interface. Uses UV for package management.
 
-**Current Version:** 1.0.0 — Production ready with full error handling and file size management
+**Current Version:** 1.1.0 — Production ready with full error handling and file size management
 
 ## Essential Commands
 

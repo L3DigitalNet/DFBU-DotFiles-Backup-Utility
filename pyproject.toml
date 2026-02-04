@@ -1,6 +1,6 @@
 [project]
 name = "dfbu"
-version = "1.0.0"
+version = "1.1.0"
 description = "Dotfiles Backup Utility - A file backup and restoration utility"
 authors = [
     {name = "Chris Purcell", email = "chris@l3digital.net"}

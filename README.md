@@ -2,7 +2,7 @@
 
 A simple GUI application to backup and restore your Linux configuration files.
 
-**Version:** 1.0.0 | **Platform:** Linux | **License:** MIT
+**Version:** 1.1.0 | **Platform:** Linux | **License:** MIT
 
 ---
 
