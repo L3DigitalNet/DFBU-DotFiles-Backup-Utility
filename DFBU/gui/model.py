@@ -41,6 +41,7 @@ from socket import gethostname
 # Local imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.common_types import (
+    BackupPreviewDict,
     DotFileDict,
     LegacyDotFileDict,
     OptionsDict,
@@ -51,6 +52,7 @@ from gui.backup_orchestrator import BackupOrchestrator
 from gui.config_manager import ConfigManager
 from gui.error_handler import ErrorHandler
 from gui.file_operations import FileOperations
+from gui.preview_generator import PreviewGenerator
 from gui.profile_manager import ProfileManager
 from gui.restore_backup_manager import RestoreBackupManager
 from gui.size_analyzer import SizeAnalyzer
@@ -186,6 +188,9 @@ class DFBUModel:
 
         # Initialize ProfileManager (v1.1.0)
         self._profile_manager: ProfileManager = ProfileManager(config_path)
+
+        # Lazy-initialized PreviewGenerator (v1.1.0)
+        self._preview_generator: PreviewGenerator | None = None
 
     # =========================================================================
     # Property Accessors for Backward Compatibility
@@ -910,3 +915,53 @@ class DFBUModel:
     def get_profile_manager(self) -> ProfileManager:
         """Get ProfileManager instance for advanced operations."""
         return self._profile_manager
+
+    # =========================================================================
+    # Preview Generation (v1.1.0)
+    # =========================================================================
+
+    def _init_preview_generator(self) -> None:
+        """
+        Lazy initialize PreviewGenerator.
+
+        Creates PreviewGenerator on first use to ensure config is loaded first.
+        """
+        if self._preview_generator is None:
+            self._preview_generator = PreviewGenerator(
+                file_ops=self._file_ops,
+                mirror_base_dir=self._config_manager.mirror_base_dir,
+            )
+
+    def generate_backup_preview(
+        self,
+        progress_callback: Callable[[int], None] | None = None,
+    ) -> BackupPreviewDict:
+        """
+        Generate preview of what would be backed up.
+
+        Args:
+            progress_callback: Optional callback for progress updates (0-100)
+
+        Returns:
+            BackupPreviewDict with preview results
+        """
+        # Initialize preview generator if needed
+        self._init_preview_generator()
+
+        # Get enabled dotfiles from ConfigManager
+        enabled_dotfiles = [df for df in self.dotfiles if df.get("enabled", True)]
+
+        # Get options for hostname/date subdirs
+        hostname_subdir = self._config_manager.options.get("hostname_subdir", True)
+        date_subdir = self._config_manager.options.get("date_subdir", False)
+
+        # Generate preview (mypy: _preview_generator is guaranteed non-None after _init)
+        # Cast to list[dict[str, Any]] as LegacyDotFileDict is compatible
+        assert self._preview_generator is not None
+        dotfiles_for_preview: list[dict[str, Any]] = enabled_dotfiles  # type: ignore[assignment]  # Compatible structure
+        return self._preview_generator.generate_preview(
+            dotfiles=dotfiles_for_preview,
+            hostname_subdir=hostname_subdir,
+            date_subdir=date_subdir,
+            progress_callback=progress_callback,
+        )

@@ -865,6 +865,60 @@ class SizeScanWorker(QThread):
             self.error_occurred.emit("Size Scan", str(e))
 
 
+class PreviewWorker(QThread):
+    """
+    Worker thread for generating backup preview.
+
+    Runs preview generation in background to prevent UI blocking.
+
+    Attributes:
+        progress_updated: Signal for progress percentage
+        preview_finished: Signal emitted with BackupPreviewDict on completion
+        error_occurred: Signal emitted on error
+        model: Reference to DFBUModel for data access
+    """
+
+    # Signal definitions
+    progress_updated = Signal(int)  # progress percentage
+    preview_finished = Signal(object)  # BackupPreviewDict
+    error_occurred = Signal(str, str)  # context, error_message
+
+    def __init__(self) -> None:
+        """Initialize the PreviewWorker."""
+        super().__init__()
+        self.model: DFBUModel | None = None
+
+    def set_model(self, model: DFBUModel) -> None:
+        """
+        Set the model reference.
+
+        Args:
+            model: DFBUModel instance
+        """
+        self.model = model
+
+    def run(self) -> None:
+        """Main thread execution method for preview generation."""
+        if not self.model:
+            return
+
+        try:
+            # Emit initial progress
+            self.progress_updated.emit(0)
+
+            # Generate preview with progress callback
+            preview = self.model.generate_backup_preview(
+                progress_callback=lambda pct: self.progress_updated.emit(pct)
+            )
+
+            # Emit completion with preview result
+            self.progress_updated.emit(100)
+            self.preview_finished.emit(preview)
+
+        except Exception as e:
+            self.error_occurred.emit("Preview", str(e))
+
+
 class DFBUViewModel(QObject):
     """
     ViewModel mediating between Model and View in MVVM pattern.
@@ -929,6 +983,10 @@ class DFBUViewModel(QObject):
     profile_switched = Signal(str)  # profile_name (empty string for default)
     profiles_changed = Signal()  # emitted when profile list changes
 
+    # Preview signals (v1.1.0)
+    preview_ready = Signal(object)  # BackupPreviewDict
+    preview_progress = Signal(int)  # progress percentage (0-100)
+
     SETTINGS_ORG: Final[str] = "L3DigitalNet"
     SETTINGS_APP: Final[str] = "dfbu_gui_settings"
 
@@ -946,6 +1004,7 @@ class DFBUViewModel(QObject):
         self.config_load_worker: ConfigLoadWorker | None = None
         self.config_save_worker: ConfigSaveWorker | None = None
         self.size_scan_worker: SizeScanWorker | None = None
+        self._preview_worker: PreviewWorker | None = None
         self.settings: QSettings = QSettings(self.SETTINGS_ORG, self.SETTINGS_APP)
         self.restore_source_directory: Path | None = None
         self._pending_backup_force_full: bool = False  # Track force_full for after scan
@@ -1497,6 +1556,43 @@ class DFBUViewModel(QObject):
     def get_active_profile_name(self) -> str | None:
         """Get name of currently active profile."""
         return self.model.get_active_profile_name()
+
+    # =========================================================================
+    # Preview Commands (v1.1.0)
+    # =========================================================================
+
+    def command_generate_preview(self) -> bool:
+        """
+        Command to generate backup preview asynchronously.
+
+        Uses PreviewWorker to prevent UI blocking during preview generation.
+
+        Returns:
+            True if preview generation started successfully
+        """
+        # Don't start if already running
+        if self._preview_worker is not None and self._preview_worker.isRunning():
+            return False
+
+        self._preview_worker = PreviewWorker()
+        self._preview_worker.set_model(self.model)
+        self._preview_worker.progress_updated.connect(self._on_preview_progress)
+        self._preview_worker.preview_finished.connect(self._on_preview_finished)
+        self._preview_worker.error_occurred.connect(self._on_worker_error)
+        self._preview_worker.start()
+        return True
+
+    def _on_preview_progress(self, progress: int) -> None:
+        """Handle preview progress updates."""
+        self.preview_progress.emit(progress)
+
+    def _on_preview_finished(self, preview: Any) -> None:
+        """Handle preview completion."""
+        if self._preview_worker:
+            self._preview_worker.wait()
+            self._preview_worker.deleteLater()
+            self._preview_worker = None
+        self.preview_ready.emit(preview)
 
     def get_exclusions(self) -> list[str]:
         """Get current exclusion list.
