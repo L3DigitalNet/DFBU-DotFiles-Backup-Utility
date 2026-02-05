@@ -44,7 +44,7 @@ from typing import Any, Final
 # Local imports
 from core.common_types import LegacyDotFileDict, OperationResultDict, SizeReportDict
 from PySide6.QtCore import QFile, Qt
-from PySide6.QtGui import QAction, QCloseEvent, QColor, QPixmap, QTextCursor
+from PySide6.QtGui import QCloseEvent, QColor, QKeySequence, QPixmap, QShortcut, QTextCursor
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -535,11 +535,14 @@ class MainWindow(QMainWindow):
         # Set window title with version
         self.setWindowTitle(f"{self.PROJECT_NAME} v{self.version}")
 
-        # Get references to all UI widgets and menu actions
-        self._setup_widget_references(ui_widget, loaded_window)
+        # Get references to all UI widgets
+        self._setup_widget_references(ui_widget)
 
         # Connect signals to handler methods
         self._connect_ui_signals()
+
+        # Set up keyboard shortcuts (replacing menu accelerators)
+        self._setup_shortcuts()
 
         # Configure table widget properties
         self._configure_table_widget()
@@ -555,15 +558,12 @@ class MainWindow(QMainWindow):
         # Set initial status message
         self.status_bar.showMessage("Ready - Load configuration to begin")
 
-    def _setup_widget_references(
-        self, ui_widget: QWidget, loaded_window: QWidget
-    ) -> None:
+    def _setup_widget_references(self, ui_widget: QWidget) -> None:
         """
         Get references to UI elements from the loaded widget.
 
         Args:
             ui_widget: Central widget containing all UI elements
-            loaded_window: Original loaded QMainWindow for finding menu actions
         """
         # Store reference to central widget
         self.central_widget: QWidget = ui_widget
@@ -578,7 +578,7 @@ class MainWindow(QMainWindow):
         self._find_config_tab_widgets(ui_widget)
         self._find_logs_tab_widgets(ui_widget)
         self._find_status_widgets()
-        self._find_menu_actions(loaded_window)
+        self._find_header_widgets(ui_widget)
 
     def _find_backup_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to Backup tab widgets."""
@@ -757,39 +757,14 @@ class MainWindow(QMainWindow):
             QProgressBar, "progress_bar"
         )  # type: ignore[assignment]
 
-    def _find_menu_actions(self, loaded_window: QWidget) -> None:
-        """
-        Find and store references to menu actions.
-
-        Args:
-            loaded_window: Original loaded QMainWindow for finding menu actions
-        """
-        self.action_exit: QAction = loaded_window.findChild(QAction, "actionExit")  # type: ignore[assignment]
-        self.action_start_backup: QAction = loaded_window.findChild(
-            QAction, "actionStartBackup"
+    def _find_header_widgets(self, ui_widget: QWidget) -> None:
+        """Find and store references to header bar widgets."""
+        self._help_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "helpButton"
         )  # type: ignore[assignment]
-        self.action_start_restore: QAction = loaded_window.findChild(
-            QAction, "actionStartRestore"
+        self._about_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "aboutButton"
         )  # type: ignore[assignment]
-        self.action_verify_backup: QAction = loaded_window.findChild(
-            QAction, "actionVerifyBackup"
-        )  # type: ignore[assignment]
-        self.action_about: QAction = loaded_window.findChild(QAction, "actionAbout")  # type: ignore[assignment]
-        self.action_user_guide: QAction = loaded_window.findChild(
-            QAction, "actionUserGuide"
-        )  # type: ignore[assignment]
-
-        # Fix Qt object ownership: Reparent actions to prevent deletion
-        for action in [
-            self.action_exit,
-            self.action_start_backup,
-            self.action_start_restore,
-            self.action_verify_backup,
-            self.action_about,
-            self.action_user_guide,
-        ]:
-            if action:
-                action.setParent(self)
 
     def _connect_ui_signals(self) -> None:
         """Connect UI element signals to handler methods."""
@@ -873,13 +848,19 @@ class MainWindow(QMainWindow):
         self._log_filter_error_btn.clicked.connect(self._on_log_filter_changed)
         self._log_clear_btn.clicked.connect(self._on_clear_log)
 
-        # Menu action connections
-        self.action_exit.triggered.connect(self.close)
-        self.action_start_backup.triggered.connect(self._on_start_backup)
-        self.action_start_restore.triggered.connect(self._on_start_restore)
-        self.action_verify_backup.triggered.connect(self._on_verify_backup)
-        self.action_about.triggered.connect(self._show_about)
-        self.action_user_guide.triggered.connect(self._show_user_guide)
+        # Header bar connections
+        if self._help_btn:
+            self._help_btn.clicked.connect(self._show_user_guide)
+        if self._about_btn:
+            self._about_btn.clicked.connect(self._show_about)
+
+    def _setup_shortcuts(self) -> None:
+        """Set up keyboard shortcuts for actions previously in menus."""
+        QShortcut(QKeySequence("Ctrl+Q"), self, self.close)
+        QShortcut(QKeySequence("F1"), self, self._show_user_guide)
+        QShortcut(QKeySequence("Ctrl+B"), self, self._on_start_backup)
+        QShortcut(QKeySequence("Ctrl+R"), self, self._on_start_restore)
+        QShortcut(QKeySequence("Ctrl+V"), self, self._on_verify_backup)
 
     def _configure_table_widget(self) -> None:
         """Configure the dotfile table widget properties.
