@@ -421,3 +421,153 @@ QToolTip {
     padding: 6px 10px;
     font-size: 12px;
 }
+
+
+/* ==========================================================================
+   14. Header Bar — Application branding and quick actions
+   ========================================================================== */
+
+#headerBar {
+    background-color: #F8FAFC;
+    border-bottom: 1px solid #E2E8F0;
+    min-height: 48px;
+    max-height: 48px;
+}
+
+#headerTitle {
+    font-size: 15px;
+    font-weight: bold;
+    color: #1E293B;
+}
+
+/* Header bar buttons - compact, icon-focused style */
+#helpButton,
+#aboutButton {
+    background-color: transparent;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    min-width: 32px;
+    min-height: 32px;
+}
+
+#helpButton:hover,
+#aboutButton:hover {
+    background-color: #EFF6FF;
+}
+
+#helpButton:pressed,
+#aboutButton:pressed {
+    background-color: #DBEAFE;
+}
+
+
+/* ==========================================================================
+   15. Log Pane — Always-visible operation log (split view)
+   ========================================================================== */
+
+#logPane {
+    background-color: #FFFFFF;
+    border-left: 1px solid #E2E8F0;
+}
+
+#logPaneHeader {
+    background-color: #F8FAFC;
+    border-bottom: 1px solid #E2E8F0;
+    padding: 8px;
+}
+
+#logPaneTitle {
+    font-size: 13px;
+    font-weight: bold;
+    color: #1E293B;
+}
+
+/* Log filter buttons - compact toggle style */
+#logPaneFilterAllButton,
+#logPaneFilterInfoButton,
+#logPaneFilterWarningButton,
+#logPaneFilterErrorButton {
+    background-color: transparent;
+    border: 1px solid #E2E8F0;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    color: #475569;
+}
+
+#logPaneFilterAllButton:hover,
+#logPaneFilterInfoButton:hover,
+#logPaneFilterWarningButton:hover,
+#logPaneFilterErrorButton:hover {
+    background-color: #F1F5F9;
+    border-color: #CBD5E1;
+}
+
+#logPaneFilterAllButton:checked,
+#logPaneFilterInfoButton:checked,
+#logPaneFilterWarningButton:checked,
+#logPaneFilterErrorButton:checked {
+    background-color: #2563EB;
+    border-color: #2563EB;
+    color: #FFFFFF;
+}
+
+/* Log pane action buttons - secondary style */
+#logPaneClearButton,
+#logPaneSaveButton {
+    background-color: transparent;
+    border: 1px solid #E2E8F0;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #475569;
+}
+
+#logPaneClearButton:hover,
+#logPaneSaveButton:hover {
+    background-color: #F1F5F9;
+    border-color: #CBD5E1;
+}
+
+/* Verify button in log pane - primary style */
+#logPaneVerifyButton {
+    background-color: #2563EB;
+    border: 1px solid #2563EB;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #FFFFFF;
+}
+
+#logPaneVerifyButton:hover {
+    background-color: #1D4ED8;
+    border-color: #1D4ED8;
+}
+
+#logPaneVerifyButton:disabled {
+    opacity: 0.5;
+}
+
+/* Log text area - inherits terminal styling from section 8 */
+#logPaneBox {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+
+/* ==========================================================================
+   16. Splitter — Resizable divider between panes
+   ========================================================================== */
+
+QSplitter::handle {
+    background-color: #E2E8F0;
+}
+
+QSplitter::handle:horizontal {
+    width: 1px;
+}
+
+QSplitter::handle:hover {
+    background-color: #2563EB;
+}
