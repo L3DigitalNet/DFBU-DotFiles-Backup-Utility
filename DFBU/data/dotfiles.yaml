@@ -1488,10 +1488,6 @@ VMware Workstation:
   description: VMware Workstation Pro configuration
   path: ~/.vmware
 
-KDE Plasma:
-  description: global configuration settings and theme preferences
-  path: ~/.config/kdeglobals
-
 Plasma:
   description: Plasma desktop environment core configuration
   paths:
@@ -1695,10 +1691,6 @@ Akonadi:
 Kalendar:
   description: Kalendar calendar application configuration
   path: ~/.config/kalendaracrc
-
-Go:
-  description: Go programming language configuration
-  path: ~/.config/go
 
 Solaar:
   description: Solaar Logitech device manager configuration
