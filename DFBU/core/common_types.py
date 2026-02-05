@@ -314,3 +314,31 @@ class SizeReportDict(TypedDict):
     has_alert: bool
     has_warning: bool
     excluded_patterns: list[str]
+
+
+# =============================================================================
+# Profile Types (v1.1.0)
+# =============================================================================
+
+
+class ProfileDict(TypedDict):
+    """
+    Type definition for backup profile configuration.
+
+    Contains named preset for different backup configurations.
+
+    Fields:
+        name: Display name for the profile
+        description: Human-readable description
+        excluded: List of application names to exclude
+        options_overrides: Partial OptionsDict with overridden settings
+        created_at: ISO format timestamp of creation
+        modified_at: ISO format timestamp of last modification
+    """
+
+    name: str
+    description: str
+    excluded: list[str]
+    options_overrides: dict[str, bool | int | str]
+    created_at: str
+    modified_at: str

@@ -8,6 +8,7 @@ from core.common_types import (
     OptionsDict,
     SessionDict,
     LegacyDotFileDict,
+    ProfileDict,
 )
 
 
@@ -165,3 +166,21 @@ class TestLegacyDotFileDict:
         assert legacy["description"] == "Bash shell configuration"
         assert legacy["paths"] == ["~/.bashrc", "~/.bash_profile"]
         assert legacy["enabled"] is True
+
+
+class TestProfileDict:
+    """Tests for ProfileDict TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_profile_dict_has_required_fields(self) -> None:
+        """ProfileDict should have all required fields."""
+        profile: ProfileDict = {
+            "name": "Work Profile",
+            "description": "Work-related dotfiles",
+            "excluded": ["Steam", "Firefox"],
+            "options_overrides": {"archive": True},
+            "created_at": "2026-02-05T10:00:00Z",
+            "modified_at": "2026-02-05T10:00:00Z",
+        }
+        assert profile["name"] == "Work Profile"
+        assert profile["excluded"] == ["Steam", "Firefox"]
