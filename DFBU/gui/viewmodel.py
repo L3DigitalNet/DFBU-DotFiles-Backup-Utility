@@ -925,6 +925,10 @@ class DFBUViewModel(QObject):
     size_warning_requested = Signal(object)  # SizeReportDict
     size_scan_progress = Signal(int)  # progress percentage during size scan
 
+    # Profile signals (v1.1.0)
+    profile_switched = Signal(str)  # profile_name (empty string for default)
+    profiles_changed = Signal()  # emitted when profile list changes
+
     SETTINGS_ORG: Final[str] = "L3DigitalNet"
     SETTINGS_APP: Final[str] = "dfbu_gui_settings"
 
@@ -1425,6 +1429,74 @@ class DFBUViewModel(QObject):
         if file_count == 0:
             return None
         return self.model.verify_last_backup()
+
+    # =========================================================================
+    # Profile Commands (v1.1.0)
+    # =========================================================================
+
+    def command_create_profile(
+        self,
+        name: str,
+        description: str,
+        excluded: list[str],
+        options_overrides: dict[str, bool | int | str] | None = None,
+    ) -> bool:
+        """
+        Command to create a new backup profile.
+
+        Args:
+            name: Unique profile name
+            description: Human-readable description
+            excluded: List of application names to exclude
+            options_overrides: Optional settings overrides
+
+        Returns:
+            True if profile was created successfully
+        """
+        success = self.model.create_profile(name, description, excluded, options_overrides)
+        if success:
+            self.profiles_changed.emit()
+        return success
+
+    def command_delete_profile(self, name: str) -> bool:
+        """
+        Command to delete a profile.
+
+        Args:
+            name: Profile name to delete
+
+        Returns:
+            True if profile was deleted
+        """
+        success = self.model.delete_profile(name)
+        if success:
+            self.profiles_changed.emit()
+        return success
+
+    def command_switch_profile(self, name: str | None) -> bool:
+        """
+        Command to switch active profile.
+
+        Args:
+            name: Profile name to switch to, or None for default
+
+        Returns:
+            True if switch was successful
+        """
+        success = self.model.switch_profile(name)
+        if success:
+            profile_name = name if name else ""
+            self.profile_switched.emit(profile_name)
+            self.exclusions_changed.emit()  # Profile switch changes exclusions
+        return success
+
+    def get_profile_names(self) -> list[str]:
+        """Get list of all profile names."""
+        return self.model.get_profile_names()
+
+    def get_active_profile_name(self) -> str | None:
+        """Get name of currently active profile."""
+        return self.model.get_active_profile_name()
 
     def get_exclusions(self) -> list[str]:
         """Get current exclusion list.
