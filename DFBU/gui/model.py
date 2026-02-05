@@ -51,6 +51,7 @@ from gui.backup_orchestrator import BackupOrchestrator
 from gui.config_manager import ConfigManager
 from gui.error_handler import ErrorHandler
 from gui.file_operations import FileOperations
+from gui.profile_manager import ProfileManager
 from gui.restore_backup_manager import RestoreBackupManager
 from gui.size_analyzer import SizeAnalyzer
 from gui.statistics_tracker import BackupStatistics, StatisticsTracker
@@ -183,6 +184,9 @@ class DFBUModel:
             ),
         )
 
+        # Initialize ProfileManager (v1.1.0)
+        self._profile_manager: ProfileManager = ProfileManager(config_path)
+
     # =========================================================================
     # Property Accessors for Backward Compatibility
     # =========================================================================
@@ -308,6 +312,9 @@ class DFBUModel:
             self._size_analyzer.critical_threshold_mb = (
                 self._config_manager.options.get("size_critical_threshold_mb", 1024)
             )
+
+            # Load profiles (v1.1.0)
+            self._profile_manager.load_profiles()
 
         return success, error
 
@@ -854,3 +861,52 @@ class DFBUModel:
             Human-readable formatted string for log output
         """
         return self._size_analyzer.format_report_for_log(report)
+
+    # =========================================================================
+    # Profile Management (v1.1.0)
+    # =========================================================================
+
+    def get_profile_count(self) -> int:
+        """Get number of saved profiles."""
+        return self._profile_manager.get_profile_count()
+
+    def get_profile_names(self) -> list[str]:
+        """Get list of all profile names."""
+        return self._profile_manager.get_profile_names()
+
+    def get_active_profile_name(self) -> str | None:
+        """Get name of currently active profile."""
+        return self._profile_manager.get_active_profile_name()
+
+    def create_profile(
+        self,
+        name: str,
+        description: str,
+        excluded: list[str],
+        options_overrides: dict[str, bool | int | str] | None = None,
+    ) -> bool:
+        """Create a new backup profile."""
+        success = self._profile_manager.create_profile(
+            name, description, excluded, options_overrides
+        )
+        if success:
+            self._profile_manager.save_profiles()
+        return success
+
+    def delete_profile(self, name: str) -> bool:
+        """Delete a profile by name."""
+        success = self._profile_manager.delete_profile(name)
+        if success:
+            self._profile_manager.save_profiles()
+        return success
+
+    def switch_profile(self, name: str | None) -> bool:
+        """Switch to a different profile."""
+        success = self._profile_manager.switch_profile(name)
+        if success:
+            self._profile_manager.save_profiles()
+        return success
+
+    def get_profile_manager(self) -> ProfileManager:
+        """Get ProfileManager instance for advanced operations."""
+        return self._profile_manager

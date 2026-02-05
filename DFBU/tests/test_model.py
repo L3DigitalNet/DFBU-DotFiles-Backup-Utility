@@ -590,3 +590,67 @@ class TestModelRestoreBackupIntegration:
         # Assert
         assert hasattr(model, "_restore_backup_manager")
         assert model._restore_backup_manager is not None
+
+
+class TestModelProfileManagement:
+    """Test DFBUModel integration with ProfileManager (v1.1.0)."""
+
+    def test_model_has_profile_manager(self, yaml_config_dir: Path) -> None:
+        """Test DFBUModel creates ProfileManager."""
+        # Arrange & Act
+        model = DFBUModel(yaml_config_dir)
+
+        # Assert
+        assert hasattr(model, "_profile_manager")
+        assert model._profile_manager is not None
+
+    def test_model_exposes_profile_operations(self, yaml_config_dir: Path) -> None:
+        """DFBUModel should expose profile operations."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+        model.load_config()
+
+        # Create profile through facade
+        success = model.create_profile("TestProfile", "Test", ["TestApp"])
+        assert success is True
+
+        # Get profile count
+        assert model.get_profile_count() == 1
+
+        # Get profile names
+        assert model.get_profile_names() == ["TestProfile"]
+
+        # Switch profile
+        success = model.switch_profile("TestProfile")
+        assert success is True
+        assert model.get_active_profile_name() == "TestProfile"
+
+        # Delete profile
+        success = model.delete_profile("TestProfile")
+        assert success is True
+        assert model.get_profile_count() == 0
+
+    def test_profile_persists_on_create(self, yaml_config_dir: Path) -> None:
+        """Test profile auto-saves on create."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+        model.load_config()
+
+        # Act
+        model.create_profile("PersistTest", "Test persistence", ["App1"])
+
+        # Assert - check profiles.yaml was created
+        profiles_file = yaml_config_dir / "profiles.yaml"
+        assert profiles_file.exists()
+
+    def test_get_profile_manager(self, yaml_config_dir: Path) -> None:
+        """Test getting ProfileManager instance for advanced operations."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+
+        # Act
+        pm = model.get_profile_manager()
+
+        # Assert
+        from gui.profile_manager import ProfileManager
+        assert isinstance(pm, ProfileManager)
