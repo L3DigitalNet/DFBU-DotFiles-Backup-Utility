@@ -10,6 +10,7 @@ Date Created: 2026-02-05
 License: MIT
 """
 
+from datetime import UTC, datetime
 from pathlib import Path
 import sys
 from typing import Any
@@ -140,3 +141,110 @@ class ProfileManager:
 
         except (OSError, IOError) as e:
             return False, f"Failed to save profiles: {e}"
+
+    def create_profile(
+        self,
+        name: str,
+        description: str,
+        excluded: list[str],
+        options_overrides: dict[str, bool | int | str] | None = None,
+    ) -> bool:
+        """
+        Create a new backup profile.
+
+        Args:
+            name: Unique profile name
+            description: Human-readable description
+            excluded: List of application names to exclude
+            options_overrides: Optional settings overrides
+
+        Returns:
+            True if profile was created successfully
+        """
+        if name in self._profiles:
+            return False  # Profile already exists
+
+        now = datetime.now(UTC).isoformat()
+        self._profiles[name] = ProfileDict(
+            name=name,
+            description=description,
+            excluded=excluded,
+            options_overrides=options_overrides or {},
+            created_at=now,
+            modified_at=now,
+        )
+        return True
+
+    def get_profile(self, name: str) -> ProfileDict | None:
+        """
+        Get profile by name.
+
+        Args:
+            name: Profile name to retrieve
+
+        Returns:
+            ProfileDict or None if not found
+        """
+        return self._profiles.get(name)
+
+    def delete_profile(self, name: str) -> bool:
+        """
+        Delete a profile by name.
+
+        Args:
+            name: Profile name to delete
+
+        Returns:
+            True if profile was deleted
+        """
+        if name not in self._profiles:
+            return False
+
+        del self._profiles[name]
+
+        # Clear active if deleted
+        if self._active_profile == name:
+            self._active_profile = None
+
+        return True
+
+    def switch_profile(self, name: str | None) -> bool:
+        """
+        Switch to a different profile.
+
+        Args:
+            name: Profile name to switch to, or None for default
+
+        Returns:
+            True if switch was successful
+        """
+        if name is not None and name not in self._profiles:
+            return False
+
+        self._active_profile = name
+        return True
+
+    def get_active_exclusions(self) -> list[str]:
+        """
+        Get exclusions from active profile.
+
+        Returns:
+            List of excluded application names, empty if no active profile
+        """
+        if self._active_profile is None:
+            return []
+
+        profile = self._profiles.get(self._active_profile)
+        if profile is None:
+            return []
+
+        return profile["excluded"]
+
+    def get_profile_names(self) -> list[str]:
+        """
+        Get list of all profile names.
+
+        Returns:
+            Sorted list of profile names
+        """
+        return sorted(self._profiles.keys())
