@@ -32,6 +32,9 @@ Classes:
     - LegacyDotFileDict: TypedDict for TOML migration support
     - SizeItemDict: TypedDict for individual file/directory size entry
     - SizeReportDict: TypedDict for backup size analysis report
+    - ProfileDict: TypedDict for backup profile configuration (v1.1.0)
+    - PreviewItemDict: TypedDict for individual backup preview item (v1.1.0)
+    - BackupPreviewDict: TypedDict for backup preview result (v1.1.0)
 """
 
 from typing import Required, TypedDict
@@ -342,3 +345,52 @@ class ProfileDict(TypedDict):
     options_overrides: dict[str, bool | int | str]
     created_at: str
     modified_at: str
+
+
+# =============================================================================
+# Backup Preview Types (v1.1.0)
+# =============================================================================
+
+
+class PreviewItemDict(TypedDict):
+    """
+    Type definition for individual backup preview item.
+
+    Contains information about a single file/directory in preview.
+
+    Fields:
+        path: Source path of the file
+        dest_path: Destination path in backup
+        size_bytes: Size in bytes
+        status: Preview status ("new", "changed", "unchanged", "error")
+        application: Name of the dotfile application
+    """
+
+    path: str
+    dest_path: str
+    size_bytes: int
+    status: str  # "new", "changed", "unchanged", "error"
+    application: str
+
+
+class BackupPreviewDict(TypedDict):
+    """
+    Type definition for backup preview result.
+
+    Contains summary and details of what would be backed up.
+
+    Fields:
+        items: List of individual preview items
+        total_size_bytes: Total size of all items
+        new_count: Number of new files
+        changed_count: Number of changed files
+        unchanged_count: Number of unchanged files
+        error_count: Number of files with errors
+    """
+
+    items: list[PreviewItemDict]
+    total_size_bytes: int
+    new_count: int
+    changed_count: int
+    unchanged_count: int
+    error_count: int

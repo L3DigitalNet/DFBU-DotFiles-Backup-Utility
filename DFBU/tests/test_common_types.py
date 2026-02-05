@@ -9,6 +9,8 @@ from core.common_types import (
     SessionDict,
     LegacyDotFileDict,
     ProfileDict,
+    PreviewItemDict,
+    BackupPreviewDict,
 )
 
 
@@ -184,3 +186,36 @@ class TestProfileDict:
         }
         assert profile["name"] == "Work Profile"
         assert profile["excluded"] == ["Steam", "Firefox"]
+
+
+class TestPreviewItemDict:
+    """Tests for PreviewItemDict TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_preview_item_dict_structure(self) -> None:
+        """PreviewItemDict should have all required fields."""
+        item: PreviewItemDict = {
+            "path": "/home/user/.bashrc",
+            "dest_path": "/backups/mirror/.bashrc",
+            "size_bytes": 1024,
+            "status": "new",
+            "application": "Bash",
+        }
+        assert item["status"] == "new"
+
+
+class TestBackupPreviewDict:
+    """Tests for BackupPreviewDict TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_backup_preview_dict_structure(self) -> None:
+        """BackupPreviewDict should have all required fields."""
+        preview: BackupPreviewDict = {
+            "items": [],
+            "total_size_bytes": 0,
+            "new_count": 0,
+            "changed_count": 0,
+            "unchanged_count": 0,
+            "error_count": 0,
+        }
+        assert preview["total_size_bytes"] == 0
