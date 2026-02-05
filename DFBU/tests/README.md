@@ -308,10 +308,10 @@ Coverage reports are generated in:
 
 ## Test Results Summary
 
-**Total Tests**: 217
+**Total Tests**: 553
 
-- **Passed**: 215 (99.08%)
-- **Skipped**: 2 (0.92%)
+- **Passed**: 551 (99.64%)
+- **Skipped**: 2 (0.36%)
 - **Failed**: 0 (0%)
 
 **Execution Time**: ~5-15 seconds for full suite

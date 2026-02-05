@@ -9,7 +9,7 @@ Set up a Python virtual environment for the PySide6 MVVM desktop application tem
 
 ## Prerequisites
 
-- Python 3.10 or higher
+- Python 3.14 or higher
 - pip (Python package manager)
 
 ## Steps to Follow
@@ -18,7 +18,7 @@ Set up a Python virtual environment for the PySide6 MVVM desktop application tem
 2. **Remove Old Environment**: Delete existing `venv/` or `.venv/` if present
 3. **Create Virtual Environment**: Create new venv in project root
 4. **Activate Virtual Environment**: Activate the environment
-5. **Install Dependencies**: Install packages from `requirements.txt`
+5. **Install Dependencies**: Install packages from `DFBU/requirements.txt`
 6. **Verification**: Verify installation success
 
 ## Commands
@@ -54,7 +54,7 @@ source .venv/bin/activate
 ### Install Dependencies
 ```bash
 pip install --upgrade pip
-pip install -r requirements.txt
+pip install -r DFBU/requirements.txt
 ```
 
 ### Verify Installation
@@ -71,7 +71,7 @@ pip list
 
 ## Expected Dependencies
 
-From `requirements.txt`:
+From `DFBU/requirements.txt`:
 - **PySide6**: Qt for Python GUI framework
 - **pytest**: Testing framework
 - **pytest-qt**: Qt testing support for pytest
@@ -120,14 +120,14 @@ uv venv
 source .venv/bin/activate
 
 # Install dependencies
-uv pip install -r requirements.txt
+uv pip install -r DFBU/requirements.txt
 ```
 
 ## Next Steps
 
 After successful setup:
 
-1. Run tests to verify: `pytest tests/`
-2. Run the application: `python src/main.py`
+1. Run tests to verify: `pytest DFBU/tests/`
+2. Run the application: `python DFBU/dfbu_gui.py`
 3. Start developing following MVVM architecture
-4. See `QUICKSTART.md` for development guide
+4. See `README.md` or `docs/INDEX.md` for development guidance

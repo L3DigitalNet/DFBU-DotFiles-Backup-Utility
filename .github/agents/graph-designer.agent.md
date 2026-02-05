@@ -45,10 +45,10 @@ This agent supports two output formats:
 This agent uses a **conversational approach**:
 
 1. **Discovery Phase** - Scans the codebase to understand structure
-2. **Clarification Phase** - Asks questions to refine the request
-3. Would you like Mermaid (for markdown) or draw.io (interactive)?"
+2. **Clarification Phase** - Asks questions to refine the request and output format
+3. **Generation Phase** - Produces the diagram with explanations
 
-- "**Generation Phase** - Produces the diagram with explanations
+During clarification, the agent will ask whether you prefer Mermaid (markdown) or draw.io (interactive).
 
 ### Discovery Questions
 
@@ -63,7 +63,7 @@ Before generating diagrams, the agent may ask:
 **Diagram Scope:**
 
 - "Should I include test files in the analysis?"
-- "How deep application code (only creates/edits diagram filesels recommended)"
+- "How deep should I go (modules only, or include implementations)?"
 - "Are there specific modules or classes you want to highlight?"
 
 **Output Preferences:**
@@ -93,7 +93,12 @@ Before generating diagrams, the agent may ask:
 
 The agent accepts natural language requests:
 
-| ReqDiagram file** - Either Mermaid (`.md`) or draw.io (`.drawio`) 2. **Brief explanation** - What the diagram shows 3. **Key insights\*\* - Notable patterns, potential issues, or observations
+| Request Type | Example |
+| --- | --- |
+| Structure | "Directory tree of DFBU/", "What's the project layout?" |
+| Dependencies | "What does UserService depend on?", "Graph the imports for auth/" |
+| Classes | "Show class hierarchy for models", "How do the handlers inherit?" |
+| Flow | "Sequence diagram for login", "How does data flow through the API?" |
 
 ### Draw.io Features
 
@@ -103,11 +108,7 @@ When creating `.drawio` files, the agent can:
 - Use professional styling with colors and shapes
 - Organize complex diagrams with layers and pages
 - Open the diagram automatically in VS Code (requires draw.io extension)
-- Update existing diagrams by adding/modifying elementyers organized?" |
-  | **Dependencies** | "What does UserService depend on?", "Graph the imports for auth/" |
-  | **Classes** | "Show class hierarchy for models", "How do the handlers inherit?" |
-  | **Flow** | "Sequence diagram for login", "How does data flow through the API?" |
-  | **Structure** | "Directory tree of src/", "What's the project layout?" |
+- Update existing diagrams by adding or modifying elements
 
 ### Optional Parameters
 
@@ -122,7 +123,7 @@ You can specify:
 
 The agent produces:
 
-1. **Mermaid diagram code** - Ready to render in markdown/GitHub/VSCode
+1. **Diagram output** - Mermaid code block or a `.drawio` file, depending on preference
 2. **Brief explanation** - What the diagram shows
 3. **Key insights** - Notable patterns, potential issues, or observations
 
@@ -348,7 +349,7 @@ Each template uses appropriate shapes, colors, and layouts for the diagram type.
 ## Constraints
 
 - **Read-only** - Does not modify files unless explicitly saving a diagram
-- **Mermaid output** - All diagrams use Mermaid syntax for portability
+- **Mermaid output** - Default to Mermaid unless draw.io is requested
 - **Depth limits** - Recommends limiting depth to avoid overwhelming diagrams
 - **Local only** - Works entirely within the workspace
 
@@ -370,16 +371,16 @@ The agent reports progress:
 **Agent:** "I've scanned the project and found:
 
 - Language: Python
-- Main directories: `src/`, `tests/`, `docs/`
+- Main directories: `DFBU/`, `DFBU/tests/`, `docs/`
 - 45 Python files across 8 packages
 
 A few questions:
 
 1. Does this project follow a specific pattern? (I see hints of layered architecture)
-2. Should I focus on `src/` only, or include `tests/`?
+2. Should I focus on `DFBU/` only, or include `DFBU/tests/`?
 3. Do you want a high-level overview or detailed component breakdown?"
 
-**User:** "It's MVVM, focus on src/, high-level please"
+**User:** "It's MVVM, focus on DFBU/, high-level please"
 
 **Agent:** "Got it! Here's the MVVM architecture diagram..."
 

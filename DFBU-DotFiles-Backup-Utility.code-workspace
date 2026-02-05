@@ -115,6 +115,7 @@
 		},
 		"chat.tools.terminal.autoApprove": {
 			"pytest": true
-		}
+		},
+		"chatgpt.commentCodeLensEnabled": false
 	}
 }

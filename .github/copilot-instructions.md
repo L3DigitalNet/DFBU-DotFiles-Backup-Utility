@@ -6,7 +6,7 @@ DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux desktop application for c
 
 **Platform:** Linux only
 **Python Version:** 3.14+
-**PySide6 Version:** 6.8.0+
+**PySide6 Version:** 6.6.0+
 **Package Manager:** UV
 **UI Design Tool:** Qt Designer (.ui files - NO hardcoded UI)
 
@@ -48,7 +48,7 @@ DFBU/
 │   ├── config_workers.py     # QThread workers
 │   └── designer/             # Qt Designer .ui files (MANDATORY)
 ├── data/                     # YAML configuration files
-└── tests/                    # Test suite (pytest + pytest-qt)
+└── tests/                    # Test suite (pytest + pytest-qt) (see DFBU/tests/)
 ```
 
 ## UI Design Standards (CRITICAL)
@@ -59,7 +59,7 @@ DFBU/
 
 **Correct Workflow:**
 
-1. Design UI in Qt Designer → Save as `src/views/ui/component_name.ui`
+1. Design UI in Qt Designer → Save as `DFBU/gui/designer/component_name.ui`
 2. Load .ui file in Python using `QUiLoader`
 3. Access widgets using `findChild()`
 4. Connect signals to ViewModel
@@ -110,13 +110,13 @@ uv venv
 source .venv/bin/activate
 
 # Install dependencies
-uv pip install -r requirements.txt
+uv pip install -r DFBU/requirements.txt
 
 # Add package
 uv pip install package-name
 
 # Update requirements
-uv pip freeze > requirements.txt
+uv pip freeze > DFBU/requirements.txt
 ```
 
 ## SOLID Principles Implementation

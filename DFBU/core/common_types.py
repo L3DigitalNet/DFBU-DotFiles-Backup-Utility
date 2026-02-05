@@ -394,3 +394,58 @@ class BackupPreviewDict(TypedDict):
     changed_count: int
     unchanged_count: int
     error_count: int
+
+
+# =============================================================================
+# Dashboard/History Types (v1.1.0)
+# =============================================================================
+
+
+class BackupHistoryEntry(TypedDict):
+    """
+    Type definition for a single backup history entry.
+
+    Records details of a completed backup operation for dashboard metrics.
+
+    Fields:
+        timestamp: ISO format timestamp of backup
+        profile: Profile name used (or "Default")
+        items_backed: Number of items backed up
+        size_bytes: Total size backed up
+        duration_seconds: Time taken for backup
+        success: Whether backup completed successfully
+        backup_type: Type of backup ("mirror" or "archive")
+    """
+
+    timestamp: str
+    profile: str
+    items_backed: int
+    size_bytes: int
+    duration_seconds: float
+    success: bool
+    backup_type: str
+
+
+class DashboardMetrics(TypedDict):
+    """
+    Type definition for dashboard metrics summary.
+
+    Aggregates backup history for display in dashboard view.
+
+    Fields:
+        total_backups: Total number of backups recorded
+        successful_backups: Number of successful backups
+        failed_backups: Number of failed backups
+        success_rate: Success rate (0.0 to 1.0)
+        total_size_backed_bytes: Total size of all backups
+        average_duration_seconds: Average backup duration
+        last_backup_timestamp: Timestamp of most recent backup (None if no history)
+    """
+
+    total_backups: int
+    successful_backups: int
+    failed_backups: int
+    success_rate: float
+    total_size_backed_bytes: int
+    average_duration_seconds: float
+    last_backup_timestamp: str | None

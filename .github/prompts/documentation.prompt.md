@@ -164,7 +164,7 @@ For Python modules in `DFBU/gui/` and `DFBU/core/`:
 ### Testing Documentation
 
 - It is not necessary to create separate documentation files for test modules.
-- If there are existing test documentation files they should be relocated to the /tests/ directory.
+- If there are existing test documentation files they should be relocated to `DFBU/tests/`.
 
 ### Other Documentation
 

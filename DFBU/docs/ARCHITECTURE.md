@@ -254,6 +254,11 @@ ConfigManager  FileOperations  BackupOrchestrator  StatisticsTracker
 - `FileOperations`: File system operations
 - `BackupOrchestrator`: Backup/restore coordination
 - `StatisticsTracker`: Operation metrics
+- `ErrorHandler`: Structured error handling (v0.9.0+)
+- `VerificationManager`: Backup integrity verification (v0.8.0+)
+- `RestoreBackupManager`: Pre-restore safety backups (v0.6.0+)
+- `SizeAnalyzer`: File size analysis and .dfbuignore support (v1.0.0+)
+- `ProfileManager`: Named backup profile management (v1.1.0+)
 
 ---
 
@@ -261,7 +266,7 @@ ConfigManager  FileOperations  BackupOrchestrator  StatisticsTracker
 
 ### DFBUModel (Facade Pattern)
 
-**Lines of Code**: 737
+**Lines of Code**: 856
 
 **Purpose**: Provide unified interface to all Model components
 
@@ -276,6 +281,8 @@ ConfigManager  FileOperations  BackupOrchestrator  StatisticsTracker
 5. ErrorHandler (v0.9.0+)
 6. VerificationManager (v0.8.0+)
 7. RestoreBackupManager (v0.6.0+)
+8. SizeAnalyzer (v1.0.0+)
+9. ProfileManager (v1.1.0+)
 
 **Key Benefits**:
 
@@ -313,7 +320,7 @@ class DFBUModel:
 
 ### ConfigManager
 
-**Lines of Code**: 814
+**Lines of Code**: 821
 
 **Purpose**: Configuration file management and CRUD operations
 
@@ -413,7 +420,7 @@ shutil.copy2(src, dest, follow_symlinks=True)
 
 ### BackupOrchestrator
 
-**Lines of Code**: 549
+**Lines of Code**: 553
 
 **Purpose**: Coordinate backup and restore operations with progress tracking
 
@@ -469,7 +476,7 @@ def on_item_processed(source: str, dest: str) -> None:
 
 ### StatisticsTracker
 
-**Lines of Code**: 158
+**Lines of Code**: 153
 
 **Purpose**: Track operation metrics and statistics
 
@@ -507,7 +514,7 @@ class StatisticsTracker:
 
 ### ErrorHandler (v0.9.0+)
 
-**Lines of Code**: 443
+**Lines of Code**: 439
 
 **Purpose**: Structured error handling with categorization and recovery suggestions
 
@@ -531,7 +538,7 @@ class ErrorHandler:
 
 ### VerificationManager (v0.8.0+)
 
-**Lines of Code**: 355
+**Lines of Code**: 356
 
 **Purpose**: Backup integrity verification with configurable checks
 
@@ -554,7 +561,7 @@ class VerificationManager:
 
 ### RestoreBackupManager (v0.6.0+)
 
-**Lines of Code**: 267
+**Lines of Code**: 272
 
 **Purpose**: Pre-restore safety backups to prevent data loss
 
@@ -573,6 +580,54 @@ class RestoreBackupManager:
     def create_backup(self, paths: list[Path]) -> Path: ...
     def cleanup_old_backups(self, max_count: int) -> None: ...
     def get_backup_history(self) -> list[BackupInfo]: ...
+```
+
+### SizeAnalyzer (v1.0.0+)
+
+**Lines of Code**: ~200 (estimated)
+
+**Purpose**: File size analysis and warnings before backup operations
+
+**Responsibilities**:
+
+- Calculate total and per-file sizes for backup selections
+- Apply .dfbuignore patterns to exclude files
+- Generate size warnings at configurable thresholds (10MB, 100MB, 1GB)
+- Provide detailed size reports for user decisions
+- Integration with backup workflow
+
+**Key Methods**:
+
+```python
+class SizeAnalyzer:
+    def analyze_size(self, paths: list[Path]) -> SizeReportDict: ...
+    def should_warn(self, size_bytes: int) -> str | None: ...
+    def apply_ignore_patterns(self, path: Path) -> bool: ...
+```
+
+### ProfileManager (v1.1.0+)
+
+**Lines of Code**: 145
+
+**Purpose**: Named backup profile management
+
+**Responsibilities**:
+
+- Create, save, and load named backup profiles
+- Store dotfile exclusion lists per profile
+- Store option overrides per profile (compression, verification, etc.)
+- Switch between profiles for different backup scenarios
+- Profile persistence in profiles.yaml
+
+**Key Methods**:
+
+```python
+class ProfileManager:
+    def create_profile(self, name: str, excluded: list[str], options: dict) -> bool: ...
+    def load_profile(self, name: str) -> ProfileDict | None: ...
+    def delete_profile(self, name: str) -> bool: ...
+    def list_profiles(self) -> list[str]: ...
+    def set_active_profile(self, name: str | None) -> None: ...
 ```
 
 ---
@@ -904,7 +959,7 @@ else:
 ### Test Organization
 
 ```
-DFBU/tests/                          # 24 test files, 540+ test functions
+DFBU/tests/                          # 25 test files, 553 test functions
 ├── conftest.py                      # Pytest configuration & fixtures
 ├── test_model*.py                   # Model unit tests (3 files)
 ├── test_viewmodel_*.py              # ViewModel tests (4 files)
@@ -974,11 +1029,11 @@ def test_main_window_initialization(qapp, viewmodel):
 
 ### Coverage Goals
 
-- **Overall**: 84% coverage (current)
+- **Overall**: 82% coverage (current)
 - **Model Layer**: 95%+ coverage
 - **ViewModel Layer**: 90%+ coverage
 - **View Layer**: 70%+ coverage
-- **Test Count**: 540+ tests across 24 files
+- **Test Count**: 553 tests across 25 files
 
 ---
 
@@ -992,9 +1047,9 @@ DFBU's architecture demonstrates:
 4. **Structured Error Handling**: Categorized errors with recovery options (v0.9.0+)
 5. **Backup Verification**: Integrity checking with size/hash comparison (v0.8.0+)
 6. **Type Safety**: Full type hint coverage with mypy compliance
-7. **Testability**: 84% coverage with 540+ tests across 24 files
+7. **Testability**: 82% coverage with 553 tests across 25 files
 8. **Performance**: Non-blocking UI through threaded operations
-9. **Maintainability**: Small, focused components (all < 850 lines)
+9. **Maintainability**: Small, focused components (all < 860 lines)
 
 This architecture supports both current development needs and future extensibility while maintaining code quality and developer experience.
 

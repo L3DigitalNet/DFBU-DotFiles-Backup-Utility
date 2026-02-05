@@ -219,3 +219,45 @@ class TestBackupPreviewDict:
             "error_count": 0,
         }
         assert preview["total_size_bytes"] == 0
+
+
+class TestBackupHistoryEntry:
+    """Tests for BackupHistoryEntry TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_backup_history_entry_structure(self) -> None:
+        """BackupHistoryEntry should have all required fields."""
+        from core.common_types import BackupHistoryEntry
+
+        entry: BackupHistoryEntry = {
+            "timestamp": "2026-02-05T10:00:00Z",
+            "profile": "Default",
+            "items_backed": 42,
+            "size_bytes": 1048576,
+            "duration_seconds": 5.5,
+            "success": True,
+            "backup_type": "mirror",
+        }
+        assert entry["success"] is True
+        assert entry["backup_type"] == "mirror"
+
+
+class TestDashboardMetrics:
+    """Tests for DashboardMetrics TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_dashboard_metrics_structure(self) -> None:
+        """DashboardMetrics should have all required fields."""
+        from core.common_types import DashboardMetrics
+
+        metrics: DashboardMetrics = {
+            "total_backups": 100,
+            "successful_backups": 95,
+            "failed_backups": 5,
+            "success_rate": 0.95,
+            "total_size_backed_bytes": 10737418240,
+            "average_duration_seconds": 4.2,
+            "last_backup_timestamp": "2026-02-05T10:00:00Z",
+        }
+        assert metrics["success_rate"] == 0.95
+        assert metrics["total_backups"] == 100

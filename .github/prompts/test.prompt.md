@@ -10,9 +10,9 @@ Handle comprehensive testing of PySide6 MVVM desktop applications following arch
 ## Core Testing Requirements
 
 ### Test File Organization - MANDATORY
-- **MUST** store ALL test files in each project's `/tests/` directory
+- **MUST** store ALL test files in each project's `DFBU/tests/` directory
 - **NEVER** place test files in base project directory
-- **INCLUDE** pytest tests, unit tests, example scripts, test configs in `/tests/`
+- **INCLUDE** pytest tests, unit tests, example scripts, test configs in `DFBU/tests/`
 - **MIRROR** source code structure in test directory organization
 - **MAINTAIN** clear separation between different test types
 
@@ -105,11 +105,18 @@ def test_function_name_should_behavior_when_condition():
 ```python
 # pytest configuration in pyproject.toml
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["DFBU/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "--cov=src --cov-report=html --cov-report=term-missing"
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+    "--cov=DFBU",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
 ```
 
 ## Testing Best Practices
@@ -138,7 +145,7 @@ addopts = "--cov=src --cov-report=html --cov-report=term-missing"
 ## Repository Integration
 
 ### QApplication Fixture
-Ensure `tests/conftest.py` has:
+Ensure `DFBU/tests/conftest.py` has:
 ```python
 import pytest
 from PySide6.QtWidgets import QApplication

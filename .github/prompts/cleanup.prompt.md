@@ -54,7 +54,7 @@ Clean up the PySide6 desktop application repository by removing unnecessary file
 
 **Keep:**
 - Main `README.md` in root
-- `AGENTS.md`, `CONTRIBUTING.md`, `QUICKSTART.md`
+- `AGENTS.md`, `CONTRIBUTING.md`, `docs/INDEX.md`
 - All core documentation files
 
 **Rationale:** Documentation should be centralized and not duplicated.
@@ -75,12 +75,12 @@ After cleanup, verify:
 
 1. **All tests pass:**
    ```bash
-   pytest tests/ -v
+   pytest DFBU/tests/ -v
    ```
 
 2. **No import errors:**
    ```bash
-   python src/main.py
+   python DFBU/dfbu_gui.py
    ```
 
 3. **Git status is clean:**
@@ -107,24 +107,24 @@ Ensure files are in correct locations:
 - `DFBU/core/` - Core utilities and validation logic (no Qt imports)
 - `DFBU/gui/designer/` - Qt Designer .ui files for UI layouts
 - `DFBU/tests/` - Test suite with pytest
-- `src/utils/` - Helper functions and constants
-- `src/main.py` - Application entry point
+- `DFBU/core/` - Helper functions and shared utilities
+- `DFBU/gui/constants.py` - Application constants
+- `DFBU/dfbu_gui.py` - Application entry point
 
 ### Tests
-- `tests/unit/` - Unit tests for models and viewmodels
-- `tests/integration/` - Integration tests
-- `tests/conftest.py` - Pytest configuration with QApplication fixture
+- `DFBU/tests/` - Test suite (unit/integration via markers)
+- `DFBU/tests/conftest.py` - Pytest configuration with QApplication fixture
 
 ### Configuration
 - `pyproject.toml` - Project configuration and dependencies
-- `requirements.txt` - Python dependencies
+- `DFBU/requirements.txt` - Python dependencies
 - `.github/copilot-instructions.md` - Development guidelines
 
 ### Documentation
 - `README.md` - Main project README
 - `AGENTS.md` - Quick reference for AI agents
 - `CONTRIBUTING.md` - Contribution guidelines
-- `QUICKSTART.md` - Getting started guide
+- `docs/INDEX.md` - Documentation index
 - `.agents/memory.instruction.md` - AI agent memory and preferences
 
 ## Execution Checklist
@@ -155,7 +155,7 @@ Verify architectural integrity:
 ## Notes
 
 - Always preserve MVVM layer separation
-- Keep `pyproject.toml`, `requirements.txt`, `LICENSE`, `.gitignore`
+- Keep `pyproject.toml`, `DFBU/requirements.txt`, `LICENSE`, `.gitignore`
 - Keep example files that demonstrate MVVM patterns
 - Version control (`.git/`) and virtual environment should already be ignored
 - Preserve `.github/` and `.agents/` directories

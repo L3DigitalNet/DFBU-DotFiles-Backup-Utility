@@ -20,11 +20,11 @@ project_root = Path(SPECPATH).parent
 # Data files to bundle (source, destination_in_bundle)
 datas = [
     # YAML configuration templates
-    # Destination matches dfbu_gui.py: Path(__file__).parent / "data"
+    # Destination matches dfbu_gui.py: BUNDLED_CONFIG_PATH = _data_base / "data"
     (str(project_root / 'DFBU' / 'data' / 'settings.yaml'), 'data'),
     (str(project_root / 'DFBU' / 'data' / 'dotfiles.yaml'), 'data'),
-    (str(project_root / 'DFBU' / 'data' / 'library.yaml'), 'data'),
     (str(project_root / 'DFBU' / 'data' / 'session.yaml'), 'data'),
+    (str(project_root / 'DFBU' / 'data' / '.dfbuignore'), 'data'),
     # Qt Designer UI files
     # Destination matches view.py: Path(__file__).parent / "designer"
     (str(project_root / 'DFBU' / 'gui' / 'designer' / 'main_window_complete.ui'), 'gui/designer'),
