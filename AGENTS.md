@@ -2,7 +2,7 @@
 
 ## Quick Reference
 
-- **UI**: PySide6 (Qt for Python 6.8.0+)
+- **UI**: PySide6 (Qt for Python 6.6.0+)
 - **Language**: Python 3.14+
 - **Platform**: Linux only
 - **Architecture**: MVVM (Model-View-ViewModel) with Facade pattern
@@ -188,3 +188,12 @@ def qapp():
 4. **Use type hints**: Modern Python 3.10+ syntax (see [CONTRIBUTING.md](CONTRIBUTING.md))
 5. **Write tests**: TDD approach preferred (see [DFBU/tests/README.md](DFBU/tests/README.md))
 6. **Run tests after changes**: `pytest DFBU/tests/` and `mypy DFBU/`
+
+<!-- BEGIN ContextStream -->
+### When to Use ContextStream Search:
+✅ Project is indexed and fresh
+✅ Looking for code by meaning/concept
+✅ Need semantic understanding
+
+---
+<!-- END ContextStream -->

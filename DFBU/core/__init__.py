@@ -16,7 +16,19 @@ Modules:
     - common_types: Shared TypedDict definitions
 """
 
-from core.common_types import DotFileDict, OptionsDict
+from core.common_types import (
+    BackupPreviewDict,
+    DotFileDict,
+    OptionsDict,
+    PreviewItemDict,
+    ProfileDict,
+)
 
 
-__all__ = ["DotFileDict", "OptionsDict"]
+__all__ = [
+    "BackupPreviewDict",
+    "DotFileDict",
+    "OptionsDict",
+    "PreviewItemDict",
+    "ProfileDict",
+]

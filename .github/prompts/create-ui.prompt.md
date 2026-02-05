@@ -1,7 +1,7 @@
-------
+---
 mode: "agent"
 description: "Create or update a Qt Designer .ui file from Python View code following MVVM architecture"
-------
+---
 
 # Create Qt Designer .ui File for PySide6 MVVM Application
 

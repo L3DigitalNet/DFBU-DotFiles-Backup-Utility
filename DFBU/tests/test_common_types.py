@@ -8,6 +8,9 @@ from core.common_types import (
     OptionsDict,
     SessionDict,
     LegacyDotFileDict,
+    ProfileDict,
+    PreviewItemDict,
+    BackupPreviewDict,
 )
 
 
@@ -165,3 +168,96 @@ class TestLegacyDotFileDict:
         assert legacy["description"] == "Bash shell configuration"
         assert legacy["paths"] == ["~/.bashrc", "~/.bash_profile"]
         assert legacy["enabled"] is True
+
+
+class TestProfileDict:
+    """Tests for ProfileDict TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_profile_dict_has_required_fields(self) -> None:
+        """ProfileDict should have all required fields."""
+        profile: ProfileDict = {
+            "name": "Work Profile",
+            "description": "Work-related dotfiles",
+            "excluded": ["Steam", "Firefox"],
+            "options_overrides": {"archive": True},
+            "created_at": "2026-02-05T10:00:00Z",
+            "modified_at": "2026-02-05T10:00:00Z",
+        }
+        assert profile["name"] == "Work Profile"
+        assert profile["excluded"] == ["Steam", "Firefox"]
+
+
+class TestPreviewItemDict:
+    """Tests for PreviewItemDict TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_preview_item_dict_structure(self) -> None:
+        """PreviewItemDict should have all required fields."""
+        item: PreviewItemDict = {
+            "path": "/home/user/.bashrc",
+            "dest_path": "/backups/mirror/.bashrc",
+            "size_bytes": 1024,
+            "status": "new",
+            "application": "Bash",
+        }
+        assert item["status"] == "new"
+
+
+class TestBackupPreviewDict:
+    """Tests for BackupPreviewDict TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_backup_preview_dict_structure(self) -> None:
+        """BackupPreviewDict should have all required fields."""
+        preview: BackupPreviewDict = {
+            "items": [],
+            "total_size_bytes": 0,
+            "new_count": 0,
+            "changed_count": 0,
+            "unchanged_count": 0,
+            "error_count": 0,
+        }
+        assert preview["total_size_bytes"] == 0
+
+
+class TestBackupHistoryEntry:
+    """Tests for BackupHistoryEntry TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_backup_history_entry_structure(self) -> None:
+        """BackupHistoryEntry should have all required fields."""
+        from core.common_types import BackupHistoryEntry
+
+        entry: BackupHistoryEntry = {
+            "timestamp": "2026-02-05T10:00:00Z",
+            "profile": "Default",
+            "items_backed": 42,
+            "size_bytes": 1048576,
+            "duration_seconds": 5.5,
+            "success": True,
+            "backup_type": "mirror",
+        }
+        assert entry["success"] is True
+        assert entry["backup_type"] == "mirror"
+
+
+class TestDashboardMetrics:
+    """Tests for DashboardMetrics TypedDict (v1.1.0)."""
+
+    @pytest.mark.unit
+    def test_dashboard_metrics_structure(self) -> None:
+        """DashboardMetrics should have all required fields."""
+        from core.common_types import DashboardMetrics
+
+        metrics: DashboardMetrics = {
+            "total_backups": 100,
+            "successful_backups": 95,
+            "failed_backups": 5,
+            "success_rate": 0.95,
+            "total_size_backed_bytes": 10737418240,
+            "average_duration_seconds": 4.2,
+            "last_backup_timestamp": "2026-02-05T10:00:00Z",
+        }
+        assert metrics["success_rate"] == 0.95
+        assert metrics["total_backups"] == 100

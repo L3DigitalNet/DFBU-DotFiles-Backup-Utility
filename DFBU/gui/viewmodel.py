@@ -865,6 +865,60 @@ class SizeScanWorker(QThread):
             self.error_occurred.emit("Size Scan", str(e))
 
 
+class PreviewWorker(QThread):
+    """
+    Worker thread for generating backup preview.
+
+    Runs preview generation in background to prevent UI blocking.
+
+    Attributes:
+        progress_updated: Signal for progress percentage
+        preview_finished: Signal emitted with BackupPreviewDict on completion
+        error_occurred: Signal emitted on error
+        model: Reference to DFBUModel for data access
+    """
+
+    # Signal definitions
+    progress_updated = Signal(int)  # progress percentage
+    preview_finished = Signal(object)  # BackupPreviewDict
+    error_occurred = Signal(str, str)  # context, error_message
+
+    def __init__(self) -> None:
+        """Initialize the PreviewWorker."""
+        super().__init__()
+        self.model: DFBUModel | None = None
+
+    def set_model(self, model: DFBUModel) -> None:
+        """
+        Set the model reference.
+
+        Args:
+            model: DFBUModel instance
+        """
+        self.model = model
+
+    def run(self) -> None:
+        """Main thread execution method for preview generation."""
+        if not self.model:
+            return
+
+        try:
+            # Emit initial progress
+            self.progress_updated.emit(0)
+
+            # Generate preview with progress callback
+            preview = self.model.generate_backup_preview(
+                progress_callback=lambda pct: self.progress_updated.emit(pct)
+            )
+
+            # Emit completion with preview result
+            self.progress_updated.emit(100)
+            self.preview_finished.emit(preview)
+
+        except Exception as e:
+            self.error_occurred.emit("Preview", str(e))
+
+
 class DFBUViewModel(QObject):
     """
     ViewModel mediating between Model and View in MVVM pattern.
@@ -925,6 +979,14 @@ class DFBUViewModel(QObject):
     size_warning_requested = Signal(object)  # SizeReportDict
     size_scan_progress = Signal(int)  # progress percentage during size scan
 
+    # Profile signals (v1.1.0)
+    profile_switched = Signal(str)  # profile_name (empty string for default)
+    profiles_changed = Signal()  # emitted when profile list changes
+
+    # Preview signals (v1.1.0)
+    preview_ready = Signal(object)  # BackupPreviewDict
+    preview_progress = Signal(int)  # progress percentage (0-100)
+
     SETTINGS_ORG: Final[str] = "L3DigitalNet"
     SETTINGS_APP: Final[str] = "dfbu_gui_settings"
 
@@ -942,6 +1004,7 @@ class DFBUViewModel(QObject):
         self.config_load_worker: ConfigLoadWorker | None = None
         self.config_save_worker: ConfigSaveWorker | None = None
         self.size_scan_worker: SizeScanWorker | None = None
+        self._preview_worker: PreviewWorker | None = None
         self.settings: QSettings = QSettings(self.SETTINGS_ORG, self.SETTINGS_APP)
         self.restore_source_directory: Path | None = None
         self._pending_backup_force_full: bool = False  # Track force_full for after scan
@@ -1426,6 +1489,111 @@ class DFBUViewModel(QObject):
             return None
         return self.model.verify_last_backup()
 
+    # =========================================================================
+    # Profile Commands (v1.1.0)
+    # =========================================================================
+
+    def command_create_profile(
+        self,
+        name: str,
+        description: str,
+        excluded: list[str],
+        options_overrides: dict[str, bool | int | str] | None = None,
+    ) -> bool:
+        """
+        Command to create a new backup profile.
+
+        Args:
+            name: Unique profile name
+            description: Human-readable description
+            excluded: List of application names to exclude
+            options_overrides: Optional settings overrides
+
+        Returns:
+            True if profile was created successfully
+        """
+        success = self.model.create_profile(name, description, excluded, options_overrides)
+        if success:
+            self.profiles_changed.emit()
+        return success
+
+    def command_delete_profile(self, name: str) -> bool:
+        """
+        Command to delete a profile.
+
+        Args:
+            name: Profile name to delete
+
+        Returns:
+            True if profile was deleted
+        """
+        success = self.model.delete_profile(name)
+        if success:
+            self.profiles_changed.emit()
+        return success
+
+    def command_switch_profile(self, name: str | None) -> bool:
+        """
+        Command to switch active profile.
+
+        Args:
+            name: Profile name to switch to, or None for default
+
+        Returns:
+            True if switch was successful
+        """
+        success = self.model.switch_profile(name)
+        if success:
+            profile_name = name if name else ""
+            self.profile_switched.emit(profile_name)
+            self.exclusions_changed.emit()  # Profile switch changes exclusions
+        return success
+
+    def get_profile_names(self) -> list[str]:
+        """Get list of all profile names."""
+        return self.model.get_profile_names()
+
+    def get_active_profile_name(self) -> str | None:
+        """Get name of currently active profile."""
+        return self.model.get_active_profile_name()
+
+    # =========================================================================
+    # Preview Commands (v1.1.0)
+    # =========================================================================
+
+    def command_generate_preview(self) -> bool:
+        """
+        Command to generate backup preview asynchronously.
+
+        Uses PreviewWorker to prevent UI blocking during preview generation.
+
+        Returns:
+            True if preview generation started successfully
+        """
+        # Don't start if already running
+        if self._preview_worker is not None and self._preview_worker.isRunning():
+            return False
+
+        self._preview_worker = PreviewWorker()
+        self._preview_worker.set_model(self.model)
+        self._preview_worker.progress_updated.connect(self._on_preview_progress)
+        self._preview_worker.preview_finished.connect(self._on_preview_finished)
+        self._preview_worker.error_occurred.connect(self._on_worker_error)
+        self._preview_worker.start()
+        return True
+
+    def _on_preview_progress(self, progress: int) -> None:
+        """Handle preview progress updates."""
+        self.preview_progress.emit(progress)
+
+    def _on_preview_finished(self, preview: Any) -> None:
+        """Handle preview completion."""
+        if self._preview_worker:
+            self._preview_worker.wait()
+            self._preview_worker.deleteLater()
+            self._preview_worker = None
+        self.preview_ready.emit(preview)
+
     def get_exclusions(self) -> list[str]:
         """Get current exclusion list.
 
@@ -1692,6 +1860,18 @@ class DFBUViewModel(QObject):
 
     def _on_backup_finished(self) -> None:
         """Handle backup completion and cleanup worker."""
+        # Record backup to history (v1.1.0)
+        stats = self.model.statistics
+        success = stats.failed_items == 0
+        backup_type = "mirror" if self.model.options.get("mirror", True) else "archive"
+        self.model.record_backup_history(
+            items_backed=stats.processed_items,
+            size_bytes=0,  # TODO: Track actual size in StatisticsTracker
+            duration_seconds=stats.total_time,
+            success=success,
+            backup_type=backup_type,
+        )
+
         summary = self.get_statistics_summary()
         self.operation_finished.emit(summary)
 

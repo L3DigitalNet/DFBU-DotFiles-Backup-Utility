@@ -32,6 +32,9 @@ Classes:
     - LegacyDotFileDict: TypedDict for TOML migration support
     - SizeItemDict: TypedDict for individual file/directory size entry
     - SizeReportDict: TypedDict for backup size analysis report
+    - ProfileDict: TypedDict for backup profile configuration (v1.1.0)
+    - PreviewItemDict: TypedDict for individual backup preview item (v1.1.0)
+    - BackupPreviewDict: TypedDict for backup preview result (v1.1.0)
 """
 
 from typing import Required, TypedDict
@@ -314,3 +317,135 @@ class SizeReportDict(TypedDict):
     has_alert: bool
     has_warning: bool
     excluded_patterns: list[str]
+
+
+# =============================================================================
+# Profile Types (v1.1.0)
+# =============================================================================
+
+
+class ProfileDict(TypedDict):
+    """
+    Type definition for backup profile configuration.
+
+    Contains named preset for different backup configurations.
+
+    Fields:
+        name: Display name for the profile
+        description: Human-readable description
+        excluded: List of application names to exclude
+        options_overrides: Partial OptionsDict with overridden settings
+        created_at: ISO format timestamp of creation
+        modified_at: ISO format timestamp of last modification
+    """
+
+    name: str
+    description: str
+    excluded: list[str]
+    options_overrides: dict[str, bool | int | str]
+    created_at: str
+    modified_at: str
+
+
+# =============================================================================
+# Backup Preview Types (v1.1.0)
+# =============================================================================
+
+
+class PreviewItemDict(TypedDict):
+    """
+    Type definition for individual backup preview item.
+
+    Contains information about a single file/directory in preview.
+
+    Fields:
+        path: Source path of the file
+        dest_path: Destination path in backup
+        size_bytes: Size in bytes
+        status: Preview status ("new", "changed", "unchanged", "error")
+        application: Name of the dotfile application
+    """
+
+    path: str
+    dest_path: str
+    size_bytes: int
+    status: str  # "new", "changed", "unchanged", "error"
+    application: str
+
+
+class BackupPreviewDict(TypedDict):
+    """
+    Type definition for backup preview result.
+
+    Contains summary and details of what would be backed up.
+
+    Fields:
+        items: List of individual preview items
+        total_size_bytes: Total size of all items
+        new_count: Number of new files
+        changed_count: Number of changed files
+        unchanged_count: Number of unchanged files
+        error_count: Number of files with errors
+    """
+
+    items: list[PreviewItemDict]
+    total_size_bytes: int
+    new_count: int
+    changed_count: int
+    unchanged_count: int
+    error_count: int
+
+
+# =============================================================================
+# Dashboard/History Types (v1.1.0)
+# =============================================================================
+
+
+class BackupHistoryEntry(TypedDict):
+    """
+    Type definition for a single backup history entry.
+
+    Records details of a completed backup operation for dashboard metrics.
+
+    Fields:
+        timestamp: ISO format timestamp of backup
+        profile: Profile name used (or "Default")
+        items_backed: Number of items backed up
+        size_bytes: Total size backed up
+        duration_seconds: Time taken for backup
+        success: Whether backup completed successfully
+        backup_type: Type of backup ("mirror" or "archive")
+    """
+
+    timestamp: str
+    profile: str
+    items_backed: int
+    size_bytes: int
+    duration_seconds: float
+    success: bool
+    backup_type: str
+
+
+class DashboardMetrics(TypedDict):
+    """
+    Type definition for dashboard metrics summary.
+
+    Aggregates backup history for display in dashboard view.
+
+    Fields:
+        total_backups: Total number of backups recorded
+        successful_backups: Number of successful backups
+        failed_backups: Number of failed backups
+        success_rate: Success rate (0.0 to 1.0)
+        total_size_backed_bytes: Total size of all backups
+        average_duration_seconds: Average backup duration
+        last_backup_timestamp: Timestamp of most recent backup (None if no history)
+    """
+
+    total_backups: int
+    successful_backups: int
+    failed_backups: int
+    success_rate: float
+    total_size_backed_bytes: int
+    average_duration_seconds: float
+    last_backup_timestamp: str | None

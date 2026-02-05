@@ -590,3 +590,130 @@ class TestModelRestoreBackupIntegration:
         # Assert
         assert hasattr(model, "_restore_backup_manager")
         assert model._restore_backup_manager is not None
+
+
+class TestModelProfileManagement:
+    """Test DFBUModel integration with ProfileManager (v1.1.0)."""
+
+    def test_model_has_profile_manager(self, yaml_config_dir: Path) -> None:
+        """Test DFBUModel creates ProfileManager."""
+        # Arrange & Act
+        model = DFBUModel(yaml_config_dir)
+
+        # Assert
+        assert hasattr(model, "_profile_manager")
+        assert model._profile_manager is not None
+
+    def test_model_exposes_profile_operations(self, yaml_config_dir: Path) -> None:
+        """DFBUModel should expose profile operations."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+        model.load_config()
+
+        # Create profile through facade
+        success = model.create_profile("TestProfile", "Test", ["TestApp"])
+        assert success is True
+
+        # Get profile count
+        assert model.get_profile_count() == 1
+
+        # Get profile names
+        assert model.get_profile_names() == ["TestProfile"]
+
+        # Switch profile
+        success = model.switch_profile("TestProfile")
+        assert success is True
+        assert model.get_active_profile_name() == "TestProfile"
+
+        # Delete profile
+        success = model.delete_profile("TestProfile")
+        assert success is True
+        assert model.get_profile_count() == 0
+
+    def test_profile_persists_on_create(self, yaml_config_dir: Path) -> None:
+        """Test profile auto-saves on create."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+        model.load_config()
+
+        # Act
+        model.create_profile("PersistTest", "Test persistence", ["App1"])
+
+        # Assert - check profiles.yaml was created
+        profiles_file = yaml_config_dir / "profiles.yaml"
+        assert profiles_file.exists()
+
+    def test_get_profile_manager(self, yaml_config_dir: Path) -> None:
+        """Test getting ProfileManager instance for advanced operations."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+
+        # Act
+        pm = model.get_profile_manager()
+
+        # Assert
+        from gui.profile_manager import ProfileManager
+        assert isinstance(pm, ProfileManager)
+
+
+class TestDFBUModelBackupHistory:
+    """Test suite for DFBUModel backup history integration (v1.1.0)."""
+
+    def test_model_exposes_history_count(self, yaml_config_dir: Path) -> None:
+        """Model should expose backup history count."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+
+        # Act
+        count = model.get_backup_history_count()
+
+        # Assert
+        assert count == 0
+
+    def test_model_records_backup_history(self, yaml_config_dir: Path) -> None:
+        """Model should record backup to history."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+
+        # Act
+        model.record_backup_history(
+            items_backed=10,
+            size_bytes=1024,
+            duration_seconds=2.5,
+            success=True,
+            backup_type="mirror",
+        )
+
+        # Assert
+        assert model.get_backup_history_count() == 1
+
+    def test_model_exposes_dashboard_metrics(self, yaml_config_dir: Path) -> None:
+        """Model should expose dashboard metrics from history."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+        model.record_backup_history(10, 1024, 2.0, True, "mirror")
+        model.record_backup_history(5, 512, 1.5, True, "archive")
+        model.record_backup_history(0, 0, 0.5, False, "mirror")
+
+        # Act
+        metrics = model.get_dashboard_metrics()
+
+        # Assert
+        assert metrics["total_backups"] == 3
+        assert metrics["successful_backups"] == 2
+        assert metrics["failed_backups"] == 1
+
+    def test_model_exposes_recent_history(self, yaml_config_dir: Path) -> None:
+        """Model should expose recent backup history."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+        model.record_backup_history(10, 1024, 2.0, True, "mirror")
+        model.record_backup_history(5, 512, 1.5, True, "archive")
+
+        # Act
+        history = model.get_recent_backup_history(count=5)
+
+        # Assert
+        assert len(history) == 2
+        # Most recent first
+        assert history[0]["items_backed"] == 5

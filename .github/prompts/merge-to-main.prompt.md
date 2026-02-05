@@ -33,15 +33,11 @@ This prompt guides you through the entire merge workflow:
 
 ```bash
 # Type checking
-mypy src/
+mypy DFBU/
 
-# Code style and linting
-pylint src/ --rcfile=.pylintrc
-black --check src/ tests/
-isort --check src/ tests/
-
-# Security scan (if configured)
-bandit -r src/
+# Linting and formatting
+ruff check DFBU/ DFBU/tests/
+ruff format --check DFBU/ DFBU/tests/
 ```
 
 ### Step 2: Comprehensive Testing
@@ -50,15 +46,15 @@ bandit -r src/
 
 ```bash
 # All tests with coverage
-pytest tests/ -v --cov=src --cov-report=html --cov-report=term
+pytest DFBU/tests/ -v --cov=DFBU --cov-report=html --cov-report=term
 
 # Specific test categories
-pytest tests/unit/ -v                    # Unit tests
-pytest tests/integration/ -v            # Integration tests
+pytest DFBU/tests/ -m unit -v            # Unit tests
+pytest DFBU/tests/ -m integration -v     # Integration tests
 
 # Test specific patterns
-pytest -k "viewmodel" tests/ -v         # ViewModel tests
-pytest -k "model" tests/ -v             # Model tests
+pytest -k "viewmodel" DFBU/tests/ -v     # ViewModel tests
+pytest -k "model" DFBU/tests/ -v         # Model tests
 ```
 
 **Testing Checklist:**
@@ -149,10 +145,10 @@ git rebase origin/main
 
 ```bash
 # Ensure tests still pass after rebase
-pytest tests/ -v
+pytest DFBU/tests/ -v
 
-# Verify application starts correctly
-python src/main.py --version  # or appropriate test command
+# Verify application version or startup
+python -c "import DFBU; print(DFBU.__version__)"
 ```
 
 ## Phase 2: Merge Execution
@@ -311,26 +307,26 @@ git diff HEAD~1 --stat       # Show change statistics
 git checkout main
 
 # Run full test suite on main
-pytest tests/ -v --cov=src
+pytest DFBU/tests/ -v --cov=DFBU
 
 # Test application startup
-python src/main.py
+python DFBU/dfbu_gui.py
 
 # Run any additional integration tests
-pytest tests/integration/ -v
+pytest DFBU/tests/ -m integration -v
 ```
 
 **Performance and Regression Testing:**
 
 ```bash
 # If performance tests exist
-pytest tests/performance/ -v
+pytest DFBU/tests/ -m performance -v  # if configured
 
 # Memory usage check (if applicable)
-python -m memory_profiler src/main.py
+python -m memory_profiler DFBU/dfbu_gui.py
 
 # Run stress tests for new features
-pytest tests/stress/ -v  # if configured
+pytest DFBU/tests/ -m stress -v  # if configured
 ```
 
 ### Step 9: Branch Management
@@ -462,7 +458,7 @@ git commit -m "resolve: merge conflicts with main"
 **Test Failures After Merge:**
 ```bash
 # Investigate failing tests
-pytest tests/path/to/failing/test.py -v -s
+pytest DFBU/tests/path/to/failing/test.py -v -s
 
 # Check for environment issues
 python -m pip check
@@ -472,23 +468,23 @@ python --version
 **Application Won't Start:**
 ```bash
 # Check for import errors
-python -c "import src.main"
+python -c "import DFBU"
 
 # Verify dependencies
-pip install -r requirements.txt
+uv pip install -r DFBU/requirements.txt
 
 # Check for missing files
-find src/ -name "*.py" -exec python -m py_compile {} \;
+find DFBU -name "*.py" -exec python -m py_compile {} \;
 ```
 
 **Performance Regression:**
 ```bash
 # Profile the application
-python -m cProfile -o profile_output.prof src/main.py
+python -m cProfile -o profile_output.prof DFBU/dfbu_gui.py
 
 # Compare with previous baseline
 # Investigate memory usage
-python -m memory_profiler src/main.py
+python -m memory_profiler DFBU/dfbu_gui.py
 ```
 
 ## Support Resources
@@ -496,14 +492,14 @@ python -m memory_profiler src/main.py
 If you encounter issues during the merge process:
 
 1. **Repository Documentation**:
-   - `ARCHITECTURE.md` - System design patterns
-   - `DESIGN.md` - Implementation guidelines
+   - `DFBU/docs/ARCHITECTURE.md` - System design patterns
+   - `docs/INDEX.md` - Documentation index
    - `CONTRIBUTING.md` - Development workflow
-   - `CHANGELOG.md` - Recent changes and impacts
+   - `docs/BRANCH_PROTECTION.md` - Branch protection rules
 
 2. **Testing Resources**:
-   - `tests/README.md` - Testing guidelines
-   - `conftest.py` - Shared test fixtures
+   - `DFBU/tests/README.md` - Testing guidelines
+   - `DFBU/tests/conftest.py` - Shared test fixtures
    - `.github/prompts/test.prompt.md` - Testing procedures
 
 3. **Development Support**:

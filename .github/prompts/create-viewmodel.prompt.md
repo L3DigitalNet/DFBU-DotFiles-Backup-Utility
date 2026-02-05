@@ -225,14 +225,14 @@ class FormViewModel(QObject):
 
 ## Testing ViewModels
 
-Create test file in `tests/unit/test_[viewmodel_name].py`:
+Create test file in `DFBU/tests/test_[viewmodel_name].py`:
 
 ```python
 """Tests for MyViewModel."""
 import pytest
 from pytestqt.qtbot import QtBot
 
-from src.viewmodels.my_viewmodel import MyViewModel
+from DFBU.gui.[viewmodel_name] import MyViewModel
 
 
 class TestMyViewModel:
@@ -334,7 +334,7 @@ class MyView(QWidget):
 - [ ] Docstrings for public APIs
 - [ ] No direct widget manipulation
 - [ ] No business logic (uses Models/Services)
-- [ ] Created unit tests in `tests/unit/`
+- [ ] Created unit tests in `DFBU/tests/`
 - [ ] Tests use `qtbot` fixture
 - [ ] All tests pass
 - [ ] Follows SRP

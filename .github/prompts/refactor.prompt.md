@@ -22,7 +22,7 @@ Follow [repository guidelines](../copilot-instructions.md) and [AGENTS.md](../..
 ### DRY (Don't Repeat Yourself) - HIGH PRIORITY
 - **ELIMINATE** code duplication through abstraction
 - **MAINTAIN** single source of truth for business logic
-- **CENTRALIZE** constants in `src/utils/constants.py`
+- **CENTRALIZE** constants in `DFBU/gui/constants.py`
 - **EXTRACT** common patterns into base classes
 - **CONSOLIDATE** similar logic into unified implementations
 

@@ -30,7 +30,7 @@ Handle version updates and changelog maintenance for PySide6 MVVM desktop applic
 ## CHANGELOG.md Requirements
 
 ### File Location and Structure
-- **MUST** store CHANGELOG.md in project's `/docs/` folder
+- **MUST** store CHANGELOG.md in project's `/docs/` folder (create if missing)
 - **MUST** follow standard Keep a Changelog format
 - **MUST** include version number, date, and detailed change descriptions
 
@@ -81,7 +81,7 @@ All notable changes to this project will be documented in this file.
 
 ## Version Update Process
 
-1. **UPDATE** `__version__` in appropriate file (e.g., `src/__init__.py`)
+1. **UPDATE** `__version__` in the appropriate file (e.g., `DFBU/__init__.py` or `DFBU/dfbu_gui.py`)
 2. **ANALYZE** changes since last version
 3. **GENERATE** changelog entry with categorized changes
 4. **UPDATE** CHANGELOG.md with new entry
@@ -90,12 +90,12 @@ All notable changes to this project will be documented in this file.
 ## Version File Locations
 
 For this template:
-- Version string can be in `src/__init__.py` or `pyproject.toml`
-- Consider adding `__version__ = "0.1.0"` to `src/__init__.py`
+- Version string can be in `DFBU/__init__.py`, `DFBU/dfbu_gui.py`, and `pyproject.toml`
+- Ensure `pyproject.toml` matches the runtime version constants
 
 Example:
 ```python
-# src/__init__.py
+# DFBU/__init__.py
 """PySide6 MVVM Desktop Application."""
 
 __version__ = "0.1.0"

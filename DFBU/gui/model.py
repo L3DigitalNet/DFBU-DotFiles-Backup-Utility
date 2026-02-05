@@ -36,11 +36,15 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 from socket import gethostname
+from typing import Any
 
 
 # Local imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.common_types import (
+    BackupHistoryEntry,
+    BackupPreviewDict,
+    DashboardMetrics,
     DotFileDict,
     LegacyDotFileDict,
     OptionsDict,
@@ -50,7 +54,10 @@ from core.common_types import (
 from gui.backup_orchestrator import BackupOrchestrator
 from gui.config_manager import ConfigManager
 from gui.error_handler import ErrorHandler
+from gui.backup_history import BackupHistoryManager
 from gui.file_operations import FileOperations
+from gui.preview_generator import PreviewGenerator
+from gui.profile_manager import ProfileManager
 from gui.restore_backup_manager import RestoreBackupManager
 from gui.size_analyzer import SizeAnalyzer
 from gui.statistics_tracker import BackupStatistics, StatisticsTracker
@@ -183,6 +190,15 @@ class DFBUModel:
             ),
         )
 
+        # Initialize ProfileManager (v1.1.0)
+        self._profile_manager: ProfileManager = ProfileManager(config_path)
+
+        # Initialize BackupHistoryManager (v1.1.0)
+        self._history_manager: BackupHistoryManager = BackupHistoryManager(config_path)
+
+        # Lazy-initialized PreviewGenerator (v1.1.0)
+        self._preview_generator: PreviewGenerator | None = None
+
     # =========================================================================
     # Property Accessors for Backward Compatibility
     # =========================================================================
@@ -308,6 +324,9 @@ class DFBUModel:
             self._size_analyzer.critical_threshold_mb = (
                 self._config_manager.options.get("size_critical_threshold_mb", 1024)
             )
+
+            # Load profiles (v1.1.0)
+            self._profile_manager.load_profiles()
 
         return success, error
 
@@ -854,3 +873,166 @@ class DFBUModel:
             Human-readable formatted string for log output
         """
         return self._size_analyzer.format_report_for_log(report)
+
+    # =========================================================================
+    # Profile Management (v1.1.0)
+    # =========================================================================
+
+    def get_profile_count(self) -> int:
+        """Get number of saved profiles."""
+        return self._profile_manager.get_profile_count()
+
+    def get_profile_names(self) -> list[str]:
+        """Get list of all profile names."""
+        return self._profile_manager.get_profile_names()
+
+    def get_active_profile_name(self) -> str | None:
+        """Get name of currently active profile."""
+        return self._profile_manager.get_active_profile_name()
+
+    def create_profile(
+        self,
+        name: str,
+        description: str,
+        excluded: list[str],
+        options_overrides: dict[str, bool | int | str] | None = None,
+    ) -> bool:
+        """Create a new backup profile."""
+        success = self._profile_manager.create_profile(
+            name, description, excluded, options_overrides
+        )
+        if success:
+            self._profile_manager.save_profiles()
+        return success
+
+    def delete_profile(self, name: str) -> bool:
+        """Delete a profile by name."""
+        success = self._profile_manager.delete_profile(name)
+        if success:
+            self._profile_manager.save_profiles()
+        return success
+
+    def switch_profile(self, name: str | None) -> bool:
+        """Switch to a different profile."""
+        success = self._profile_manager.switch_profile(name)
+        if success:
+            self._profile_manager.save_profiles()
+        return success
+
+    def get_profile_manager(self) -> ProfileManager:
+        """Get ProfileManager instance for advanced operations."""
+        return self._profile_manager
+
+    # =========================================================================
+    # Backup History / Dashboard (v1.1.0)
+    # =========================================================================
+
+    def get_backup_history_count(self) -> int:
+        """
+        Get number of backup history entries.
+
+        Returns:
+            Number of recorded backup operations
+        """
+        return self._history_manager.get_entry_count()
+
+    def record_backup_history(
+        self,
+        items_backed: int,
+        size_bytes: int,
+        duration_seconds: float,
+        success: bool,
+        backup_type: str,
+    ) -> None:
+        """
+        Record a backup operation to history.
+
+        Args:
+            items_backed: Number of items backed up
+            size_bytes: Total size backed up in bytes
+            duration_seconds: Duration of backup operation
+            success: Whether backup completed successfully
+            backup_type: Type of backup ("mirror" or "archive")
+        """
+        profile = self.get_active_profile_name() or "Default"
+        self._history_manager.record_backup(
+            items_backed=items_backed,
+            size_bytes=size_bytes,
+            duration_seconds=duration_seconds,
+            success=success,
+            backup_type=backup_type,
+            profile=profile,
+        )
+
+    def get_dashboard_metrics(self) -> DashboardMetrics:
+        """
+        Get dashboard metrics from backup history.
+
+        Returns:
+            DashboardMetrics with aggregate statistics
+        """
+        return self._history_manager.get_metrics()
+
+    def get_recent_backup_history(
+        self, count: int = 10
+    ) -> list[BackupHistoryEntry]:
+        """
+        Get recent backup history entries.
+
+        Args:
+            count: Number of entries to return
+
+        Returns:
+            List of recent history entries (newest first)
+        """
+        return self._history_manager.get_recent_history(count)
+
+    # =========================================================================
+    # Preview Generation (v1.1.0)
+    # =========================================================================
+
+    def _init_preview_generator(self) -> None:
+        """
+        Lazy initialize PreviewGenerator.
+
+        Creates PreviewGenerator on first use to ensure config is loaded first.
+        """
+        if self._preview_generator is None:
+            self._preview_generator = PreviewGenerator(
+                file_ops=self._file_ops,
+                mirror_base_dir=self._config_manager.mirror_base_dir,
+            )
+
+    def generate_backup_preview(
+        self,
+        progress_callback: Callable[[int], None] | None = None,
+    ) -> BackupPreviewDict:
+        """
+        Generate preview of what would be backed up.
+
+        Args:
+            progress_callback: Optional callback for progress updates (0-100)
+
+        Returns:
+            BackupPreviewDict with preview results
+        """
+        # Initialize preview generator if needed
+        self._init_preview_generator()
+
+        # Get enabled dotfiles from ConfigManager
+        enabled_dotfiles = [df for df in self.dotfiles if df.get("enabled", True)]
+
+        # Get options for hostname/date subdirs
+        hostname_subdir = self._config_manager.options.get("hostname_subdir", True)
+        date_subdir = self._config_manager.options.get("date_subdir", False)
+
+        # Generate preview (mypy: _preview_generator is guaranteed non-None after _init)
+        # Cast to list[dict[str, Any]] as LegacyDotFileDict is compatible
+        assert self._preview_generator is not None
+        dotfiles_for_preview: list[dict[str, Any]] = enabled_dotfiles  # type: ignore[assignment]  # Compatible structure
+        return self._preview_generator.generate_preview(
+            dotfiles=dotfiles_for_preview,
+            hostname_subdir=hostname_subdir,
+            date_subdir=date_subdir,
+            progress_callback=progress_callback,
+        )

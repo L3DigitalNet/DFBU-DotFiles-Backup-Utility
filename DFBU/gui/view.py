@@ -44,7 +44,7 @@ from typing import Any, Final
 # Local imports
 from core.common_types import LegacyDotFileDict, OperationResultDict, SizeReportDict
 from PySide6.QtCore import QFile, Qt
-from PySide6.QtGui import QAction, QCloseEvent, QColor, QPixmap, QTextCursor
+from PySide6.QtGui import QCloseEvent, QColor, QKeySequence, QPixmap, QShortcut, QTextCursor
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -535,11 +535,14 @@ class MainWindow(QMainWindow):
         # Set window title with version
         self.setWindowTitle(f"{self.PROJECT_NAME} v{self.version}")
 
-        # Get references to all UI widgets and menu actions
-        self._setup_widget_references(ui_widget, loaded_window)
+        # Get references to all UI widgets
+        self._setup_widget_references(ui_widget)
 
         # Connect signals to handler methods
         self._connect_ui_signals()
+
+        # Set up keyboard shortcuts (replacing menu accelerators)
+        self._setup_shortcuts()
 
         # Configure table widget properties
         self._configure_table_widget()
@@ -555,15 +558,12 @@ class MainWindow(QMainWindow):
         # Set initial status message
         self.status_bar.showMessage("Ready - Load configuration to begin")
 
-    def _setup_widget_references(
-        self, ui_widget: QWidget, loaded_window: QWidget
-    ) -> None:
+    def _setup_widget_references(self, ui_widget: QWidget) -> None:
         """
         Get references to UI elements from the loaded widget.
 
         Args:
             ui_widget: Central widget containing all UI elements
-            loaded_window: Original loaded QMainWindow for finding menu actions
         """
         # Store reference to central widget
         self.central_widget: QWidget = ui_widget
@@ -572,13 +572,13 @@ class MainWindow(QMainWindow):
             raise RuntimeError("Required widget 'tab_widget' not found in UI file")
         self.tab_widget: QTabWidget = found_tab
 
-        # Find widgets for each tab
+        # Find widgets for each tab and pane
         self._find_backup_tab_widgets(ui_widget)
+        self._find_logs_tab_widgets(ui_widget)  # Must be before restore to set operation_log
         self._find_restore_tab_widgets(ui_widget)
         self._find_config_tab_widgets(ui_widget)
-        self._find_logs_tab_widgets(ui_widget)
         self._find_status_widgets()
-        self._find_menu_actions(loaded_window)
+        self._find_header_widgets(ui_widget)
 
     def _find_backup_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to Backup tab widgets."""
@@ -617,8 +617,6 @@ class MainWindow(QMainWindow):
         self.backup_btn: QPushButton = ui_widget.findChild(
             QPushButton, "startBackupButton"
         )  # type: ignore[assignment]
-        self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "logBox")  # type: ignore[assignment]
-
         # Empty state widgets
         self._backup_stacked_widget: QStackedWidget | None = ui_widget.findChild(
             QStackedWidget, "backupStackedWidget"
@@ -626,10 +624,6 @@ class MainWindow(QMainWindow):
         self._empty_state_add_btn: QPushButton | None = ui_widget.findChild(
             QPushButton, "emptyStateAddButton"
         )
-
-        # Validate critical widgets were found
-        if not self.operation_log:
-            raise RuntimeError("logBox widget not found in UI file!")
 
     def _find_restore_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to Restore tab widgets."""
@@ -642,7 +636,7 @@ class MainWindow(QMainWindow):
         self.restore_btn: QPushButton = ui_widget.findChild(
             QPushButton, "restoreSourceButton"
         )  # type: ignore[assignment]
-        # Note: Restore operation log uses the same logBox widget in the Logs tab
+        # Note: Restore operation log uses the same logPaneBox widget in the log pane
         self.restore_operation_log: QTextEdit = self.operation_log
 
         # Backup preview widgets
@@ -729,25 +723,37 @@ class MainWindow(QMainWindow):
         )  # type: ignore[assignment]
 
     def _find_logs_tab_widgets(self, ui_widget: QWidget) -> None:
-        """Find and store references to Logs tab widgets."""
-        self.verify_backup_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "verifyBackupButton"
+        """Find and store references to log pane widgets (split view)."""
+        # Log pane text area (replaces old logBox in logTab)
+        self.operation_log: QTextEdit = ui_widget.findChild(
+            QTextEdit, "logPaneBox"
         )  # type: ignore[assignment]
-        self.save_log_btn: QPushButton = ui_widget.findChild(QPushButton, "pushButton")  # type: ignore[assignment]
+
+        # Validate critical widget was found
+        if not self.operation_log:
+            raise RuntimeError("logPaneBox widget not found in UI file!")
+
+        # Log pane buttons
+        self.verify_backup_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logPaneVerifyButton"
+        )  # type: ignore[assignment]
+        self.save_log_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logPaneSaveButton"
+        )  # type: ignore[assignment]
         self._log_filter_all_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logFilterAllButton"
+            QPushButton, "logPaneFilterAllButton"
         )  # type: ignore[assignment]
         self._log_filter_info_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logFilterInfoButton"
+            QPushButton, "logPaneFilterInfoButton"
         )  # type: ignore[assignment]
         self._log_filter_warning_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logFilterWarningButton"
+            QPushButton, "logPaneFilterWarningButton"
         )  # type: ignore[assignment]
         self._log_filter_error_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logFilterErrorButton"
+            QPushButton, "logPaneFilterErrorButton"
         )  # type: ignore[assignment]
         self._log_clear_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logClearButton"
+            QPushButton, "logPaneClearButton"
         )  # type: ignore[assignment]
 
     def _find_status_widgets(self) -> None:
@@ -757,39 +763,14 @@ class MainWindow(QMainWindow):
             QProgressBar, "progress_bar"
         )  # type: ignore[assignment]
 
-    def _find_menu_actions(self, loaded_window: QWidget) -> None:
-        """
-        Find and store references to menu actions.
-
-        Args:
-            loaded_window: Original loaded QMainWindow for finding menu actions
-        """
-        self.action_exit: QAction = loaded_window.findChild(QAction, "actionExit")  # type: ignore[assignment]
-        self.action_start_backup: QAction = loaded_window.findChild(
-            QAction, "actionStartBackup"
+    def _find_header_widgets(self, ui_widget: QWidget) -> None:
+        """Find and store references to header bar widgets."""
+        self._help_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "helpButton"
         )  # type: ignore[assignment]
-        self.action_start_restore: QAction = loaded_window.findChild(
-            QAction, "actionStartRestore"
+        self._about_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "aboutButton"
         )  # type: ignore[assignment]
-        self.action_verify_backup: QAction = loaded_window.findChild(
-            QAction, "actionVerifyBackup"
-        )  # type: ignore[assignment]
-        self.action_about: QAction = loaded_window.findChild(QAction, "actionAbout")  # type: ignore[assignment]
-        self.action_user_guide: QAction = loaded_window.findChild(
-            QAction, "actionUserGuide"
-        )  # type: ignore[assignment]
-
-        # Fix Qt object ownership: Reparent actions to prevent deletion
-        for action in [
-            self.action_exit,
-            self.action_start_backup,
-            self.action_start_restore,
-            self.action_verify_backup,
-            self.action_about,
-            self.action_user_guide,
-        ]:
-            if action:
-                action.setParent(self)
 
     def _connect_ui_signals(self) -> None:
         """Connect UI element signals to handler methods."""
@@ -873,13 +854,19 @@ class MainWindow(QMainWindow):
         self._log_filter_error_btn.clicked.connect(self._on_log_filter_changed)
         self._log_clear_btn.clicked.connect(self._on_clear_log)
 
-        # Menu action connections
-        self.action_exit.triggered.connect(self.close)
-        self.action_start_backup.triggered.connect(self._on_start_backup)
-        self.action_start_restore.triggered.connect(self._on_start_restore)
-        self.action_verify_backup.triggered.connect(self._on_verify_backup)
-        self.action_about.triggered.connect(self._show_about)
-        self.action_user_guide.triggered.connect(self._show_user_guide)
+        # Header bar connections
+        if self._help_btn:
+            self._help_btn.clicked.connect(self._show_user_guide)
+        if self._about_btn:
+            self._about_btn.clicked.connect(self._show_about)
+
+    def _setup_shortcuts(self) -> None:
+        """Set up keyboard shortcuts for actions previously in menus."""
+        QShortcut(QKeySequence("Ctrl+Q"), self, self.close)
+        QShortcut(QKeySequence("F1"), self, self._show_user_guide)
+        QShortcut(QKeySequence("Ctrl+B"), self, self._on_start_backup)
+        QShortcut(QKeySequence("Ctrl+R"), self, self._on_start_restore)
+        QShortcut(QKeySequence("Ctrl+V"), self, self._on_verify_backup)
 
     def _configure_table_widget(self) -> None:
         """Configure the dotfile table widget properties.
@@ -961,9 +948,6 @@ class MainWindow(QMainWindow):
             self.operation_log.clear()
             self._log_entries.clear()
             self._append_log("=== Backup Operation Started ===", "header")
-
-            # Switch to Logs tab (index 3)
-            self.tab_widget.setCurrentIndex(3)
 
             # Disable buttons during operation
             self.backup_btn.setEnabled(False)
@@ -1084,9 +1068,6 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Clear operation log
             self.restore_operation_log.clear()
-
-            # Switch to Logs tab (index 3)
-            self.tab_widget.setCurrentIndex(3)
 
             # Disable buttons during operation
             self.restore_btn.setEnabled(False)
@@ -2053,9 +2034,6 @@ class MainWindow(QMainWindow):
                 "Run a backup operation first, then verify.",
             )
             return
-
-        # Switch to Logs tab (index 3)
-        self.tab_widget.setCurrentIndex(3)
 
         # Append verification report to log
         self._append_log(report, "info")

@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window_complete.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.0
+## Created by: Qt User Interface Compiler version 6.10.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -11,19 +11,18 @@
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
-    QCursor, QFont, QFontDatabase, QGradient,
-    QIcon, QImage, QKeySequence, QLinearGradient,
-    QPainter, QPalette, QPixmap, QRadialGradient,
-    QTransform)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QFormLayout,
     QFrame, QGridLayout, QGroupBox, QHBoxLayout,
     QHeaderView, QLabel, QLineEdit, QMainWindow,
-    QMenu, QMenuBar, QProgressBar, QPushButton,
-    QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
-    QStackedWidget, QStatusBar, QTabWidget, QTableWidget,
-    QTableWidgetItem, QTextEdit, QTreeWidget, QTreeWidgetItem,
-    QVBoxLayout, QWidget)
+    QProgressBar, QPushButton, QScrollArea, QSizePolicy,
+    QSpacerItem, QSpinBox, QSplitter, QStackedWidget,
+    QStatusBar, QTabWidget, QTableWidget, QTableWidgetItem,
+    QTextEdit, QTreeWidget, QTreeWidgetItem, QVBoxLayout,
+    QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -31,18 +30,6 @@ class Ui_MainWindow(object):
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(1475, 1100)
         MainWindow.setMinimumSize(QSize(1000, 700))
-        self.actionExit = QAction(MainWindow)
-        self.actionExit.setObjectName(u"actionExit")
-        self.actionStartBackup = QAction(MainWindow)
-        self.actionStartBackup.setObjectName(u"actionStartBackup")
-        self.actionStartRestore = QAction(MainWindow)
-        self.actionStartRestore.setObjectName(u"actionStartRestore")
-        self.actionAbout = QAction(MainWindow)
-        self.actionAbout.setObjectName(u"actionAbout")
-        self.actionVerifyBackup = QAction(MainWindow)
-        self.actionVerifyBackup.setObjectName(u"actionVerifyBackup")
-        self.actionUserGuide = QAction(MainWindow)
-        self.actionUserGuide.setObjectName(u"actionUserGuide")
         self.central_widget = QWidget(MainWindow)
         self.central_widget.setObjectName(u"central_widget")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -55,8 +42,74 @@ class Ui_MainWindow(object):
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setObjectName(u"main_layout")
         self.main_layout.setContentsMargins(0, 0, 0, 0)
-        self.tab_widget = QTabWidget(self.central_widget)
+        self.headerBar = QWidget(self.central_widget)
+        self.headerBar.setObjectName(u"headerBar")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.headerBar.sizePolicy().hasHeightForWidth())
+        self.headerBar.setSizePolicy(sizePolicy1)
+        self.headerBar.setMinimumSize(QSize(0, 48))
+        self.headerBar.setMaximumSize(QSize(16777215, 48))
+        self.headerBarLayout = QHBoxLayout(self.headerBar)
+        self.headerBarLayout.setSpacing(12)
+        self.headerBarLayout.setContentsMargins(0, 0, 0, 0)
+        self.headerBarLayout.setObjectName(u"headerBarLayout")
+        self.headerBarLayout.setContentsMargins(16, 8, 16, 8)
+        self.headerIcon = QLabel(self.headerBar)
+        self.headerIcon.setObjectName(u"headerIcon")
+        self.headerIcon.setMaximumSize(QSize(24, 24))
+        self.headerIcon.setPixmap(QPixmap(u"../resources/icons/dfbu.svg"))
+        self.headerIcon.setScaledContents(True)
+
+        self.headerBarLayout.addWidget(self.headerIcon)
+
+        self.headerTitle = QLabel(self.headerBar)
+        self.headerTitle.setObjectName(u"headerTitle")
+
+        self.headerBarLayout.addWidget(self.headerTitle)
+
+        self.headerSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.headerBarLayout.addItem(self.headerSpacer)
+
+        self.helpButton = QPushButton(self.headerBar)
+        self.helpButton.setObjectName(u"helpButton")
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.helpButton.sizePolicy().hasHeightForWidth())
+        self.helpButton.setSizePolicy(sizePolicy2)
+        self.helpButton.setMinimumSize(QSize(32, 32))
+        self.helpButton.setMaximumSize(QSize(32, 32))
+
+        self.headerBarLayout.addWidget(self.helpButton)
+
+        self.aboutButton = QPushButton(self.headerBar)
+        self.aboutButton.setObjectName(u"aboutButton")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.aboutButton.sizePolicy().hasHeightForWidth())
+        self.aboutButton.setSizePolicy(sizePolicy3)
+        self.aboutButton.setMinimumSize(QSize(0, 32))
+
+        self.headerBarLayout.addWidget(self.aboutButton)
+
+
+        self.main_layout.addWidget(self.headerBar)
+
+        self.mainSplitter = QSplitter(self.central_widget)
+        self.mainSplitter.setObjectName(u"mainSplitter")
+        self.mainSplitter.setOrientation(Qt.Orientation.Horizontal)
+        self.mainSplitter.setChildrenCollapsible(False)
+        self.tab_widget = QTabWidget(self.mainSplitter)
         self.tab_widget.setObjectName(u"tab_widget")
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy4.setHorizontalStretch(65)
+        sizePolicy4.setVerticalStretch(0)
+        sizePolicy4.setHeightForWidth(self.tab_widget.sizePolicy().hasHeightForWidth())
+        self.tab_widget.setSizePolicy(sizePolicy4)
         self.tab_widget.setTabShape(QTabWidget.TabShape.Rounded)
         self.backupTab = QWidget()
         self.backupTab.setObjectName(u"backupTab")
@@ -102,11 +155,11 @@ class Ui_MainWindow(object):
 
         self.emptyStateAddButton = QPushButton(self.backupEmptyPage)
         self.emptyStateAddButton.setObjectName(u"emptyStateAddButton")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.emptyStateAddButton.sizePolicy().hasHeightForWidth())
-        self.emptyStateAddButton.setSizePolicy(sizePolicy1)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.emptyStateAddButton.sizePolicy().hasHeightForWidth())
+        self.emptyStateAddButton.setSizePolicy(sizePolicy5)
 
         self.emptyStateLayout.addWidget(self.emptyStateAddButton, 0, Qt.AlignmentFlag.AlignHCenter)
 
@@ -127,22 +180,19 @@ class Ui_MainWindow(object):
         self.backupToolbarLayout.setObjectName(u"backupToolbarLayout")
         self.filterLineEdit = QLineEdit(self.backupContentPage)
         self.filterLineEdit.setObjectName(u"filterLineEdit")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.filterLineEdit.sizePolicy().hasHeightForWidth())
-        self.filterLineEdit.setSizePolicy(sizePolicy2)
+        sizePolicy1.setHeightForWidth(self.filterLineEdit.sizePolicy().hasHeightForWidth())
+        self.filterLineEdit.setSizePolicy(sizePolicy1)
         self.filterLineEdit.setClearButtonEnabled(True)
 
         self.backupToolbarLayout.addWidget(self.filterLineEdit)
 
         self.fileGroupAddFileButton = QPushButton(self.backupContentPage)
         self.fileGroupAddFileButton.setObjectName(u"fileGroupAddFileButton")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.fileGroupAddFileButton.sizePolicy().hasHeightForWidth())
-        self.fileGroupAddFileButton.setSizePolicy(sizePolicy3)
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.fileGroupAddFileButton.sizePolicy().hasHeightForWidth())
+        self.fileGroupAddFileButton.setSizePolicy(sizePolicy6)
 
         self.backupToolbarLayout.addWidget(self.fileGroupAddFileButton)
 
@@ -165,11 +215,11 @@ class Ui_MainWindow(object):
         __qtablewidgetitem5 = QTableWidgetItem()
         self.fileGroupFileTable.setHorizontalHeaderItem(5, __qtablewidgetitem5)
         self.fileGroupFileTable.setObjectName(u"fileGroupFileTable")
-        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(1)
-        sizePolicy4.setHeightForWidth(self.fileGroupFileTable.sizePolicy().hasHeightForWidth())
-        self.fileGroupFileTable.setSizePolicy(sizePolicy4)
+        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy7.setHorizontalStretch(0)
+        sizePolicy7.setVerticalStretch(1)
+        sizePolicy7.setHeightForWidth(self.fileGroupFileTable.sizePolicy().hasHeightForWidth())
+        self.fileGroupFileTable.setSizePolicy(sizePolicy7)
         self.fileGroupFileTable.setDragEnabled(True)
         self.fileGroupFileTable.setAlternatingRowColors(True)
         self.fileGroupFileTable.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -210,11 +260,11 @@ class Ui_MainWindow(object):
 
         self.fileGroupTotalSizeLabel = QLabel(self.backupContentPage)
         self.fileGroupTotalSizeLabel.setObjectName(u"fileGroupTotalSizeLabel")
-        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
-        sizePolicy5.setHorizontalStretch(0)
-        sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.fileGroupTotalSizeLabel.sizePolicy().hasHeightForWidth())
-        self.fileGroupTotalSizeLabel.setSizePolicy(sizePolicy5)
+        sizePolicy8 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        sizePolicy8.setHorizontalStretch(0)
+        sizePolicy8.setVerticalStretch(0)
+        sizePolicy8.setHeightForWidth(self.fileGroupTotalSizeLabel.sizePolicy().hasHeightForWidth())
+        self.fileGroupTotalSizeLabel.setSizePolicy(sizePolicy8)
 
         self.backupActionBarLayout.addWidget(self.fileGroupTotalSizeLabel)
 
@@ -230,30 +280,30 @@ class Ui_MainWindow(object):
         self.backupOptionsStripLayout.setObjectName(u"backupOptionsStripLayout")
         self.backupOptionsLabel = QLabel(self.backupTab)
         self.backupOptionsLabel.setObjectName(u"backupOptionsLabel")
-        sizePolicy1.setHeightForWidth(self.backupOptionsLabel.sizePolicy().hasHeightForWidth())
-        self.backupOptionsLabel.setSizePolicy(sizePolicy1)
+        sizePolicy5.setHeightForWidth(self.backupOptionsLabel.sizePolicy().hasHeightForWidth())
+        self.backupOptionsLabel.setSizePolicy(sizePolicy5)
 
         self.backupOptionsStripLayout.addWidget(self.backupOptionsLabel)
 
         self.mirrorCheckbox = QCheckBox(self.backupTab)
         self.mirrorCheckbox.setObjectName(u"mirrorCheckbox")
-        sizePolicy1.setHeightForWidth(self.mirrorCheckbox.sizePolicy().hasHeightForWidth())
-        self.mirrorCheckbox.setSizePolicy(sizePolicy1)
+        sizePolicy5.setHeightForWidth(self.mirrorCheckbox.sizePolicy().hasHeightForWidth())
+        self.mirrorCheckbox.setSizePolicy(sizePolicy5)
         self.mirrorCheckbox.setChecked(True)
 
         self.backupOptionsStripLayout.addWidget(self.mirrorCheckbox)
 
         self.archiveCheckbox = QCheckBox(self.backupTab)
         self.archiveCheckbox.setObjectName(u"archiveCheckbox")
-        sizePolicy1.setHeightForWidth(self.archiveCheckbox.sizePolicy().hasHeightForWidth())
-        self.archiveCheckbox.setSizePolicy(sizePolicy1)
+        sizePolicy5.setHeightForWidth(self.archiveCheckbox.sizePolicy().hasHeightForWidth())
+        self.archiveCheckbox.setSizePolicy(sizePolicy5)
 
         self.backupOptionsStripLayout.addWidget(self.archiveCheckbox)
 
         self.forceBackupCheckbox = QCheckBox(self.backupTab)
         self.forceBackupCheckbox.setObjectName(u"forceBackupCheckbox")
-        sizePolicy1.setHeightForWidth(self.forceBackupCheckbox.sizePolicy().hasHeightForWidth())
-        self.forceBackupCheckbox.setSizePolicy(sizePolicy1)
+        sizePolicy5.setHeightForWidth(self.forceBackupCheckbox.sizePolicy().hasHeightForWidth())
+        self.forceBackupCheckbox.setSizePolicy(sizePolicy5)
         self.forceBackupCheckbox.setChecked(False)
 
         self.backupOptionsStripLayout.addWidget(self.forceBackupCheckbox)
@@ -265,8 +315,8 @@ class Ui_MainWindow(object):
         self.startBackupButton = QPushButton(self.backupTab)
         self.startBackupButton.setObjectName(u"startBackupButton")
         self.startBackupButton.setEnabled(False)
-        sizePolicy1.setHeightForWidth(self.startBackupButton.sizePolicy().hasHeightForWidth())
-        self.startBackupButton.setSizePolicy(sizePolicy1)
+        sizePolicy5.setHeightForWidth(self.startBackupButton.sizePolicy().hasHeightForWidth())
+        self.startBackupButton.setSizePolicy(sizePolicy5)
 
         self.backupOptionsStripLayout.addWidget(self.startBackupButton)
 
@@ -274,6 +324,319 @@ class Ui_MainWindow(object):
         self.backupTabLayout.addLayout(self.backupOptionsStripLayout)
 
         self.tab_widget.addTab(self.backupTab, "")
+        self.configTab = QWidget()
+        self.configTab.setObjectName(u"configTab")
+        sizePolicy.setHeightForWidth(self.configTab.sizePolicy().hasHeightForWidth())
+        self.configTab.setSizePolicy(sizePolicy)
+        self.config_tab_layout = QVBoxLayout(self.configTab)
+        self.config_tab_layout.setSpacing(8)
+        self.config_tab_layout.setContentsMargins(0, 0, 0, 0)
+        self.config_tab_layout.setObjectName(u"config_tab_layout")
+        self.config_tab_layout.setContentsMargins(12, 12, 12, 12)
+        self.configScrollArea = QScrollArea(self.configTab)
+        self.configScrollArea.setObjectName(u"configScrollArea")
+        self.configScrollArea.setWidgetResizable(True)
+        self.configScrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.configScrollContent = QWidget()
+        self.configScrollContent.setObjectName(u"configScrollContent")
+        self.configScrollLayout = QVBoxLayout(self.configScrollContent)
+        self.configScrollLayout.setSpacing(12)
+        self.configScrollLayout.setContentsMargins(0, 0, 0, 0)
+        self.configScrollLayout.setObjectName(u"configScrollLayout")
+        self.backupPathsGroup = QGroupBox(self.configScrollContent)
+        self.backupPathsGroup.setObjectName(u"backupPathsGroup")
+        self.backupPathsLayout = QFormLayout(self.backupPathsGroup)
+        self.backupPathsLayout.setSpacing(0)
+        self.backupPathsLayout.setContentsMargins(0, 0, 0, 0)
+        self.backupPathsLayout.setObjectName(u"backupPathsLayout")
+        self.backupPathsLayout.setHorizontalSpacing(8)
+        self.backupPathsLayout.setVerticalSpacing(8)
+        self.mirror_path_label = QLabel(self.backupPathsGroup)
+        self.mirror_path_label.setObjectName(u"mirror_path_label")
+
+        self.backupPathsLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.mirror_path_label)
+
+        self.mirror_path_layout = QHBoxLayout()
+        self.mirror_path_layout.setSpacing(0)
+        self.mirror_path_layout.setObjectName(u"mirror_path_layout")
+        self.config_mirror_path_edit = QLineEdit(self.backupPathsGroup)
+        self.config_mirror_path_edit.setObjectName(u"config_mirror_path_edit")
+
+        self.mirror_path_layout.addWidget(self.config_mirror_path_edit)
+
+        self.browse_mirror_btn = QPushButton(self.backupPathsGroup)
+        self.browse_mirror_btn.setObjectName(u"browse_mirror_btn")
+        sizePolicy5.setHeightForWidth(self.browse_mirror_btn.sizePolicy().hasHeightForWidth())
+        self.browse_mirror_btn.setSizePolicy(sizePolicy5)
+
+        self.mirror_path_layout.addWidget(self.browse_mirror_btn)
+
+
+        self.backupPathsLayout.setLayout(0, QFormLayout.ItemRole.FieldRole, self.mirror_path_layout)
+
+        self.archivePathLabel = QLabel(self.backupPathsGroup)
+        self.archivePathLabel.setObjectName(u"archivePathLabel")
+
+        self.backupPathsLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.archivePathLabel)
+
+        self.archivePathLayout = QHBoxLayout()
+        self.archivePathLayout.setSpacing(0)
+        self.archivePathLayout.setObjectName(u"archivePathLayout")
+        self.configArchivePathEdit = QLineEdit(self.backupPathsGroup)
+        self.configArchivePathEdit.setObjectName(u"configArchivePathEdit")
+
+        self.archivePathLayout.addWidget(self.configArchivePathEdit)
+
+        self.browseArchiveButton = QPushButton(self.backupPathsGroup)
+        self.browseArchiveButton.setObjectName(u"browseArchiveButton")
+        sizePolicy5.setHeightForWidth(self.browseArchiveButton.sizePolicy().hasHeightForWidth())
+        self.browseArchiveButton.setSizePolicy(sizePolicy5)
+
+        self.archivePathLayout.addWidget(self.browseArchiveButton)
+
+
+        self.backupPathsLayout.setLayout(1, QFormLayout.ItemRole.FieldRole, self.archivePathLayout)
+
+
+        self.configScrollLayout.addWidget(self.backupPathsGroup)
+
+        self.backupModesGroup = QGroupBox(self.configScrollContent)
+        self.backupModesGroup.setObjectName(u"backupModesGroup")
+        self.backupModesLayout = QGridLayout(self.backupModesGroup)
+        self.backupModesLayout.setSpacing(0)
+        self.backupModesLayout.setContentsMargins(0, 0, 0, 0)
+        self.backupModesLayout.setObjectName(u"backupModesLayout")
+        self.backupModesLayout.setHorizontalSpacing(16)
+        self.backupModesLayout.setVerticalSpacing(8)
+        self.config_mirror_checkbox = QCheckBox(self.backupModesGroup)
+        self.config_mirror_checkbox.setObjectName(u"config_mirror_checkbox")
+
+        self.backupModesLayout.addWidget(self.config_mirror_checkbox, 0, 0, 1, 1)
+
+        self.config_archive_checkbox = QCheckBox(self.backupModesGroup)
+        self.config_archive_checkbox.setObjectName(u"config_archive_checkbox")
+
+        self.backupModesLayout.addWidget(self.config_archive_checkbox, 0, 1, 1, 1)
+
+        self.config_hostname_checkbox = QCheckBox(self.backupModesGroup)
+        self.config_hostname_checkbox.setObjectName(u"config_hostname_checkbox")
+
+        self.backupModesLayout.addWidget(self.config_hostname_checkbox, 1, 0, 1, 1)
+
+        self.config_date_checkbox = QCheckBox(self.backupModesGroup)
+        self.config_date_checkbox.setObjectName(u"config_date_checkbox")
+
+        self.backupModesLayout.addWidget(self.config_date_checkbox, 1, 1, 1, 1)
+
+
+        self.configScrollLayout.addWidget(self.backupModesGroup)
+
+        self.archiveOptionsGroup = QGroupBox(self.configScrollContent)
+        self.archiveOptionsGroup.setObjectName(u"archiveOptionsGroup")
+        self.archiveOptionsLayout = QFormLayout(self.archiveOptionsGroup)
+        self.archiveOptionsLayout.setSpacing(0)
+        self.archiveOptionsLayout.setContentsMargins(0, 0, 0, 0)
+        self.archiveOptionsLayout.setObjectName(u"archiveOptionsLayout")
+        self.archiveOptionsLayout.setHorizontalSpacing(8)
+        self.archiveOptionsLayout.setVerticalSpacing(8)
+        self.compressionLabel = QLabel(self.archiveOptionsGroup)
+        self.compressionLabel.setObjectName(u"compressionLabel")
+
+        self.archiveOptionsLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.compressionLabel)
+
+        self.config_compression_spinbox = QSpinBox(self.archiveOptionsGroup)
+        self.config_compression_spinbox.setObjectName(u"config_compression_spinbox")
+        sizePolicy5.setHeightForWidth(self.config_compression_spinbox.sizePolicy().hasHeightForWidth())
+        self.config_compression_spinbox.setSizePolicy(sizePolicy5)
+        self.config_compression_spinbox.setMinimum(0)
+        self.config_compression_spinbox.setMaximum(9)
+
+        self.archiveOptionsLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.config_compression_spinbox)
+
+        self.rotate_label = QLabel(self.archiveOptionsGroup)
+        self.rotate_label.setObjectName(u"rotate_label")
+
+        self.archiveOptionsLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.rotate_label)
+
+        self.config_rotate_checkbox = QCheckBox(self.archiveOptionsGroup)
+        self.config_rotate_checkbox.setObjectName(u"config_rotate_checkbox")
+
+        self.archiveOptionsLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.config_rotate_checkbox)
+
+        self.max_archives_label = QLabel(self.archiveOptionsGroup)
+        self.max_archives_label.setObjectName(u"max_archives_label")
+
+        self.archiveOptionsLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.max_archives_label)
+
+        self.config_max_archives_spinbox = QSpinBox(self.archiveOptionsGroup)
+        self.config_max_archives_spinbox.setObjectName(u"config_max_archives_spinbox")
+        sizePolicy5.setHeightForWidth(self.config_max_archives_spinbox.sizePolicy().hasHeightForWidth())
+        self.config_max_archives_spinbox.setSizePolicy(sizePolicy5)
+        self.config_max_archives_spinbox.setMinimum(1)
+        self.config_max_archives_spinbox.setMaximum(100)
+
+        self.archiveOptionsLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.config_max_archives_spinbox)
+
+
+        self.configScrollLayout.addWidget(self.archiveOptionsGroup)
+
+        self.preRestoreSafetyGroup = QGroupBox(self.configScrollContent)
+        self.preRestoreSafetyGroup.setObjectName(u"preRestoreSafetyGroup")
+        self.preRestoreSafetyLayout = QFormLayout(self.preRestoreSafetyGroup)
+        self.preRestoreSafetyLayout.setSpacing(0)
+        self.preRestoreSafetyLayout.setContentsMargins(0, 0, 0, 0)
+        self.preRestoreSafetyLayout.setObjectName(u"preRestoreSafetyLayout")
+        self.preRestoreSafetyLayout.setHorizontalSpacing(8)
+        self.preRestoreSafetyLayout.setVerticalSpacing(8)
+        self.config_pre_restore_checkbox = QCheckBox(self.preRestoreSafetyGroup)
+        self.config_pre_restore_checkbox.setObjectName(u"config_pre_restore_checkbox")
+
+        self.preRestoreSafetyLayout.setWidget(0, QFormLayout.ItemRole.SpanningRole, self.config_pre_restore_checkbox)
+
+        self.maxRestoreBackupsLabel = QLabel(self.preRestoreSafetyGroup)
+        self.maxRestoreBackupsLabel.setObjectName(u"maxRestoreBackupsLabel")
+
+        self.preRestoreSafetyLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.maxRestoreBackupsLabel)
+
+        self.config_max_restore_spinbox = QSpinBox(self.preRestoreSafetyGroup)
+        self.config_max_restore_spinbox.setObjectName(u"config_max_restore_spinbox")
+        sizePolicy5.setHeightForWidth(self.config_max_restore_spinbox.sizePolicy().hasHeightForWidth())
+        self.config_max_restore_spinbox.setSizePolicy(sizePolicy5)
+        self.config_max_restore_spinbox.setMinimum(1)
+        self.config_max_restore_spinbox.setMaximum(100)
+        self.config_max_restore_spinbox.setValue(5)
+
+        self.preRestoreSafetyLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.config_max_restore_spinbox)
+
+        self.restoreBackupDirLabel = QLabel(self.preRestoreSafetyGroup)
+        self.restoreBackupDirLabel.setObjectName(u"restoreBackupDirLabel")
+
+        self.preRestoreSafetyLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.restoreBackupDirLabel)
+
+        self.restoreBackupDirLayout = QHBoxLayout()
+        self.restoreBackupDirLayout.setSpacing(0)
+        self.restoreBackupDirLayout.setObjectName(u"restoreBackupDirLayout")
+        self.config_restore_path_edit = QLineEdit(self.preRestoreSafetyGroup)
+        self.config_restore_path_edit.setObjectName(u"config_restore_path_edit")
+
+        self.restoreBackupDirLayout.addWidget(self.config_restore_path_edit)
+
+        self.browse_restore_btn = QPushButton(self.preRestoreSafetyGroup)
+        self.browse_restore_btn.setObjectName(u"browse_restore_btn")
+        sizePolicy5.setHeightForWidth(self.browse_restore_btn.sizePolicy().hasHeightForWidth())
+        self.browse_restore_btn.setSizePolicy(sizePolicy5)
+
+        self.restoreBackupDirLayout.addWidget(self.browse_restore_btn)
+
+
+        self.preRestoreSafetyLayout.setLayout(2, QFormLayout.ItemRole.FieldRole, self.restoreBackupDirLayout)
+
+
+        self.configScrollLayout.addWidget(self.preRestoreSafetyGroup)
+
+        self.verificationGroup = QGroupBox(self.configScrollContent)
+        self.verificationGroup.setObjectName(u"verificationGroup")
+        self.verificationLayout = QVBoxLayout(self.verificationGroup)
+        self.verificationLayout.setSpacing(8)
+        self.verificationLayout.setContentsMargins(0, 0, 0, 0)
+        self.verificationLayout.setObjectName(u"verificationLayout")
+        self.config_verify_checkbox = QCheckBox(self.verificationGroup)
+        self.config_verify_checkbox.setObjectName(u"config_verify_checkbox")
+
+        self.verificationLayout.addWidget(self.config_verify_checkbox)
+
+        self.config_hash_checkbox = QCheckBox(self.verificationGroup)
+        self.config_hash_checkbox.setObjectName(u"config_hash_checkbox")
+
+        self.verificationLayout.addWidget(self.config_hash_checkbox)
+
+
+        self.configScrollLayout.addWidget(self.verificationGroup)
+
+        self.sizeManagementGroup = QGroupBox(self.configScrollContent)
+        self.sizeManagementGroup.setObjectName(u"sizeManagementGroup")
+        self.sizeManagementLayout = QFormLayout(self.sizeManagementGroup)
+        self.sizeManagementLayout.setSpacing(0)
+        self.sizeManagementLayout.setContentsMargins(0, 0, 0, 0)
+        self.sizeManagementLayout.setObjectName(u"sizeManagementLayout")
+        self.sizeManagementLayout.setHorizontalSpacing(8)
+        self.sizeManagementLayout.setVerticalSpacing(8)
+        self.config_size_check_checkbox = QCheckBox(self.sizeManagementGroup)
+        self.config_size_check_checkbox.setObjectName(u"config_size_check_checkbox")
+
+        self.sizeManagementLayout.setWidget(0, QFormLayout.ItemRole.SpanningRole, self.config_size_check_checkbox)
+
+        self.sizeWarningLabel = QLabel(self.sizeManagementGroup)
+        self.sizeWarningLabel.setObjectName(u"sizeWarningLabel")
+
+        self.sizeManagementLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.sizeWarningLabel)
+
+        self.config_size_warning_spinbox = QSpinBox(self.sizeManagementGroup)
+        self.config_size_warning_spinbox.setObjectName(u"config_size_warning_spinbox")
+        sizePolicy5.setHeightForWidth(self.config_size_warning_spinbox.sizePolicy().hasHeightForWidth())
+        self.config_size_warning_spinbox.setSizePolicy(sizePolicy5)
+        self.config_size_warning_spinbox.setMinimum(1)
+        self.config_size_warning_spinbox.setMaximum(10000)
+        self.config_size_warning_spinbox.setValue(10)
+
+        self.sizeManagementLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.config_size_warning_spinbox)
+
+        self.sizeAlertLabel = QLabel(self.sizeManagementGroup)
+        self.sizeAlertLabel.setObjectName(u"sizeAlertLabel")
+
+        self.sizeManagementLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.sizeAlertLabel)
+
+        self.config_size_alert_spinbox = QSpinBox(self.sizeManagementGroup)
+        self.config_size_alert_spinbox.setObjectName(u"config_size_alert_spinbox")
+        sizePolicy5.setHeightForWidth(self.config_size_alert_spinbox.sizePolicy().hasHeightForWidth())
+        self.config_size_alert_spinbox.setSizePolicy(sizePolicy5)
+        self.config_size_alert_spinbox.setMinimum(1)
+        self.config_size_alert_spinbox.setMaximum(10000)
+        self.config_size_alert_spinbox.setValue(100)
+
+        self.sizeManagementLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.config_size_alert_spinbox)
+
+        self.sizeCriticalLabel = QLabel(self.sizeManagementGroup)
+        self.sizeCriticalLabel.setObjectName(u"sizeCriticalLabel")
+
+        self.sizeManagementLayout.setWidget(3, QFormLayout.ItemRole.LabelRole, self.sizeCriticalLabel)
+
+        self.config_size_critical_spinbox = QSpinBox(self.sizeManagementGroup)
+        self.config_size_critical_spinbox.setObjectName(u"config_size_critical_spinbox")
+        sizePolicy5.setHeightForWidth(self.config_size_critical_spinbox.sizePolicy().hasHeightForWidth())
+        self.config_size_critical_spinbox.setSizePolicy(sizePolicy5)
+        self.config_size_critical_spinbox.setMinimum(1)
+        self.config_size_critical_spinbox.setMaximum(100000)
+        self.config_size_critical_spinbox.setValue(1024)
+
+        self.sizeManagementLayout.setWidget(3, QFormLayout.ItemRole.FieldRole, self.config_size_critical_spinbox)
+
+
+        self.configScrollLayout.addWidget(self.sizeManagementGroup)
+
+        self.configScrollArea.setWidget(self.configScrollContent)
+
+        self.config_tab_layout.addWidget(self.configScrollArea)
+
+        self.configButtonLayout = QHBoxLayout()
+        self.configButtonLayout.setSpacing(8)
+        self.configButtonLayout.setObjectName(u"configButtonLayout")
+        self.configButtonSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.configButtonLayout.addItem(self.configButtonSpacer)
+
+        self.saveConfigButton = QPushButton(self.configTab)
+        self.saveConfigButton.setObjectName(u"saveConfigButton")
+        self.saveConfigButton.setEnabled(False)
+        sizePolicy5.setHeightForWidth(self.saveConfigButton.sizePolicy().hasHeightForWidth())
+        self.saveConfigButton.setSizePolicy(sizePolicy5)
+
+        self.configButtonLayout.addWidget(self.saveConfigButton)
+
+
+        self.config_tab_layout.addLayout(self.configButtonLayout)
+
+        self.tab_widget.addTab(self.configTab, "")
         self.restoreTab = QWidget()
         self.restoreTab.setObjectName(u"restoreTab")
         sizePolicy.setHeightForWidth(self.restoreTab.sizePolicy().hasHeightForWidth())
@@ -285,11 +648,11 @@ class Ui_MainWindow(object):
         self.restore_layout.setContentsMargins(12, 12, 12, 12)
         self.restoreSourceGroup = QWidget(self.restoreTab)
         self.restoreSourceGroup.setObjectName(u"restoreSourceGroup")
-        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
-        sizePolicy6.setHorizontalStretch(0)
-        sizePolicy6.setVerticalStretch(0)
-        sizePolicy6.setHeightForWidth(self.restoreSourceGroup.sizePolicy().hasHeightForWidth())
-        self.restoreSourceGroup.setSizePolicy(sizePolicy6)
+        sizePolicy9 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+        sizePolicy9.setHorizontalStretch(0)
+        sizePolicy9.setVerticalStretch(0)
+        sizePolicy9.setHeightForWidth(self.restoreSourceGroup.sizePolicy().hasHeightForWidth())
+        self.restoreSourceGroup.setSizePolicy(sizePolicy9)
         self.restore_source_layout = QVBoxLayout(self.restoreSourceGroup)
         self.restore_source_layout.setSpacing(6)
         self.restore_source_layout.setContentsMargins(0, 0, 0, 0)
@@ -297,8 +660,8 @@ class Ui_MainWindow(object):
         self.restore_source_layout.setContentsMargins(6, 0, 6, 6)
         self.restoreSourceLabelContainer = QWidget(self.restoreSourceGroup)
         self.restoreSourceLabelContainer.setObjectName(u"restoreSourceLabelContainer")
-        sizePolicy6.setHeightForWidth(self.restoreSourceLabelContainer.sizePolicy().hasHeightForWidth())
-        self.restoreSourceLabelContainer.setSizePolicy(sizePolicy6)
+        sizePolicy9.setHeightForWidth(self.restoreSourceLabelContainer.sizePolicy().hasHeightForWidth())
+        self.restoreSourceLabelContainer.setSizePolicy(sizePolicy9)
         self.restoreSourceLabelLayout = QHBoxLayout(self.restoreSourceLabelContainer)
         self.restoreSourceLabelLayout.setSpacing(0)
         self.restoreSourceLabelLayout.setContentsMargins(0, 0, 0, 0)
@@ -306,8 +669,8 @@ class Ui_MainWindow(object):
         self.restoreSourceLabelLayout.setContentsMargins(-1, -1, -1, 0)
         self.restoreSourceLabel = QLabel(self.restoreSourceLabelContainer)
         self.restoreSourceLabel.setObjectName(u"restoreSourceLabel")
-        sizePolicy6.setHeightForWidth(self.restoreSourceLabel.sizePolicy().hasHeightForWidth())
-        self.restoreSourceLabel.setSizePolicy(sizePolicy6)
+        sizePolicy9.setHeightForWidth(self.restoreSourceLabel.sizePolicy().hasHeightForWidth())
+        self.restoreSourceLabel.setSizePolicy(sizePolicy9)
         self.restoreSourceLabel.setMargin(6)
 
         self.restoreSourceLabelLayout.addWidget(self.restoreSourceLabel)
@@ -317,8 +680,8 @@ class Ui_MainWindow(object):
 
         self.restoreSourceLine = QFrame(self.restoreSourceGroup)
         self.restoreSourceLine.setObjectName(u"restoreSourceLine")
-        sizePolicy6.setHeightForWidth(self.restoreSourceLine.sizePolicy().hasHeightForWidth())
-        self.restoreSourceLine.setSizePolicy(sizePolicy6)
+        sizePolicy9.setHeightForWidth(self.restoreSourceLine.sizePolicy().hasHeightForWidth())
+        self.restoreSourceLine.setSizePolicy(sizePolicy9)
         self.restoreSourceLine.setFrameShape(QFrame.Shape.HLine)
         self.restoreSourceLine.setFrameShadow(QFrame.Shadow.Sunken)
 
@@ -326,8 +689,8 @@ class Ui_MainWindow(object):
 
         self.restoreSourceInfoButtonContainer = QWidget(self.restoreSourceGroup)
         self.restoreSourceInfoButtonContainer.setObjectName(u"restoreSourceInfoButtonContainer")
-        sizePolicy6.setHeightForWidth(self.restoreSourceInfoButtonContainer.sizePolicy().hasHeightForWidth())
-        self.restoreSourceInfoButtonContainer.setSizePolicy(sizePolicy6)
+        sizePolicy9.setHeightForWidth(self.restoreSourceInfoButtonContainer.sizePolicy().hasHeightForWidth())
+        self.restoreSourceInfoButtonContainer.setSizePolicy(sizePolicy9)
         self.restoreSourceInfoButtonLayout = QHBoxLayout(self.restoreSourceInfoButtonContainer)
         self.restoreSourceInfoButtonLayout.setSpacing(6)
         self.restoreSourceInfoButtonLayout.setContentsMargins(0, 0, 0, 0)
@@ -335,8 +698,8 @@ class Ui_MainWindow(object):
         self.restoreSourceInfoButtonLayout.setContentsMargins(6, 0, 0, 0)
         self.restoreSourceInfoLabel = QLabel(self.restoreSourceInfoButtonContainer)
         self.restoreSourceInfoLabel.setObjectName(u"restoreSourceInfoLabel")
-        sizePolicy6.setHeightForWidth(self.restoreSourceInfoLabel.sizePolicy().hasHeightForWidth())
-        self.restoreSourceInfoLabel.setSizePolicy(sizePolicy6)
+        sizePolicy9.setHeightForWidth(self.restoreSourceInfoLabel.sizePolicy().hasHeightForWidth())
+        self.restoreSourceInfoLabel.setSizePolicy(sizePolicy9)
         self.restoreSourceInfoLabel.setWordWrap(True)
         self.restoreSourceInfoLabel.setMargin(5)
 
@@ -344,11 +707,8 @@ class Ui_MainWindow(object):
 
         self.restoreSourceInfoButtonLine = QFrame(self.restoreSourceInfoButtonContainer)
         self.restoreSourceInfoButtonLine.setObjectName(u"restoreSourceInfoButtonLine")
-        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
-        sizePolicy7.setHorizontalStretch(0)
-        sizePolicy7.setVerticalStretch(0)
-        sizePolicy7.setHeightForWidth(self.restoreSourceInfoButtonLine.sizePolicy().hasHeightForWidth())
-        self.restoreSourceInfoButtonLine.setSizePolicy(sizePolicy7)
+        sizePolicy3.setHeightForWidth(self.restoreSourceInfoButtonLine.sizePolicy().hasHeightForWidth())
+        self.restoreSourceInfoButtonLine.setSizePolicy(sizePolicy3)
         self.restoreSourceInfoButtonLine.setMinimumSize(QSize(0, 50))
         self.restoreSourceInfoButtonLine.setFrameShape(QFrame.Shape.VLine)
         self.restoreSourceInfoButtonLine.setFrameShadow(QFrame.Shadow.Sunken)
@@ -358,8 +718,8 @@ class Ui_MainWindow(object):
         self.restoreSourceButton = QPushButton(self.restoreSourceInfoButtonContainer)
         self.restoreSourceButton.setObjectName(u"restoreSourceButton")
         self.restoreSourceButton.setEnabled(False)
-        sizePolicy6.setHeightForWidth(self.restoreSourceButton.sizePolicy().hasHeightForWidth())
-        self.restoreSourceButton.setSizePolicy(sizePolicy6)
+        sizePolicy9.setHeightForWidth(self.restoreSourceButton.sizePolicy().hasHeightForWidth())
+        self.restoreSourceButton.setSizePolicy(sizePolicy9)
         self.restoreSourceButton.setMinimumSize(QSize(0, 0))
 
         self.restoreSourceInfoButtonLayout.addWidget(self.restoreSourceButton, 0, Qt.AlignmentFlag.AlignLeft)
@@ -375,8 +735,8 @@ class Ui_MainWindow(object):
         self.restorePathLayout.setObjectName(u"restorePathLayout")
         self.restoreSourceEdit = QLineEdit(self.restoreSourceGroup)
         self.restoreSourceEdit.setObjectName(u"restoreSourceEdit")
-        sizePolicy6.setHeightForWidth(self.restoreSourceEdit.sizePolicy().hasHeightForWidth())
-        self.restoreSourceEdit.setSizePolicy(sizePolicy6)
+        sizePolicy9.setHeightForWidth(self.restoreSourceEdit.sizePolicy().hasHeightForWidth())
+        self.restoreSourceEdit.setSizePolicy(sizePolicy9)
         self.restoreSourceEdit.setFrame(True)
         self.restoreSourceEdit.setReadOnly(True)
         self.restoreSourceEdit.setClearButtonEnabled(False)
@@ -385,8 +745,8 @@ class Ui_MainWindow(object):
 
         self.restoreSourceBrowseButton = QPushButton(self.restoreSourceGroup)
         self.restoreSourceBrowseButton.setObjectName(u"restoreSourceBrowseButton")
-        sizePolicy1.setHeightForWidth(self.restoreSourceBrowseButton.sizePolicy().hasHeightForWidth())
-        self.restoreSourceBrowseButton.setSizePolicy(sizePolicy1)
+        sizePolicy5.setHeightForWidth(self.restoreSourceBrowseButton.sizePolicy().hasHeightForWidth())
+        self.restoreSourceBrowseButton.setSizePolicy(sizePolicy5)
 
         self.restorePathLayout.addWidget(self.restoreSourceBrowseButton)
 
@@ -457,8 +817,8 @@ class Ui_MainWindow(object):
         self.restore_info_layout.setContentsMargins(-1, -1, 0, 0)
         self.restoreInfoLabel = QLabel(self.restoreInfoGroup)
         self.restoreInfoLabel.setObjectName(u"restoreInfoLabel")
-        sizePolicy6.setHeightForWidth(self.restoreInfoLabel.sizePolicy().hasHeightForWidth())
-        self.restoreInfoLabel.setSizePolicy(sizePolicy6)
+        sizePolicy9.setHeightForWidth(self.restoreInfoLabel.sizePolicy().hasHeightForWidth())
+        self.restoreInfoLabel.setSizePolicy(sizePolicy9)
         font = QFont()
         font.setBold(False)
         self.restoreInfoLabel.setFont(font)
@@ -468,8 +828,8 @@ class Ui_MainWindow(object):
 
         self.restoreInfoLine = QFrame(self.restoreInfoGroup)
         self.restoreInfoLine.setObjectName(u"restoreInfoLine")
-        sizePolicy6.setHeightForWidth(self.restoreInfoLine.sizePolicy().hasHeightForWidth())
-        self.restoreInfoLine.setSizePolicy(sizePolicy6)
+        sizePolicy9.setHeightForWidth(self.restoreInfoLine.sizePolicy().hasHeightForWidth())
+        self.restoreInfoLine.setSizePolicy(sizePolicy9)
         self.restoreInfoLine.setFrameShape(QFrame.Shape.HLine)
         self.restoreInfoLine.setFrameShadow(QFrame.Shadow.Sunken)
 
@@ -477,8 +837,8 @@ class Ui_MainWindow(object):
 
         self.restoreInfoText = QLabel(self.restoreInfoGroup)
         self.restoreInfoText.setObjectName(u"restoreInfoText")
-        sizePolicy1.setHeightForWidth(self.restoreInfoText.sizePolicy().hasHeightForWidth())
-        self.restoreInfoText.setSizePolicy(sizePolicy1)
+        sizePolicy5.setHeightForWidth(self.restoreInfoText.sizePolicy().hasHeightForWidth())
+        self.restoreInfoText.setSizePolicy(sizePolicy5)
         self.restoreInfoText.setWordWrap(True)
         self.restoreInfoText.setMargin(10)
         self.restoreInfoText.setIndent(-1)
@@ -489,418 +849,116 @@ class Ui_MainWindow(object):
         self.restore_layout.addWidget(self.restoreInfoGroup)
 
         self.tab_widget.addTab(self.restoreTab, "")
-        self.configTab = QWidget()
-        self.configTab.setObjectName(u"configTab")
-        sizePolicy.setHeightForWidth(self.configTab.sizePolicy().hasHeightForWidth())
-        self.configTab.setSizePolicy(sizePolicy)
-        self.config_tab_layout = QVBoxLayout(self.configTab)
-        self.config_tab_layout.setSpacing(8)
-        self.config_tab_layout.setContentsMargins(0, 0, 0, 0)
-        self.config_tab_layout.setObjectName(u"config_tab_layout")
-        self.config_tab_layout.setContentsMargins(12, 12, 12, 12)
-        self.configScrollArea = QScrollArea(self.configTab)
-        self.configScrollArea.setObjectName(u"configScrollArea")
-        self.configScrollArea.setWidgetResizable(True)
-        self.configScrollArea.setFrameShape(QFrame.Shape.NoFrame)
-        self.configScrollContent = QWidget()
-        self.configScrollContent.setObjectName(u"configScrollContent")
-        self.configScrollLayout = QVBoxLayout(self.configScrollContent)
-        self.configScrollLayout.setSpacing(12)
-        self.configScrollLayout.setContentsMargins(0, 0, 0, 0)
-        self.configScrollLayout.setObjectName(u"configScrollLayout")
-        self.backupPathsGroup = QGroupBox(self.configScrollContent)
-        self.backupPathsGroup.setObjectName(u"backupPathsGroup")
-        self.backupPathsLayout = QFormLayout(self.backupPathsGroup)
-        self.backupPathsLayout.setSpacing(0)
-        self.backupPathsLayout.setContentsMargins(0, 0, 0, 0)
-        self.backupPathsLayout.setObjectName(u"backupPathsLayout")
-        self.backupPathsLayout.setHorizontalSpacing(8)
-        self.backupPathsLayout.setVerticalSpacing(8)
-        self.mirror_path_label = QLabel(self.backupPathsGroup)
-        self.mirror_path_label.setObjectName(u"mirror_path_label")
-
-        self.backupPathsLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.mirror_path_label)
-
-        self.mirror_path_layout = QHBoxLayout()
-        self.mirror_path_layout.setSpacing(0)
-        self.mirror_path_layout.setObjectName(u"mirror_path_layout")
-        self.config_mirror_path_edit = QLineEdit(self.backupPathsGroup)
-        self.config_mirror_path_edit.setObjectName(u"config_mirror_path_edit")
+        self.mainSplitter.addWidget(self.tab_widget)
+        self.logPane = QWidget(self.mainSplitter)
+        self.logPane.setObjectName(u"logPane")
+        sizePolicy10 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy10.setHorizontalStretch(35)
+        sizePolicy10.setVerticalStretch(0)
+        sizePolicy10.setHeightForWidth(self.logPane.sizePolicy().hasHeightForWidth())
+        self.logPane.setSizePolicy(sizePolicy10)
+        self.logPane.setMinimumSize(QSize(300, 0))
+        self.logPaneLayout = QVBoxLayout(self.logPane)
+        self.logPaneLayout.setSpacing(0)
+        self.logPaneLayout.setContentsMargins(0, 0, 0, 0)
+        self.logPaneLayout.setObjectName(u"logPaneLayout")
+        self.logPaneLayout.setContentsMargins(0, 0, 0, 0)
+        self.logHeader = QWidget(self.logPane)
+        self.logHeader.setObjectName(u"logHeader")
+        sizePolicy1.setHeightForWidth(self.logHeader.sizePolicy().hasHeightForWidth())
+        self.logHeader.setSizePolicy(sizePolicy1)
+        self.logHeader.setMinimumSize(QSize(0, 48))
+        self.logHeaderLayout = QHBoxLayout(self.logHeader)
+        self.logHeaderLayout.setSpacing(4)
+        self.logHeaderLayout.setContentsMargins(0, 0, 0, 0)
+        self.logHeaderLayout.setObjectName(u"logHeaderLayout")
+        self.logHeaderLayout.setContentsMargins(12, 8, 12, 8)
+        self.logPaneTitle = QLabel(self.logHeader)
+        self.logPaneTitle.setObjectName(u"logPaneTitle")
+
+        self.logHeaderLayout.addWidget(self.logPaneTitle)
+
+        self.logHeaderSpacer1 = QSpacerItem(16, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.logHeaderLayout.addItem(self.logHeaderSpacer1)
+
+        self.logPaneFilterAllButton = QPushButton(self.logHeader)
+        self.logPaneFilterAllButton.setObjectName(u"logPaneFilterAllButton")
+        self.logPaneFilterAllButton.setCheckable(True)
+        self.logPaneFilterAllButton.setChecked(True)
+        sizePolicy5.setHeightForWidth(self.logPaneFilterAllButton.sizePolicy().hasHeightForWidth())
+        self.logPaneFilterAllButton.setSizePolicy(sizePolicy5)
+
+        self.logHeaderLayout.addWidget(self.logPaneFilterAllButton)
+
+        self.logPaneFilterInfoButton = QPushButton(self.logHeader)
+        self.logPaneFilterInfoButton.setObjectName(u"logPaneFilterInfoButton")
+        self.logPaneFilterInfoButton.setCheckable(True)
+        self.logPaneFilterInfoButton.setChecked(True)
+        sizePolicy5.setHeightForWidth(self.logPaneFilterInfoButton.sizePolicy().hasHeightForWidth())
+        self.logPaneFilterInfoButton.setSizePolicy(sizePolicy5)
+
+        self.logHeaderLayout.addWidget(self.logPaneFilterInfoButton)
+
+        self.logPaneFilterWarningButton = QPushButton(self.logHeader)
+        self.logPaneFilterWarningButton.setObjectName(u"logPaneFilterWarningButton")
+        self.logPaneFilterWarningButton.setCheckable(True)
+        self.logPaneFilterWarningButton.setChecked(True)
+        sizePolicy5.setHeightForWidth(self.logPaneFilterWarningButton.sizePolicy().hasHeightForWidth())
+        self.logPaneFilterWarningButton.setSizePolicy(sizePolicy5)
+
+        self.logHeaderLayout.addWidget(self.logPaneFilterWarningButton)
+
+        self.logPaneFilterErrorButton = QPushButton(self.logHeader)
+        self.logPaneFilterErrorButton.setObjectName(u"logPaneFilterErrorButton")
+        self.logPaneFilterErrorButton.setCheckable(True)
+        self.logPaneFilterErrorButton.setChecked(True)
+        sizePolicy5.setHeightForWidth(self.logPaneFilterErrorButton.sizePolicy().hasHeightForWidth())
+        self.logPaneFilterErrorButton.setSizePolicy(sizePolicy5)
+
+        self.logHeaderLayout.addWidget(self.logPaneFilterErrorButton)
+
+        self.logHeaderSpacer2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.logHeaderLayout.addItem(self.logHeaderSpacer2)
+
+        self.logPaneClearButton = QPushButton(self.logHeader)
+        self.logPaneClearButton.setObjectName(u"logPaneClearButton")
+        sizePolicy5.setHeightForWidth(self.logPaneClearButton.sizePolicy().hasHeightForWidth())
+        self.logPaneClearButton.setSizePolicy(sizePolicy5)
+
+        self.logHeaderLayout.addWidget(self.logPaneClearButton)
+
+        self.logPaneSaveButton = QPushButton(self.logHeader)
+        self.logPaneSaveButton.setObjectName(u"logPaneSaveButton")
+        sizePolicy5.setHeightForWidth(self.logPaneSaveButton.sizePolicy().hasHeightForWidth())
+        self.logPaneSaveButton.setSizePolicy(sizePolicy5)
+
+        self.logHeaderLayout.addWidget(self.logPaneSaveButton)
+
+        self.logPaneVerifyButton = QPushButton(self.logHeader)
+        self.logPaneVerifyButton.setObjectName(u"logPaneVerifyButton")
+        sizePolicy5.setHeightForWidth(self.logPaneVerifyButton.sizePolicy().hasHeightForWidth())
+        self.logPaneVerifyButton.setSizePolicy(sizePolicy5)
+
+        self.logHeaderLayout.addWidget(self.logPaneVerifyButton)
+
+
+        self.logPaneLayout.addWidget(self.logHeader)
+
+        self.logPaneBox = QTextEdit(self.logPane)
+        self.logPaneBox.setObjectName(u"logPaneBox")
+        sizePolicy.setHeightForWidth(self.logPaneBox.sizePolicy().hasHeightForWidth())
+        self.logPaneBox.setSizePolicy(sizePolicy)
+        self.logPaneBox.setReadOnly(True)
 
-        self.mirror_path_layout.addWidget(self.config_mirror_path_edit)
+        self.logPaneLayout.addWidget(self.logPaneBox)
 
-        self.browse_mirror_btn = QPushButton(self.backupPathsGroup)
-        self.browse_mirror_btn.setObjectName(u"browse_mirror_btn")
-        sizePolicy1.setHeightForWidth(self.browse_mirror_btn.sizePolicy().hasHeightForWidth())
-        self.browse_mirror_btn.setSizePolicy(sizePolicy1)
+        self.mainSplitter.addWidget(self.logPane)
 
-        self.mirror_path_layout.addWidget(self.browse_mirror_btn)
-
-
-        self.backupPathsLayout.setLayout(0, QFormLayout.ItemRole.FieldRole, self.mirror_path_layout)
-
-        self.archivePathLabel = QLabel(self.backupPathsGroup)
-        self.archivePathLabel.setObjectName(u"archivePathLabel")
-
-        self.backupPathsLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.archivePathLabel)
-
-        self.archivePathLayout = QHBoxLayout()
-        self.archivePathLayout.setSpacing(0)
-        self.archivePathLayout.setObjectName(u"archivePathLayout")
-        self.configArchivePathEdit = QLineEdit(self.backupPathsGroup)
-        self.configArchivePathEdit.setObjectName(u"configArchivePathEdit")
-
-        self.archivePathLayout.addWidget(self.configArchivePathEdit)
-
-        self.browseArchiveButton = QPushButton(self.backupPathsGroup)
-        self.browseArchiveButton.setObjectName(u"browseArchiveButton")
-        sizePolicy1.setHeightForWidth(self.browseArchiveButton.sizePolicy().hasHeightForWidth())
-        self.browseArchiveButton.setSizePolicy(sizePolicy1)
-
-        self.archivePathLayout.addWidget(self.browseArchiveButton)
-
-
-        self.backupPathsLayout.setLayout(1, QFormLayout.ItemRole.FieldRole, self.archivePathLayout)
-
-
-        self.configScrollLayout.addWidget(self.backupPathsGroup)
-
-        self.backupModesGroup = QGroupBox(self.configScrollContent)
-        self.backupModesGroup.setObjectName(u"backupModesGroup")
-        self.backupModesLayout = QGridLayout(self.backupModesGroup)
-        self.backupModesLayout.setSpacing(0)
-        self.backupModesLayout.setContentsMargins(0, 0, 0, 0)
-        self.backupModesLayout.setObjectName(u"backupModesLayout")
-        self.backupModesLayout.setHorizontalSpacing(16)
-        self.backupModesLayout.setVerticalSpacing(8)
-        self.config_mirror_checkbox = QCheckBox(self.backupModesGroup)
-        self.config_mirror_checkbox.setObjectName(u"config_mirror_checkbox")
-
-        self.backupModesLayout.addWidget(self.config_mirror_checkbox, 0, 0, 1, 1)
-
-        self.config_archive_checkbox = QCheckBox(self.backupModesGroup)
-        self.config_archive_checkbox.setObjectName(u"config_archive_checkbox")
-
-        self.backupModesLayout.addWidget(self.config_archive_checkbox, 0, 1, 1, 1)
-
-        self.config_hostname_checkbox = QCheckBox(self.backupModesGroup)
-        self.config_hostname_checkbox.setObjectName(u"config_hostname_checkbox")
-
-        self.backupModesLayout.addWidget(self.config_hostname_checkbox, 1, 0, 1, 1)
-
-        self.config_date_checkbox = QCheckBox(self.backupModesGroup)
-        self.config_date_checkbox.setObjectName(u"config_date_checkbox")
-
-        self.backupModesLayout.addWidget(self.config_date_checkbox, 1, 1, 1, 1)
-
-
-        self.configScrollLayout.addWidget(self.backupModesGroup)
-
-        self.archiveOptionsGroup = QGroupBox(self.configScrollContent)
-        self.archiveOptionsGroup.setObjectName(u"archiveOptionsGroup")
-        self.archiveOptionsLayout = QFormLayout(self.archiveOptionsGroup)
-        self.archiveOptionsLayout.setSpacing(0)
-        self.archiveOptionsLayout.setContentsMargins(0, 0, 0, 0)
-        self.archiveOptionsLayout.setObjectName(u"archiveOptionsLayout")
-        self.archiveOptionsLayout.setHorizontalSpacing(8)
-        self.archiveOptionsLayout.setVerticalSpacing(8)
-        self.compressionLabel = QLabel(self.archiveOptionsGroup)
-        self.compressionLabel.setObjectName(u"compressionLabel")
-
-        self.archiveOptionsLayout.setWidget(0, QFormLayout.ItemRole.LabelRole, self.compressionLabel)
-
-        self.config_compression_spinbox = QSpinBox(self.archiveOptionsGroup)
-        self.config_compression_spinbox.setObjectName(u"config_compression_spinbox")
-        sizePolicy1.setHeightForWidth(self.config_compression_spinbox.sizePolicy().hasHeightForWidth())
-        self.config_compression_spinbox.setSizePolicy(sizePolicy1)
-        self.config_compression_spinbox.setMinimum(0)
-        self.config_compression_spinbox.setMaximum(9)
-
-        self.archiveOptionsLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.config_compression_spinbox)
-
-        self.rotate_label = QLabel(self.archiveOptionsGroup)
-        self.rotate_label.setObjectName(u"rotate_label")
-
-        self.archiveOptionsLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.rotate_label)
-
-        self.config_rotate_checkbox = QCheckBox(self.archiveOptionsGroup)
-        self.config_rotate_checkbox.setObjectName(u"config_rotate_checkbox")
-
-        self.archiveOptionsLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.config_rotate_checkbox)
-
-        self.max_archives_label = QLabel(self.archiveOptionsGroup)
-        self.max_archives_label.setObjectName(u"max_archives_label")
-
-        self.archiveOptionsLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.max_archives_label)
-
-        self.config_max_archives_spinbox = QSpinBox(self.archiveOptionsGroup)
-        self.config_max_archives_spinbox.setObjectName(u"config_max_archives_spinbox")
-        sizePolicy1.setHeightForWidth(self.config_max_archives_spinbox.sizePolicy().hasHeightForWidth())
-        self.config_max_archives_spinbox.setSizePolicy(sizePolicy1)
-        self.config_max_archives_spinbox.setMinimum(1)
-        self.config_max_archives_spinbox.setMaximum(100)
-
-        self.archiveOptionsLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.config_max_archives_spinbox)
-
-
-        self.configScrollLayout.addWidget(self.archiveOptionsGroup)
-
-        self.preRestoreSafetyGroup = QGroupBox(self.configScrollContent)
-        self.preRestoreSafetyGroup.setObjectName(u"preRestoreSafetyGroup")
-        self.preRestoreSafetyLayout = QFormLayout(self.preRestoreSafetyGroup)
-        self.preRestoreSafetyLayout.setSpacing(0)
-        self.preRestoreSafetyLayout.setContentsMargins(0, 0, 0, 0)
-        self.preRestoreSafetyLayout.setObjectName(u"preRestoreSafetyLayout")
-        self.preRestoreSafetyLayout.setHorizontalSpacing(8)
-        self.preRestoreSafetyLayout.setVerticalSpacing(8)
-        self.config_pre_restore_checkbox = QCheckBox(self.preRestoreSafetyGroup)
-        self.config_pre_restore_checkbox.setObjectName(u"config_pre_restore_checkbox")
-
-        self.preRestoreSafetyLayout.setWidget(0, QFormLayout.ItemRole.SpanningRole, self.config_pre_restore_checkbox)
-
-        self.maxRestoreBackupsLabel = QLabel(self.preRestoreSafetyGroup)
-        self.maxRestoreBackupsLabel.setObjectName(u"maxRestoreBackupsLabel")
-
-        self.preRestoreSafetyLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.maxRestoreBackupsLabel)
-
-        self.config_max_restore_spinbox = QSpinBox(self.preRestoreSafetyGroup)
-        self.config_max_restore_spinbox.setObjectName(u"config_max_restore_spinbox")
-        sizePolicy1.setHeightForWidth(self.config_max_restore_spinbox.sizePolicy().hasHeightForWidth())
-        self.config_max_restore_spinbox.setSizePolicy(sizePolicy1)
-        self.config_max_restore_spinbox.setMinimum(1)
-        self.config_max_restore_spinbox.setMaximum(100)
-        self.config_max_restore_spinbox.setValue(5)
-
-        self.preRestoreSafetyLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.config_max_restore_spinbox)
-
-        self.restoreBackupDirLabel = QLabel(self.preRestoreSafetyGroup)
-        self.restoreBackupDirLabel.setObjectName(u"restoreBackupDirLabel")
-
-        self.preRestoreSafetyLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.restoreBackupDirLabel)
-
-        self.restoreBackupDirLayout = QHBoxLayout()
-        self.restoreBackupDirLayout.setSpacing(0)
-        self.restoreBackupDirLayout.setObjectName(u"restoreBackupDirLayout")
-        self.config_restore_path_edit = QLineEdit(self.preRestoreSafetyGroup)
-        self.config_restore_path_edit.setObjectName(u"config_restore_path_edit")
-
-        self.restoreBackupDirLayout.addWidget(self.config_restore_path_edit)
-
-        self.browse_restore_btn = QPushButton(self.preRestoreSafetyGroup)
-        self.browse_restore_btn.setObjectName(u"browse_restore_btn")
-        sizePolicy1.setHeightForWidth(self.browse_restore_btn.sizePolicy().hasHeightForWidth())
-        self.browse_restore_btn.setSizePolicy(sizePolicy1)
-
-        self.restoreBackupDirLayout.addWidget(self.browse_restore_btn)
-
-
-        self.preRestoreSafetyLayout.setLayout(2, QFormLayout.ItemRole.FieldRole, self.restoreBackupDirLayout)
-
-
-        self.configScrollLayout.addWidget(self.preRestoreSafetyGroup)
-
-        self.verificationGroup = QGroupBox(self.configScrollContent)
-        self.verificationGroup.setObjectName(u"verificationGroup")
-        self.verificationLayout = QVBoxLayout(self.verificationGroup)
-        self.verificationLayout.setSpacing(8)
-        self.verificationLayout.setContentsMargins(0, 0, 0, 0)
-        self.verificationLayout.setObjectName(u"verificationLayout")
-        self.config_verify_checkbox = QCheckBox(self.verificationGroup)
-        self.config_verify_checkbox.setObjectName(u"config_verify_checkbox")
-
-        self.verificationLayout.addWidget(self.config_verify_checkbox)
-
-        self.config_hash_checkbox = QCheckBox(self.verificationGroup)
-        self.config_hash_checkbox.setObjectName(u"config_hash_checkbox")
-
-        self.verificationLayout.addWidget(self.config_hash_checkbox)
-
-
-        self.configScrollLayout.addWidget(self.verificationGroup)
-
-        self.sizeManagementGroup = QGroupBox(self.configScrollContent)
-        self.sizeManagementGroup.setObjectName(u"sizeManagementGroup")
-        self.sizeManagementLayout = QFormLayout(self.sizeManagementGroup)
-        self.sizeManagementLayout.setSpacing(0)
-        self.sizeManagementLayout.setContentsMargins(0, 0, 0, 0)
-        self.sizeManagementLayout.setObjectName(u"sizeManagementLayout")
-        self.sizeManagementLayout.setHorizontalSpacing(8)
-        self.sizeManagementLayout.setVerticalSpacing(8)
-        self.config_size_check_checkbox = QCheckBox(self.sizeManagementGroup)
-        self.config_size_check_checkbox.setObjectName(u"config_size_check_checkbox")
-
-        self.sizeManagementLayout.setWidget(0, QFormLayout.ItemRole.SpanningRole, self.config_size_check_checkbox)
-
-        self.sizeWarningLabel = QLabel(self.sizeManagementGroup)
-        self.sizeWarningLabel.setObjectName(u"sizeWarningLabel")
-
-        self.sizeManagementLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.sizeWarningLabel)
-
-        self.config_size_warning_spinbox = QSpinBox(self.sizeManagementGroup)
-        self.config_size_warning_spinbox.setObjectName(u"config_size_warning_spinbox")
-        sizePolicy1.setHeightForWidth(self.config_size_warning_spinbox.sizePolicy().hasHeightForWidth())
-        self.config_size_warning_spinbox.setSizePolicy(sizePolicy1)
-        self.config_size_warning_spinbox.setMinimum(1)
-        self.config_size_warning_spinbox.setMaximum(10000)
-        self.config_size_warning_spinbox.setValue(10)
-
-        self.sizeManagementLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.config_size_warning_spinbox)
-
-        self.sizeAlertLabel = QLabel(self.sizeManagementGroup)
-        self.sizeAlertLabel.setObjectName(u"sizeAlertLabel")
-
-        self.sizeManagementLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.sizeAlertLabel)
-
-        self.config_size_alert_spinbox = QSpinBox(self.sizeManagementGroup)
-        self.config_size_alert_spinbox.setObjectName(u"config_size_alert_spinbox")
-        sizePolicy1.setHeightForWidth(self.config_size_alert_spinbox.sizePolicy().hasHeightForWidth())
-        self.config_size_alert_spinbox.setSizePolicy(sizePolicy1)
-        self.config_size_alert_spinbox.setMinimum(1)
-        self.config_size_alert_spinbox.setMaximum(10000)
-        self.config_size_alert_spinbox.setValue(100)
-
-        self.sizeManagementLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.config_size_alert_spinbox)
-
-        self.sizeCriticalLabel = QLabel(self.sizeManagementGroup)
-        self.sizeCriticalLabel.setObjectName(u"sizeCriticalLabel")
-
-        self.sizeManagementLayout.setWidget(3, QFormLayout.ItemRole.LabelRole, self.sizeCriticalLabel)
-
-        self.config_size_critical_spinbox = QSpinBox(self.sizeManagementGroup)
-        self.config_size_critical_spinbox.setObjectName(u"config_size_critical_spinbox")
-        sizePolicy1.setHeightForWidth(self.config_size_critical_spinbox.sizePolicy().hasHeightForWidth())
-        self.config_size_critical_spinbox.setSizePolicy(sizePolicy1)
-        self.config_size_critical_spinbox.setMinimum(1)
-        self.config_size_critical_spinbox.setMaximum(100000)
-        self.config_size_critical_spinbox.setValue(1024)
-
-        self.sizeManagementLayout.setWidget(3, QFormLayout.ItemRole.FieldRole, self.config_size_critical_spinbox)
-
-
-        self.configScrollLayout.addWidget(self.sizeManagementGroup)
-
-        self.configScrollArea.setWidget(self.configScrollContent)
-
-        self.config_tab_layout.addWidget(self.configScrollArea)
-
-        self.configButtonLayout = QHBoxLayout()
-        self.configButtonLayout.setSpacing(8)
-        self.configButtonLayout.setObjectName(u"configButtonLayout")
-        self.configButtonSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.configButtonLayout.addItem(self.configButtonSpacer)
-
-        self.saveConfigButton = QPushButton(self.configTab)
-        self.saveConfigButton.setObjectName(u"saveConfigButton")
-        self.saveConfigButton.setEnabled(False)
-        sizePolicy1.setHeightForWidth(self.saveConfigButton.sizePolicy().hasHeightForWidth())
-        self.saveConfigButton.setSizePolicy(sizePolicy1)
-
-        self.configButtonLayout.addWidget(self.saveConfigButton)
-
-
-        self.config_tab_layout.addLayout(self.configButtonLayout)
-
-        self.tab_widget.addTab(self.configTab, "")
-        self.logTab = QWidget()
-        self.logTab.setObjectName(u"logTab")
-        sizePolicy.setHeightForWidth(self.logTab.sizePolicy().hasHeightForWidth())
-        self.logTab.setSizePolicy(sizePolicy)
-        self.logLayout = QVBoxLayout(self.logTab)
-        self.logLayout.setSpacing(8)
-        self.logLayout.setContentsMargins(0, 0, 0, 0)
-        self.logLayout.setObjectName(u"logLayout")
-        self.logLayout.setContentsMargins(12, 12, 12, 12)
-        self.logToolbarLayout = QHBoxLayout()
-        self.logToolbarLayout.setSpacing(4)
-        self.logToolbarLayout.setObjectName(u"logToolbarLayout")
-        self.logFilterAllButton = QPushButton(self.logTab)
-        self.logFilterAllButton.setObjectName(u"logFilterAllButton")
-        self.logFilterAllButton.setCheckable(True)
-        self.logFilterAllButton.setChecked(True)
-        sizePolicy1.setHeightForWidth(self.logFilterAllButton.sizePolicy().hasHeightForWidth())
-        self.logFilterAllButton.setSizePolicy(sizePolicy1)
-
-        self.logToolbarLayout.addWidget(self.logFilterAllButton)
-
-        self.logFilterInfoButton = QPushButton(self.logTab)
-        self.logFilterInfoButton.setObjectName(u"logFilterInfoButton")
-        self.logFilterInfoButton.setCheckable(True)
-        self.logFilterInfoButton.setChecked(True)
-        sizePolicy1.setHeightForWidth(self.logFilterInfoButton.sizePolicy().hasHeightForWidth())
-        self.logFilterInfoButton.setSizePolicy(sizePolicy1)
-
-        self.logToolbarLayout.addWidget(self.logFilterInfoButton)
-
-        self.logFilterWarningButton = QPushButton(self.logTab)
-        self.logFilterWarningButton.setObjectName(u"logFilterWarningButton")
-        self.logFilterWarningButton.setCheckable(True)
-        self.logFilterWarningButton.setChecked(True)
-        sizePolicy1.setHeightForWidth(self.logFilterWarningButton.sizePolicy().hasHeightForWidth())
-        self.logFilterWarningButton.setSizePolicy(sizePolicy1)
-
-        self.logToolbarLayout.addWidget(self.logFilterWarningButton)
-
-        self.logFilterErrorButton = QPushButton(self.logTab)
-        self.logFilterErrorButton.setObjectName(u"logFilterErrorButton")
-        self.logFilterErrorButton.setCheckable(True)
-        self.logFilterErrorButton.setChecked(True)
-        sizePolicy1.setHeightForWidth(self.logFilterErrorButton.sizePolicy().hasHeightForWidth())
-        self.logFilterErrorButton.setSizePolicy(sizePolicy1)
-
-        self.logToolbarLayout.addWidget(self.logFilterErrorButton)
-
-        self.logToolbarSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.logToolbarLayout.addItem(self.logToolbarSpacer)
-
-        self.logClearButton = QPushButton(self.logTab)
-        self.logClearButton.setObjectName(u"logClearButton")
-        sizePolicy1.setHeightForWidth(self.logClearButton.sizePolicy().hasHeightForWidth())
-        self.logClearButton.setSizePolicy(sizePolicy1)
-
-        self.logToolbarLayout.addWidget(self.logClearButton)
-
-        self.pushButton = QPushButton(self.logTab)
-        self.pushButton.setObjectName(u"pushButton")
-        sizePolicy1.setHeightForWidth(self.pushButton.sizePolicy().hasHeightForWidth())
-        self.pushButton.setSizePolicy(sizePolicy1)
-
-        self.logToolbarLayout.addWidget(self.pushButton)
-
-        self.verifyBackupButton = QPushButton(self.logTab)
-        self.verifyBackupButton.setObjectName(u"verifyBackupButton")
-        sizePolicy1.setHeightForWidth(self.verifyBackupButton.sizePolicy().hasHeightForWidth())
-        self.verifyBackupButton.setSizePolicy(sizePolicy1)
-
-        self.logToolbarLayout.addWidget(self.verifyBackupButton)
-
-
-        self.logLayout.addLayout(self.logToolbarLayout)
-
-        self.logBox = QTextEdit(self.logTab)
-        self.logBox.setObjectName(u"logBox")
-        sizePolicy.setHeightForWidth(self.logBox.sizePolicy().hasHeightForWidth())
-        self.logBox.setSizePolicy(sizePolicy)
-        self.logBox.setReadOnly(True)
-
-        self.logLayout.addWidget(self.logBox)
-
-        self.tab_widget.addTab(self.logTab, "")
-
-        self.main_layout.addWidget(self.tab_widget)
+        self.main_layout.addWidget(self.mainSplitter)
 
         MainWindow.setCentralWidget(self.central_widget)
-        self.menubar = QMenuBar(MainWindow)
-        self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1475, 30))
-        self.menuFile = QMenu(self.menubar)
-        self.menuFile.setObjectName(u"menuFile")
-        self.menuOperations = QMenu(self.menubar)
-        self.menuOperations.setObjectName(u"menuOperations")
-        self.menuHelp = QMenu(self.menubar)
-        self.menuHelp.setObjectName(u"menuHelp")
-        MainWindow.setMenuBar(self.menubar)
         self.status_bar = QStatusBar(MainWindow)
         self.status_bar.setObjectName(u"status_bar")
         self.progress_bar = QProgressBar(self.status_bar)
@@ -909,19 +967,6 @@ class Ui_MainWindow(object):
         self.progress_bar.setVisible(False)
         self.progress_bar.setValue(0)
         MainWindow.setStatusBar(self.status_bar)
-
-        self.menubar.addAction(self.menuFile.menuAction())
-        self.menubar.addAction(self.menuOperations.menuAction())
-        self.menubar.addAction(self.menuHelp.menuAction())
-        self.menuFile.addSeparator()
-        self.menuFile.addAction(self.actionExit)
-        self.menuOperations.addAction(self.actionStartBackup)
-        self.menuOperations.addAction(self.actionStartRestore)
-        self.menuOperations.addSeparator()
-        self.menuOperations.addAction(self.actionVerifyBackup)
-        self.menuHelp.addAction(self.actionUserGuide)
-        self.menuHelp.addSeparator()
-        self.menuHelp.addAction(self.actionAbout)
 
         self.retranslateUi(MainWindow)
 
@@ -934,27 +979,18 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"DFBU GUI", None))
-        self.actionExit.setText(QCoreApplication.translate("MainWindow", u"E&xit", None))
-#if QT_CONFIG(shortcut)
-        self.actionExit.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+Q", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionStartBackup.setText(QCoreApplication.translate("MainWindow", u"Start &Backup", None))
-#if QT_CONFIG(shortcut)
-        self.actionStartBackup.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+B", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionStartRestore.setText(QCoreApplication.translate("MainWindow", u"Start &Restore", None))
-#if QT_CONFIG(shortcut)
-        self.actionStartRestore.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+R", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionAbout.setText(QCoreApplication.translate("MainWindow", u"&About", None))
-        self.actionVerifyBackup.setText(QCoreApplication.translate("MainWindow", u"&Verify Backup", None))
-#if QT_CONFIG(shortcut)
-        self.actionVerifyBackup.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+V", None))
-#endif // QT_CONFIG(shortcut)
-        self.actionUserGuide.setText(QCoreApplication.translate("MainWindow", u"&User Guide", None))
-#if QT_CONFIG(shortcut)
-        self.actionUserGuide.setShortcut(QCoreApplication.translate("MainWindow", u"F1", None))
-#endif // QT_CONFIG(shortcut)
+        self.headerBar.setStyleSheet(QCoreApplication.translate("MainWindow", u"background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;", None))
+        self.headerTitle.setStyleSheet(QCoreApplication.translate("MainWindow", u"font-size: 15px; font-weight: bold; color: #1E293B; border: none; background: transparent;", None))
+        self.headerTitle.setText(QCoreApplication.translate("MainWindow", u"DFBU - Dotfiles Backup Utility", None))
+#if QT_CONFIG(tooltip)
+        self.helpButton.setToolTip(QCoreApplication.translate("MainWindow", u"Help (F1)", None))
+#endif // QT_CONFIG(tooltip)
+        self.helpButton.setText(QCoreApplication.translate("MainWindow", u"?", None))
+        self.helpButton.setStyleSheet(QCoreApplication.translate("MainWindow", u"font-weight: bold; font-size: 14px;", None))
+#if QT_CONFIG(tooltip)
+        self.aboutButton.setToolTip(QCoreApplication.translate("MainWindow", u"About DFBU", None))
+#endif // QT_CONFIG(tooltip)
+        self.aboutButton.setText(QCoreApplication.translate("MainWindow", u"About", None))
         self.emptyStateIcon.setText("")
         self.emptyStateTitle.setText(QCoreApplication.translate("MainWindow", u"No dotfiles configured yet", None))
         self.emptyStateTitle.setStyleSheet(QCoreApplication.translate("MainWindow", u"font-size: 16px; font-weight: bold; color: #1E293B;", None))
@@ -998,30 +1034,6 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.startBackupButton.setText(QCoreApplication.translate("MainWindow", u"Start Backup", None))
         self.tab_widget.setTabText(self.tab_widget.indexOf(self.backupTab), QCoreApplication.translate("MainWindow", u"Backup", None))
-        self.restoreSourceLabel.setText(QCoreApplication.translate("MainWindow", u"Restore Source Path", None))
-        self.restoreSourceInfoLabel.setText(QCoreApplication.translate("MainWindow", u"Select the backup directory containing the hostname folder.\n"
-"Example: ~/GitHub/dotfiles/ (containing hostname subdirectory)", None))
-        self.restoreSourceButton.setText(QCoreApplication.translate("MainWindow", u"Start Restore", None))
-        self.restoreSourceEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Path to backup directory with hostname", None))
-        self.restoreSourceBrowseButton.setText(QCoreApplication.translate("MainWindow", u"Browse...", None))
-        self.restorePreviewGroup.setTitle(QCoreApplication.translate("MainWindow", u"Backup Preview", None))
-        self.restorePreviewHostLabel.setText(QCoreApplication.translate("MainWindow", u"Hostname: \u2014", None))
-        self.restorePreviewCountLabel.setText(QCoreApplication.translate("MainWindow", u"Files: \u2014", None))
-        self.restorePreviewSizeLabel.setText(QCoreApplication.translate("MainWindow", u"Size: \u2014", None))
-        ___qtreewidgetitem = self.restorePreviewTree.headerItem()
-        ___qtreewidgetitem.setText(2, QCoreApplication.translate("MainWindow", u"Size", None));
-        ___qtreewidgetitem.setText(1, QCoreApplication.translate("MainWindow", u"Files", None));
-        ___qtreewidgetitem.setText(0, QCoreApplication.translate("MainWindow", u"Application", None));
-        self.restoreInfoLabel.setText(QCoreApplication.translate("MainWindow", u"Restore Information", None))
-        self.restoreInfoText.setText(QCoreApplication.translate("MainWindow", u"Restore will:\n"
-"\u2022 Discover all files in the selected backup directory\n"
-"\u2022 Reconstruct original file paths based on backup structure\n"
-"\u2022 Copy files back to their original locations\n"
-"\u2022 Create necessary parent directories\n"
-"\u2022 Preserve file metadata and permissions\n"
-"\n"
-"WARNING: This will overwrite existing files at destination paths.", None))
-        self.tab_widget.setTabText(self.tab_widget.indexOf(self.restoreTab), QCoreApplication.translate("MainWindow", u"Restore", None))
         self.backupPathsGroup.setTitle(QCoreApplication.translate("MainWindow", u"Backup Paths", None))
         self.mirror_path_label.setText(QCoreApplication.translate("MainWindow", u"Mirror Directory:", None))
         self.config_mirror_path_edit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Mirror backup directory", None))
@@ -1088,19 +1100,42 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.saveConfigButton.setText(QCoreApplication.translate("MainWindow", u"Save Configuration", None))
         self.tab_widget.setTabText(self.tab_widget.indexOf(self.configTab), QCoreApplication.translate("MainWindow", u"Configuration", None))
-        self.logFilterAllButton.setText(QCoreApplication.translate("MainWindow", u"All", None))
-        self.logFilterInfoButton.setText(QCoreApplication.translate("MainWindow", u"Info", None))
-        self.logFilterWarningButton.setText(QCoreApplication.translate("MainWindow", u"Warnings", None))
-        self.logFilterErrorButton.setText(QCoreApplication.translate("MainWindow", u"Errors", None))
-        self.logClearButton.setText(QCoreApplication.translate("MainWindow", u"Clear Log", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Save Log", None))
-        self.verifyBackupButton.setText(QCoreApplication.translate("MainWindow", u"Verify Backup", None))
+        self.restoreSourceLabel.setText(QCoreApplication.translate("MainWindow", u"Restore Source Path", None))
+        self.restoreSourceInfoLabel.setText(QCoreApplication.translate("MainWindow", u"Select the backup directory containing the hostname folder.\n"
+"Example: ~/GitHub/dotfiles/ (containing hostname subdirectory)", None))
+        self.restoreSourceButton.setText(QCoreApplication.translate("MainWindow", u"Start Restore", None))
+        self.restoreSourceEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Path to backup directory with hostname", None))
+        self.restoreSourceBrowseButton.setText(QCoreApplication.translate("MainWindow", u"Browse...", None))
+        self.restorePreviewGroup.setTitle(QCoreApplication.translate("MainWindow", u"Backup Preview", None))
+        self.restorePreviewHostLabel.setText(QCoreApplication.translate("MainWindow", u"Hostname: \u2014", None))
+        self.restorePreviewCountLabel.setText(QCoreApplication.translate("MainWindow", u"Files: \u2014", None))
+        self.restorePreviewSizeLabel.setText(QCoreApplication.translate("MainWindow", u"Size: \u2014", None))
+        ___qtreewidgetitem = self.restorePreviewTree.headerItem()
+        ___qtreewidgetitem.setText(2, QCoreApplication.translate("MainWindow", u"Size", None));
+        ___qtreewidgetitem.setText(1, QCoreApplication.translate("MainWindow", u"Files", None));
+        ___qtreewidgetitem.setText(0, QCoreApplication.translate("MainWindow", u"Application", None));
+        self.restoreInfoLabel.setText(QCoreApplication.translate("MainWindow", u"Restore Information", None))
+        self.restoreInfoText.setText(QCoreApplication.translate("MainWindow", u"Restore will:\n"
+"\u2022 Discover all files in the selected backup directory\n"
+"\u2022 Reconstruct original file paths based on backup structure\n"
+"\u2022 Copy files back to their original locations\n"
+"\u2022 Create necessary parent directories\n"
+"\u2022 Preserve file metadata and permissions\n"
+"\n"
+"WARNING: This will overwrite existing files at destination paths.", None))
+        self.tab_widget.setTabText(self.tab_widget.indexOf(self.restoreTab), QCoreApplication.translate("MainWindow", u"Restore", None))
+        self.logHeader.setStyleSheet(QCoreApplication.translate("MainWindow", u"background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;", None))
+        self.logPaneTitle.setStyleSheet(QCoreApplication.translate("MainWindow", u"font-weight: bold; font-size: 13px; color: #1E293B; border: none; background: transparent;", None))
+        self.logPaneTitle.setText(QCoreApplication.translate("MainWindow", u"Operation Log", None))
+        self.logPaneFilterAllButton.setText(QCoreApplication.translate("MainWindow", u"All", None))
+        self.logPaneFilterInfoButton.setText(QCoreApplication.translate("MainWindow", u"Info", None))
+        self.logPaneFilterWarningButton.setText(QCoreApplication.translate("MainWindow", u"Warn", None))
+        self.logPaneFilterErrorButton.setText(QCoreApplication.translate("MainWindow", u"Errors", None))
+        self.logPaneClearButton.setText(QCoreApplication.translate("MainWindow", u"Clear", None))
+        self.logPaneSaveButton.setText(QCoreApplication.translate("MainWindow", u"Save", None))
+        self.logPaneVerifyButton.setText(QCoreApplication.translate("MainWindow", u"Verify", None))
 #if QT_CONFIG(tooltip)
-        self.verifyBackupButton.setToolTip(QCoreApplication.translate("MainWindow", u"Verify integrity of the last backup operation", None))
+        self.logPaneVerifyButton.setToolTip(QCoreApplication.translate("MainWindow", u"Verify integrity of the last backup operation", None))
 #endif // QT_CONFIG(tooltip)
-        self.tab_widget.setTabText(self.tab_widget.indexOf(self.logTab), QCoreApplication.translate("MainWindow", u"Logs", None))
-        self.menuFile.setTitle(QCoreApplication.translate("MainWindow", u"&File", None))
-        self.menuOperations.setTitle(QCoreApplication.translate("MainWindow", u"&Operations", None))
-        self.menuHelp.setTitle(QCoreApplication.translate("MainWindow", u"&Help", None))
     # retranslateUi
 

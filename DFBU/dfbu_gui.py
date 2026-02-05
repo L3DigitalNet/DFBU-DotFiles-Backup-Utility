@@ -56,6 +56,7 @@ Functions:
     - main: Main entry point for the application
 """
 
+import shutil
 import sys
 from pathlib import Path
 from typing import Final
@@ -91,15 +92,57 @@ logger = get_logger(__name__)
 # Application version
 __version__: Final[str] = "1.1.0"
 PROJECT_NAME: Final[str] = "DFBU GUI"
-CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu_gui"
-# Points to directory containing settings.yaml, dotfiles.yaml, session.yaml
+# User config directory - writable location for user settings
+USER_CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu"
+
+# Bundled config path - read-only defaults inside AppImage/PyInstaller bundle
 # When frozen by PyInstaller, data files are bundled under sys._MEIPASS
 _data_base = (
-    Path(getattr(sys, "_MEIPASS"))
+    Path(sys._MEIPASS)
     if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
     else Path(__file__).parent
 )
-DEFAULT_CONFIG_PATH: Final[Path] = (_data_base / "data").resolve()
+BUNDLED_CONFIG_PATH: Final[Path] = (_data_base / "data").resolve()
+
+# Determine if running as frozen app (AppImage/PyInstaller)
+IS_FROZEN: Final[bool] = getattr(sys, "frozen", False)
+
+# Config path selection:
+# - When frozen (AppImage): Use writable user directory (~/.config/dfbu/)
+# - When running from source: Use local data directory (DFBU/data/)
+DEFAULT_CONFIG_PATH: Final[Path] = USER_CONFIG_DIR if IS_FROZEN else BUNDLED_CONFIG_PATH
+
+
+def _initialize_user_config() -> None:
+    """
+    Initialize user config directory with bundled defaults on first run.
+
+    When running as AppImage/frozen app, the bundled config files are read-only.
+    This function copies them to the user's writable config directory on first run.
+
+    Files copied: settings.yaml, dotfiles.yaml, session.yaml, .dfbuignore
+    """
+    if not IS_FROZEN:
+        # When running from source, use local data directory directly
+        return
+
+    # Create user config directory if it doesn't exist
+    USER_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+
+    # List of config files to copy from bundle to user directory
+    config_files = ["settings.yaml", "dotfiles.yaml", "session.yaml", ".dfbuignore"]
+
+    for filename in config_files:
+        user_file = USER_CONFIG_DIR / filename
+        bundled_file = BUNDLED_CONFIG_PATH / filename
+
+        # Only copy if user file doesn't exist (preserve user customizations)
+        if not user_file.exists() and bundled_file.exists():
+            try:
+                shutil.copy2(bundled_file, user_file)
+                logger.info(f"Copied default config: {filename} -> {user_file}")
+            except (OSError, PermissionError) as e:
+                logger.warning(f"Failed to copy default config {filename}: {e}")
 
 
 class Application:
@@ -156,8 +199,9 @@ class Application:
             raise
 
     def _initialize_config_directory(self) -> None:
-        """Create configuration directory if needed."""
-        CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+        """Create configuration directory and copy defaults if needed."""
+        # Initialize user config with bundled defaults (handles AppImage case)
+        _initialize_user_config()
 
     def _load_config_if_available(self) -> None:
         """Load configuration from default path on startup."""

@@ -85,12 +85,12 @@ class FeatureModel:
         return f"{self.field1}: {self.field2}"
 ```
 
-**Test**: `tests/unit/test_[feature]_model.py`
+**Test**: `DFBU/tests/test_[feature]_model.py`
 
 ```python
 """Tests for FeatureModel."""
 import pytest
-from src.models.feature_model import FeatureModel
+from DFBU.gui.[feature]_model import FeatureModel
 
 
 class TestFeatureModel:
@@ -134,7 +134,7 @@ class FeatureServiceProtocol(Protocol):
         """Load data from source."""
         ...
 
-    def save_data(self, data: dict) -> bool:
+    def save_data(self, data: list[dict]) -> bool:
         """Save data to source."""
         ...
 
@@ -164,7 +164,7 @@ class FeatureService:
         with open(file_path, 'r') as f:
             return json.load(f)
 
-    def save_data(self, data: dict) -> bool:
+    def save_data(self, data: list[dict]) -> bool:
         """Save data to file.
 
         Args:
@@ -183,7 +183,7 @@ class FeatureService:
         return True
 ```
 
-**Test**: `tests/unit/test_[feature]_service.py`
+**Test**: `DFBU/tests/test_[feature]_service.py`
 
 ```python
 """Tests for FeatureService."""
@@ -191,7 +191,7 @@ import pytest
 from pathlib import Path
 import tempfile
 
-from src.services.feature_service import FeatureService
+from DFBU.gui.[feature]_service import FeatureService
 
 
 class TestFeatureService:
@@ -210,13 +210,13 @@ class TestFeatureService:
 
     def test_save_and_load_data(self, service):
         """Test saving and loading data."""
-        test_data = {"id": 1, "name": "test"}
+        test_data = [{"id": 1, "name": "test"}]
 
         success = service.save_data(test_data)
         assert success is True
 
         loaded = service.load_data()
-        assert loaded == [test_data]
+        assert loaded == test_data
 ```
 
 ### Step 3: Create ViewModel
@@ -293,8 +293,8 @@ class FeatureViewModel(QObject):
             return
 
         try:
-            data = {"field1": self._current_model.field1,
-                    "field2": self._current_model.field2}
+            data = [{"field1": self._current_model.field1,
+                    "field2": self._current_model.field2}]
             success = self._service.save_data(data)
             self.data_saved.emit(success)
             logger.info("Data saved successfully")
@@ -303,14 +303,14 @@ class FeatureViewModel(QObject):
             self.error_occurred.emit(str(e))
 ```
 
-**Test**: `tests/unit/test_[feature]_viewmodel.py`
+**Test**: `DFBU/tests/test_[feature]_viewmodel.py`
 
 ```python
 """Tests for FeatureViewModel."""
 import pytest
 from pytestqt.qtbot import QtBot
 
-from src.viewmodels.feature_viewmodel import FeatureViewModel
+from DFBU.gui.[feature]_viewmodel import FeatureViewModel
 
 
 class TestFeatureViewModel:
@@ -496,7 +496,7 @@ class FeatureView(QWidget):
 
 ### Step 5: Integration and Testing
 
-**Integration Test**: `tests/integration/test_[feature]_integration.py`
+**Integration Test**: `DFBU/tests/test_[feature]_integration.py`
 
 ```python
 """Integration tests for feature."""
@@ -504,10 +504,10 @@ import pytest
 from pathlib import Path
 import tempfile
 
-from src.models.feature_model import FeatureModel
-from src.services.feature_service import FeatureService
-from src.viewmodels.feature_viewmodel import FeatureViewModel
-from src.views.feature_view import FeatureView
+from DFBU.gui.[feature]_model import FeatureModel
+from DFBU.gui.[feature]_service import FeatureService
+from DFBU.gui.[feature]_viewmodel import FeatureViewModel
+from DFBU.gui.[feature]_view import FeatureView
 
 
 def test_complete_feature_workflow(qtbot):
