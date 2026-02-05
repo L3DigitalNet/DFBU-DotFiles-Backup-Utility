@@ -654,3 +654,66 @@ class TestModelProfileManagement:
         # Assert
         from gui.profile_manager import ProfileManager
         assert isinstance(pm, ProfileManager)
+
+
+class TestDFBUModelBackupHistory:
+    """Test suite for DFBUModel backup history integration (v1.1.0)."""
+
+    def test_model_exposes_history_count(self, yaml_config_dir: Path) -> None:
+        """Model should expose backup history count."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+
+        # Act
+        count = model.get_backup_history_count()
+
+        # Assert
+        assert count == 0
+
+    def test_model_records_backup_history(self, yaml_config_dir: Path) -> None:
+        """Model should record backup to history."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+
+        # Act
+        model.record_backup_history(
+            items_backed=10,
+            size_bytes=1024,
+            duration_seconds=2.5,
+            success=True,
+            backup_type="mirror",
+        )
+
+        # Assert
+        assert model.get_backup_history_count() == 1
+
+    def test_model_exposes_dashboard_metrics(self, yaml_config_dir: Path) -> None:
+        """Model should expose dashboard metrics from history."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+        model.record_backup_history(10, 1024, 2.0, True, "mirror")
+        model.record_backup_history(5, 512, 1.5, True, "archive")
+        model.record_backup_history(0, 0, 0.5, False, "mirror")
+
+        # Act
+        metrics = model.get_dashboard_metrics()
+
+        # Assert
+        assert metrics["total_backups"] == 3
+        assert metrics["successful_backups"] == 2
+        assert metrics["failed_backups"] == 1
+
+    def test_model_exposes_recent_history(self, yaml_config_dir: Path) -> None:
+        """Model should expose recent backup history."""
+        # Arrange
+        model = DFBUModel(yaml_config_dir)
+        model.record_backup_history(10, 1024, 2.0, True, "mirror")
+        model.record_backup_history(5, 512, 1.5, True, "archive")
+
+        # Act
+        history = model.get_recent_backup_history(count=5)
+
+        # Assert
+        assert len(history) == 2
+        # Most recent first
+        assert history[0]["items_backed"] == 5

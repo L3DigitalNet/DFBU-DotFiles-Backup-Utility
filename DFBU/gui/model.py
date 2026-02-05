@@ -36,12 +36,15 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 from socket import gethostname
+from typing import Any
 
 
 # Local imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.common_types import (
+    BackupHistoryEntry,
     BackupPreviewDict,
+    DashboardMetrics,
     DotFileDict,
     LegacyDotFileDict,
     OptionsDict,
@@ -51,6 +54,7 @@ from core.common_types import (
 from gui.backup_orchestrator import BackupOrchestrator
 from gui.config_manager import ConfigManager
 from gui.error_handler import ErrorHandler
+from gui.backup_history import BackupHistoryManager
 from gui.file_operations import FileOperations
 from gui.preview_generator import PreviewGenerator
 from gui.profile_manager import ProfileManager
@@ -188,6 +192,9 @@ class DFBUModel:
 
         # Initialize ProfileManager (v1.1.0)
         self._profile_manager: ProfileManager = ProfileManager(config_path)
+
+        # Initialize BackupHistoryManager (v1.1.0)
+        self._history_manager: BackupHistoryManager = BackupHistoryManager(config_path)
 
         # Lazy-initialized PreviewGenerator (v1.1.0)
         self._preview_generator: PreviewGenerator | None = None
@@ -915,6 +922,70 @@ class DFBUModel:
     def get_profile_manager(self) -> ProfileManager:
         """Get ProfileManager instance for advanced operations."""
         return self._profile_manager
+
+    # =========================================================================
+    # Backup History / Dashboard (v1.1.0)
+    # =========================================================================
+
+    def get_backup_history_count(self) -> int:
+        """
+        Get number of backup history entries.
+
+        Returns:
+            Number of recorded backup operations
+        """
+        return self._history_manager.get_entry_count()
+
+    def record_backup_history(
+        self,
+        items_backed: int,
+        size_bytes: int,
+        duration_seconds: float,
+        success: bool,
+        backup_type: str,
+    ) -> None:
+        """
+        Record a backup operation to history.
+
+        Args:
+            items_backed: Number of items backed up
+            size_bytes: Total size backed up in bytes
+            duration_seconds: Duration of backup operation
+            success: Whether backup completed successfully
+            backup_type: Type of backup ("mirror" or "archive")
+        """
+        profile = self.get_active_profile_name() or "Default"
+        self._history_manager.record_backup(
+            items_backed=items_backed,
+            size_bytes=size_bytes,
+            duration_seconds=duration_seconds,
+            success=success,
+            backup_type=backup_type,
+            profile=profile,
+        )
+
+    def get_dashboard_metrics(self) -> DashboardMetrics:
+        """
+        Get dashboard metrics from backup history.
+
+        Returns:
+            DashboardMetrics with aggregate statistics
+        """
+        return self._history_manager.get_metrics()
+
+    def get_recent_backup_history(
+        self, count: int = 10
+    ) -> list[BackupHistoryEntry]:
+        """
+        Get recent backup history entries.
+
+        Args:
+            count: Number of entries to return
+
+        Returns:
+            List of recent history entries (newest first)
+        """
+        return self._history_manager.get_recent_history(count)
 
     # =========================================================================
     # Preview Generation (v1.1.0)

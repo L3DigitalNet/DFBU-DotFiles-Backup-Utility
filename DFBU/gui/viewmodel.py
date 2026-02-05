@@ -1860,6 +1860,18 @@ class DFBUViewModel(QObject):
 
     def _on_backup_finished(self) -> None:
         """Handle backup completion and cleanup worker."""
+        # Record backup to history (v1.1.0)
+        stats = self.model.statistics
+        success = stats.failed_items == 0
+        backup_type = "mirror" if self.model.options.get("mirror", True) else "archive"
+        self.model.record_backup_history(
+            items_backed=stats.processed_items,
+            size_bytes=0,  # TODO: Track actual size in StatisticsTracker
+            duration_seconds=stats.total_time,
+            success=success,
+            backup_type=backup_type,
+        )
+
         summary = self.get_statistics_summary()
         self.operation_finished.emit(summary)
 
