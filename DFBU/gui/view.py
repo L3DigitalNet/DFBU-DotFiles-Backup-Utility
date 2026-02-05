@@ -572,11 +572,11 @@ class MainWindow(QMainWindow):
             raise RuntimeError("Required widget 'tab_widget' not found in UI file")
         self.tab_widget: QTabWidget = found_tab
 
-        # Find widgets for each tab
+        # Find widgets for each tab and pane
         self._find_backup_tab_widgets(ui_widget)
+        self._find_logs_tab_widgets(ui_widget)  # Must be before restore to set operation_log
         self._find_restore_tab_widgets(ui_widget)
         self._find_config_tab_widgets(ui_widget)
-        self._find_logs_tab_widgets(ui_widget)
         self._find_status_widgets()
         self._find_header_widgets(ui_widget)
 
@@ -617,8 +617,6 @@ class MainWindow(QMainWindow):
         self.backup_btn: QPushButton = ui_widget.findChild(
             QPushButton, "startBackupButton"
         )  # type: ignore[assignment]
-        self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "logBox")  # type: ignore[assignment]
-
         # Empty state widgets
         self._backup_stacked_widget: QStackedWidget | None = ui_widget.findChild(
             QStackedWidget, "backupStackedWidget"
@@ -626,10 +624,6 @@ class MainWindow(QMainWindow):
         self._empty_state_add_btn: QPushButton | None = ui_widget.findChild(
             QPushButton, "emptyStateAddButton"
         )
-
-        # Validate critical widgets were found
-        if not self.operation_log:
-            raise RuntimeError("logBox widget not found in UI file!")
 
     def _find_restore_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to Restore tab widgets."""
@@ -642,7 +636,7 @@ class MainWindow(QMainWindow):
         self.restore_btn: QPushButton = ui_widget.findChild(
             QPushButton, "restoreSourceButton"
         )  # type: ignore[assignment]
-        # Note: Restore operation log uses the same logBox widget in the Logs tab
+        # Note: Restore operation log uses the same logPaneBox widget in the log pane
         self.restore_operation_log: QTextEdit = self.operation_log
 
         # Backup preview widgets
@@ -729,25 +723,37 @@ class MainWindow(QMainWindow):
         )  # type: ignore[assignment]
 
     def _find_logs_tab_widgets(self, ui_widget: QWidget) -> None:
-        """Find and store references to Logs tab widgets."""
-        self.verify_backup_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "verifyBackupButton"
+        """Find and store references to log pane widgets (split view)."""
+        # Log pane text area (replaces old logBox in logTab)
+        self.operation_log: QTextEdit = ui_widget.findChild(
+            QTextEdit, "logPaneBox"
         )  # type: ignore[assignment]
-        self.save_log_btn: QPushButton = ui_widget.findChild(QPushButton, "pushButton")  # type: ignore[assignment]
+
+        # Validate critical widget was found
+        if not self.operation_log:
+            raise RuntimeError("logPaneBox widget not found in UI file!")
+
+        # Log pane buttons
+        self.verify_backup_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logPaneVerifyButton"
+        )  # type: ignore[assignment]
+        self.save_log_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logPaneSaveButton"
+        )  # type: ignore[assignment]
         self._log_filter_all_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logFilterAllButton"
+            QPushButton, "logPaneFilterAllButton"
         )  # type: ignore[assignment]
         self._log_filter_info_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logFilterInfoButton"
+            QPushButton, "logPaneFilterInfoButton"
         )  # type: ignore[assignment]
         self._log_filter_warning_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logFilterWarningButton"
+            QPushButton, "logPaneFilterWarningButton"
         )  # type: ignore[assignment]
         self._log_filter_error_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logFilterErrorButton"
+            QPushButton, "logPaneFilterErrorButton"
         )  # type: ignore[assignment]
         self._log_clear_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "logClearButton"
+            QPushButton, "logPaneClearButton"
         )  # type: ignore[assignment]
 
     def _find_status_widgets(self) -> None:
@@ -943,9 +949,6 @@ class MainWindow(QMainWindow):
             self._log_entries.clear()
             self._append_log("=== Backup Operation Started ===", "header")
 
-            # Switch to Logs tab (index 3)
-            self.tab_widget.setCurrentIndex(3)
-
             # Disable buttons during operation
             self.backup_btn.setEnabled(False)
 
@@ -1065,9 +1068,6 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Clear operation log
             self.restore_operation_log.clear()
-
-            # Switch to Logs tab (index 3)
-            self.tab_widget.setCurrentIndex(3)
 
             # Disable buttons during operation
             self.restore_btn.setEnabled(False)
@@ -2034,9 +2034,6 @@ class MainWindow(QMainWindow):
                 "Run a backup operation first, then verify.",
             )
             return
-
-        # Switch to Logs tab (index 3)
-        self.tab_widget.setCurrentIndex(3)
 
         # Append verification report to log
         self._append_log(report, "info")
