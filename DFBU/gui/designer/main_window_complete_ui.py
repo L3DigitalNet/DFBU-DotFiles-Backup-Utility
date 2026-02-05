@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window_complete.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.0
+## Created by: Qt User Interface Compiler version 6.10.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -324,218 +324,6 @@ class Ui_MainWindow(object):
         self.backupTabLayout.addLayout(self.backupOptionsStripLayout)
 
         self.tab_widget.addTab(self.backupTab, "")
-        self.restoreTab = QWidget()
-        self.restoreTab.setObjectName(u"restoreTab")
-        sizePolicy.setHeightForWidth(self.restoreTab.sizePolicy().hasHeightForWidth())
-        self.restoreTab.setSizePolicy(sizePolicy)
-        self.restore_layout = QVBoxLayout(self.restoreTab)
-        self.restore_layout.setSpacing(0)
-        self.restore_layout.setContentsMargins(0, 0, 0, 0)
-        self.restore_layout.setObjectName(u"restore_layout")
-        self.restore_layout.setContentsMargins(12, 12, 12, 12)
-        self.restoreSourceGroup = QWidget(self.restoreTab)
-        self.restoreSourceGroup.setObjectName(u"restoreSourceGroup")
-        sizePolicy9 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
-        sizePolicy9.setHorizontalStretch(0)
-        sizePolicy9.setVerticalStretch(0)
-        sizePolicy9.setHeightForWidth(self.restoreSourceGroup.sizePolicy().hasHeightForWidth())
-        self.restoreSourceGroup.setSizePolicy(sizePolicy9)
-        self.restore_source_layout = QVBoxLayout(self.restoreSourceGroup)
-        self.restore_source_layout.setSpacing(6)
-        self.restore_source_layout.setContentsMargins(0, 0, 0, 0)
-        self.restore_source_layout.setObjectName(u"restore_source_layout")
-        self.restore_source_layout.setContentsMargins(6, 0, 6, 6)
-        self.restoreSourceLabelContainer = QWidget(self.restoreSourceGroup)
-        self.restoreSourceLabelContainer.setObjectName(u"restoreSourceLabelContainer")
-        sizePolicy9.setHeightForWidth(self.restoreSourceLabelContainer.sizePolicy().hasHeightForWidth())
-        self.restoreSourceLabelContainer.setSizePolicy(sizePolicy9)
-        self.restoreSourceLabelLayout = QHBoxLayout(self.restoreSourceLabelContainer)
-        self.restoreSourceLabelLayout.setSpacing(0)
-        self.restoreSourceLabelLayout.setContentsMargins(0, 0, 0, 0)
-        self.restoreSourceLabelLayout.setObjectName(u"restoreSourceLabelLayout")
-        self.restoreSourceLabelLayout.setContentsMargins(-1, -1, -1, 0)
-        self.restoreSourceLabel = QLabel(self.restoreSourceLabelContainer)
-        self.restoreSourceLabel.setObjectName(u"restoreSourceLabel")
-        sizePolicy9.setHeightForWidth(self.restoreSourceLabel.sizePolicy().hasHeightForWidth())
-        self.restoreSourceLabel.setSizePolicy(sizePolicy9)
-        self.restoreSourceLabel.setMargin(6)
-
-        self.restoreSourceLabelLayout.addWidget(self.restoreSourceLabel)
-
-
-        self.restore_source_layout.addWidget(self.restoreSourceLabelContainer)
-
-        self.restoreSourceLine = QFrame(self.restoreSourceGroup)
-        self.restoreSourceLine.setObjectName(u"restoreSourceLine")
-        sizePolicy9.setHeightForWidth(self.restoreSourceLine.sizePolicy().hasHeightForWidth())
-        self.restoreSourceLine.setSizePolicy(sizePolicy9)
-        self.restoreSourceLine.setFrameShape(QFrame.Shape.HLine)
-        self.restoreSourceLine.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.restore_source_layout.addWidget(self.restoreSourceLine)
-
-        self.restoreSourceInfoButtonContainer = QWidget(self.restoreSourceGroup)
-        self.restoreSourceInfoButtonContainer.setObjectName(u"restoreSourceInfoButtonContainer")
-        sizePolicy9.setHeightForWidth(self.restoreSourceInfoButtonContainer.sizePolicy().hasHeightForWidth())
-        self.restoreSourceInfoButtonContainer.setSizePolicy(sizePolicy9)
-        self.restoreSourceInfoButtonLayout = QHBoxLayout(self.restoreSourceInfoButtonContainer)
-        self.restoreSourceInfoButtonLayout.setSpacing(6)
-        self.restoreSourceInfoButtonLayout.setContentsMargins(0, 0, 0, 0)
-        self.restoreSourceInfoButtonLayout.setObjectName(u"restoreSourceInfoButtonLayout")
-        self.restoreSourceInfoButtonLayout.setContentsMargins(6, 0, 0, 0)
-        self.restoreSourceInfoLabel = QLabel(self.restoreSourceInfoButtonContainer)
-        self.restoreSourceInfoLabel.setObjectName(u"restoreSourceInfoLabel")
-        sizePolicy9.setHeightForWidth(self.restoreSourceInfoLabel.sizePolicy().hasHeightForWidth())
-        self.restoreSourceInfoLabel.setSizePolicy(sizePolicy9)
-        self.restoreSourceInfoLabel.setWordWrap(True)
-        self.restoreSourceInfoLabel.setMargin(5)
-
-        self.restoreSourceInfoButtonLayout.addWidget(self.restoreSourceInfoLabel)
-
-        self.restoreSourceInfoButtonLine = QFrame(self.restoreSourceInfoButtonContainer)
-        self.restoreSourceInfoButtonLine.setObjectName(u"restoreSourceInfoButtonLine")
-        sizePolicy3.setHeightForWidth(self.restoreSourceInfoButtonLine.sizePolicy().hasHeightForWidth())
-        self.restoreSourceInfoButtonLine.setSizePolicy(sizePolicy3)
-        self.restoreSourceInfoButtonLine.setMinimumSize(QSize(0, 50))
-        self.restoreSourceInfoButtonLine.setFrameShape(QFrame.Shape.VLine)
-        self.restoreSourceInfoButtonLine.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.restoreSourceInfoButtonLayout.addWidget(self.restoreSourceInfoButtonLine, 0, Qt.AlignmentFlag.AlignHCenter)
-
-        self.restoreSourceButton = QPushButton(self.restoreSourceInfoButtonContainer)
-        self.restoreSourceButton.setObjectName(u"restoreSourceButton")
-        self.restoreSourceButton.setEnabled(False)
-        sizePolicy9.setHeightForWidth(self.restoreSourceButton.sizePolicy().hasHeightForWidth())
-        self.restoreSourceButton.setSizePolicy(sizePolicy9)
-        self.restoreSourceButton.setMinimumSize(QSize(0, 0))
-
-        self.restoreSourceInfoButtonLayout.addWidget(self.restoreSourceButton, 0, Qt.AlignmentFlag.AlignLeft)
-
-        self.restoreSourceInfoButtonLayout.setStretch(0, 20)
-        self.restoreSourceInfoButtonLayout.setStretch(1, 1)
-        self.restoreSourceInfoButtonLayout.setStretch(2, 20)
-
-        self.restore_source_layout.addWidget(self.restoreSourceInfoButtonContainer)
-
-        self.restorePathLayout = QHBoxLayout()
-        self.restorePathLayout.setSpacing(0)
-        self.restorePathLayout.setObjectName(u"restorePathLayout")
-        self.restoreSourceEdit = QLineEdit(self.restoreSourceGroup)
-        self.restoreSourceEdit.setObjectName(u"restoreSourceEdit")
-        sizePolicy9.setHeightForWidth(self.restoreSourceEdit.sizePolicy().hasHeightForWidth())
-        self.restoreSourceEdit.setSizePolicy(sizePolicy9)
-        self.restoreSourceEdit.setFrame(True)
-        self.restoreSourceEdit.setReadOnly(True)
-        self.restoreSourceEdit.setClearButtonEnabled(False)
-
-        self.restorePathLayout.addWidget(self.restoreSourceEdit)
-
-        self.restoreSourceBrowseButton = QPushButton(self.restoreSourceGroup)
-        self.restoreSourceBrowseButton.setObjectName(u"restoreSourceBrowseButton")
-        sizePolicy5.setHeightForWidth(self.restoreSourceBrowseButton.sizePolicy().hasHeightForWidth())
-        self.restoreSourceBrowseButton.setSizePolicy(sizePolicy5)
-
-        self.restorePathLayout.addWidget(self.restoreSourceBrowseButton)
-
-
-        self.restore_source_layout.addLayout(self.restorePathLayout)
-
-        self.restoreSourceButtonLayout = QHBoxLayout()
-        self.restoreSourceButtonLayout.setSpacing(0)
-        self.restoreSourceButtonLayout.setObjectName(u"restoreSourceButtonLayout")
-
-        self.restore_source_layout.addLayout(self.restoreSourceButtonLayout)
-
-
-        self.restore_layout.addWidget(self.restoreSourceGroup)
-
-        self.restorePreviewGroup = QGroupBox(self.restoreTab)
-        self.restorePreviewGroup.setObjectName(u"restorePreviewGroup")
-        self.restorePreviewGroup.setVisible(False)
-        self.restorePreviewLayout = QVBoxLayout(self.restorePreviewGroup)
-        self.restorePreviewLayout.setSpacing(0)
-        self.restorePreviewLayout.setContentsMargins(0, 0, 0, 0)
-        self.restorePreviewLayout.setObjectName(u"restorePreviewLayout")
-        self.restorePreviewLayout.setContentsMargins(12, 12, 12, 12)
-        self.restorePreviewSummaryLayout = QHBoxLayout()
-        self.restorePreviewSummaryLayout.setSpacing(0)
-        self.restorePreviewSummaryLayout.setObjectName(u"restorePreviewSummaryLayout")
-        self.restorePreviewHostLabel = QLabel(self.restorePreviewGroup)
-        self.restorePreviewHostLabel.setObjectName(u"restorePreviewHostLabel")
-
-        self.restorePreviewSummaryLayout.addWidget(self.restorePreviewHostLabel)
-
-        self.restorePreviewCountLabel = QLabel(self.restorePreviewGroup)
-        self.restorePreviewCountLabel.setObjectName(u"restorePreviewCountLabel")
-
-        self.restorePreviewSummaryLayout.addWidget(self.restorePreviewCountLabel)
-
-        self.restorePreviewSizeLabel = QLabel(self.restorePreviewGroup)
-        self.restorePreviewSizeLabel.setObjectName(u"restorePreviewSizeLabel")
-
-        self.restorePreviewSummaryLayout.addWidget(self.restorePreviewSizeLabel)
-
-        self.restorePreviewSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.restorePreviewSummaryLayout.addItem(self.restorePreviewSpacer)
-
-
-        self.restorePreviewLayout.addLayout(self.restorePreviewSummaryLayout)
-
-        self.restorePreviewTree = QTreeWidget(self.restorePreviewGroup)
-        self.restorePreviewTree.setObjectName(u"restorePreviewTree")
-        self.restorePreviewTree.setMinimumSize(QSize(0, 150))
-        self.restorePreviewTree.setAlternatingRowColors(True)
-        self.restorePreviewTree.setRootIsDecorated(True)
-
-        self.restorePreviewLayout.addWidget(self.restorePreviewTree)
-
-
-        self.restore_layout.addWidget(self.restorePreviewGroup)
-
-        self.restoreInfoGroup = QWidget(self.restoreTab)
-        self.restoreInfoGroup.setObjectName(u"restoreInfoGroup")
-        sizePolicy.setHeightForWidth(self.restoreInfoGroup.sizePolicy().hasHeightForWidth())
-        self.restoreInfoGroup.setSizePolicy(sizePolicy)
-        self.restore_info_layout = QVBoxLayout(self.restoreInfoGroup)
-        self.restore_info_layout.setSpacing(6)
-        self.restore_info_layout.setContentsMargins(0, 0, 0, 0)
-        self.restore_info_layout.setObjectName(u"restore_info_layout")
-        self.restore_info_layout.setContentsMargins(-1, -1, 0, 0)
-        self.restoreInfoLabel = QLabel(self.restoreInfoGroup)
-        self.restoreInfoLabel.setObjectName(u"restoreInfoLabel")
-        sizePolicy9.setHeightForWidth(self.restoreInfoLabel.sizePolicy().hasHeightForWidth())
-        self.restoreInfoLabel.setSizePolicy(sizePolicy9)
-        font = QFont()
-        font.setBold(False)
-        self.restoreInfoLabel.setFont(font)
-        self.restoreInfoLabel.setMargin(6)
-
-        self.restore_info_layout.addWidget(self.restoreInfoLabel)
-
-        self.restoreInfoLine = QFrame(self.restoreInfoGroup)
-        self.restoreInfoLine.setObjectName(u"restoreInfoLine")
-        sizePolicy9.setHeightForWidth(self.restoreInfoLine.sizePolicy().hasHeightForWidth())
-        self.restoreInfoLine.setSizePolicy(sizePolicy9)
-        self.restoreInfoLine.setFrameShape(QFrame.Shape.HLine)
-        self.restoreInfoLine.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.restore_info_layout.addWidget(self.restoreInfoLine)
-
-        self.restoreInfoText = QLabel(self.restoreInfoGroup)
-        self.restoreInfoText.setObjectName(u"restoreInfoText")
-        sizePolicy5.setHeightForWidth(self.restoreInfoText.sizePolicy().hasHeightForWidth())
-        self.restoreInfoText.setSizePolicy(sizePolicy5)
-        self.restoreInfoText.setWordWrap(True)
-        self.restoreInfoText.setMargin(10)
-        self.restoreInfoText.setIndent(-1)
-
-        self.restore_info_layout.addWidget(self.restoreInfoText, 0, Qt.AlignmentFlag.AlignTop)
-
-
-        self.restore_layout.addWidget(self.restoreInfoGroup)
-
-        self.tab_widget.addTab(self.restoreTab, "")
         self.configTab = QWidget()
         self.configTab.setObjectName(u"configTab")
         sizePolicy.setHeightForWidth(self.configTab.sizePolicy().hasHeightForWidth())
@@ -849,6 +637,218 @@ class Ui_MainWindow(object):
         self.config_tab_layout.addLayout(self.configButtonLayout)
 
         self.tab_widget.addTab(self.configTab, "")
+        self.restoreTab = QWidget()
+        self.restoreTab.setObjectName(u"restoreTab")
+        sizePolicy.setHeightForWidth(self.restoreTab.sizePolicy().hasHeightForWidth())
+        self.restoreTab.setSizePolicy(sizePolicy)
+        self.restore_layout = QVBoxLayout(self.restoreTab)
+        self.restore_layout.setSpacing(0)
+        self.restore_layout.setContentsMargins(0, 0, 0, 0)
+        self.restore_layout.setObjectName(u"restore_layout")
+        self.restore_layout.setContentsMargins(12, 12, 12, 12)
+        self.restoreSourceGroup = QWidget(self.restoreTab)
+        self.restoreSourceGroup.setObjectName(u"restoreSourceGroup")
+        sizePolicy9 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
+        sizePolicy9.setHorizontalStretch(0)
+        sizePolicy9.setVerticalStretch(0)
+        sizePolicy9.setHeightForWidth(self.restoreSourceGroup.sizePolicy().hasHeightForWidth())
+        self.restoreSourceGroup.setSizePolicy(sizePolicy9)
+        self.restore_source_layout = QVBoxLayout(self.restoreSourceGroup)
+        self.restore_source_layout.setSpacing(6)
+        self.restore_source_layout.setContentsMargins(0, 0, 0, 0)
+        self.restore_source_layout.setObjectName(u"restore_source_layout")
+        self.restore_source_layout.setContentsMargins(6, 0, 6, 6)
+        self.restoreSourceLabelContainer = QWidget(self.restoreSourceGroup)
+        self.restoreSourceLabelContainer.setObjectName(u"restoreSourceLabelContainer")
+        sizePolicy9.setHeightForWidth(self.restoreSourceLabelContainer.sizePolicy().hasHeightForWidth())
+        self.restoreSourceLabelContainer.setSizePolicy(sizePolicy9)
+        self.restoreSourceLabelLayout = QHBoxLayout(self.restoreSourceLabelContainer)
+        self.restoreSourceLabelLayout.setSpacing(0)
+        self.restoreSourceLabelLayout.setContentsMargins(0, 0, 0, 0)
+        self.restoreSourceLabelLayout.setObjectName(u"restoreSourceLabelLayout")
+        self.restoreSourceLabelLayout.setContentsMargins(-1, -1, -1, 0)
+        self.restoreSourceLabel = QLabel(self.restoreSourceLabelContainer)
+        self.restoreSourceLabel.setObjectName(u"restoreSourceLabel")
+        sizePolicy9.setHeightForWidth(self.restoreSourceLabel.sizePolicy().hasHeightForWidth())
+        self.restoreSourceLabel.setSizePolicy(sizePolicy9)
+        self.restoreSourceLabel.setMargin(6)
+
+        self.restoreSourceLabelLayout.addWidget(self.restoreSourceLabel)
+
+
+        self.restore_source_layout.addWidget(self.restoreSourceLabelContainer)
+
+        self.restoreSourceLine = QFrame(self.restoreSourceGroup)
+        self.restoreSourceLine.setObjectName(u"restoreSourceLine")
+        sizePolicy9.setHeightForWidth(self.restoreSourceLine.sizePolicy().hasHeightForWidth())
+        self.restoreSourceLine.setSizePolicy(sizePolicy9)
+        self.restoreSourceLine.setFrameShape(QFrame.Shape.HLine)
+        self.restoreSourceLine.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.restore_source_layout.addWidget(self.restoreSourceLine)
+
+        self.restoreSourceInfoButtonContainer = QWidget(self.restoreSourceGroup)
+        self.restoreSourceInfoButtonContainer.setObjectName(u"restoreSourceInfoButtonContainer")
+        sizePolicy9.setHeightForWidth(self.restoreSourceInfoButtonContainer.sizePolicy().hasHeightForWidth())
+        self.restoreSourceInfoButtonContainer.setSizePolicy(sizePolicy9)
+        self.restoreSourceInfoButtonLayout = QHBoxLayout(self.restoreSourceInfoButtonContainer)
+        self.restoreSourceInfoButtonLayout.setSpacing(6)
+        self.restoreSourceInfoButtonLayout.setContentsMargins(0, 0, 0, 0)
+        self.restoreSourceInfoButtonLayout.setObjectName(u"restoreSourceInfoButtonLayout")
+        self.restoreSourceInfoButtonLayout.setContentsMargins(6, 0, 0, 0)
+        self.restoreSourceInfoLabel = QLabel(self.restoreSourceInfoButtonContainer)
+        self.restoreSourceInfoLabel.setObjectName(u"restoreSourceInfoLabel")
+        sizePolicy9.setHeightForWidth(self.restoreSourceInfoLabel.sizePolicy().hasHeightForWidth())
+        self.restoreSourceInfoLabel.setSizePolicy(sizePolicy9)
+        self.restoreSourceInfoLabel.setWordWrap(True)
+        self.restoreSourceInfoLabel.setMargin(5)
+
+        self.restoreSourceInfoButtonLayout.addWidget(self.restoreSourceInfoLabel)
+
+        self.restoreSourceInfoButtonLine = QFrame(self.restoreSourceInfoButtonContainer)
+        self.restoreSourceInfoButtonLine.setObjectName(u"restoreSourceInfoButtonLine")
+        sizePolicy3.setHeightForWidth(self.restoreSourceInfoButtonLine.sizePolicy().hasHeightForWidth())
+        self.restoreSourceInfoButtonLine.setSizePolicy(sizePolicy3)
+        self.restoreSourceInfoButtonLine.setMinimumSize(QSize(0, 50))
+        self.restoreSourceInfoButtonLine.setFrameShape(QFrame.Shape.VLine)
+        self.restoreSourceInfoButtonLine.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.restoreSourceInfoButtonLayout.addWidget(self.restoreSourceInfoButtonLine, 0, Qt.AlignmentFlag.AlignHCenter)
+
+        self.restoreSourceButton = QPushButton(self.restoreSourceInfoButtonContainer)
+        self.restoreSourceButton.setObjectName(u"restoreSourceButton")
+        self.restoreSourceButton.setEnabled(False)
+        sizePolicy9.setHeightForWidth(self.restoreSourceButton.sizePolicy().hasHeightForWidth())
+        self.restoreSourceButton.setSizePolicy(sizePolicy9)
+        self.restoreSourceButton.setMinimumSize(QSize(0, 0))
+
+        self.restoreSourceInfoButtonLayout.addWidget(self.restoreSourceButton, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.restoreSourceInfoButtonLayout.setStretch(0, 20)
+        self.restoreSourceInfoButtonLayout.setStretch(1, 1)
+        self.restoreSourceInfoButtonLayout.setStretch(2, 20)
+
+        self.restore_source_layout.addWidget(self.restoreSourceInfoButtonContainer)
+
+        self.restorePathLayout = QHBoxLayout()
+        self.restorePathLayout.setSpacing(0)
+        self.restorePathLayout.setObjectName(u"restorePathLayout")
+        self.restoreSourceEdit = QLineEdit(self.restoreSourceGroup)
+        self.restoreSourceEdit.setObjectName(u"restoreSourceEdit")
+        sizePolicy9.setHeightForWidth(self.restoreSourceEdit.sizePolicy().hasHeightForWidth())
+        self.restoreSourceEdit.setSizePolicy(sizePolicy9)
+        self.restoreSourceEdit.setFrame(True)
+        self.restoreSourceEdit.setReadOnly(True)
+        self.restoreSourceEdit.setClearButtonEnabled(False)
+
+        self.restorePathLayout.addWidget(self.restoreSourceEdit)
+
+        self.restoreSourceBrowseButton = QPushButton(self.restoreSourceGroup)
+        self.restoreSourceBrowseButton.setObjectName(u"restoreSourceBrowseButton")
+        sizePolicy5.setHeightForWidth(self.restoreSourceBrowseButton.sizePolicy().hasHeightForWidth())
+        self.restoreSourceBrowseButton.setSizePolicy(sizePolicy5)
+
+        self.restorePathLayout.addWidget(self.restoreSourceBrowseButton)
+
+
+        self.restore_source_layout.addLayout(self.restorePathLayout)
+
+        self.restoreSourceButtonLayout = QHBoxLayout()
+        self.restoreSourceButtonLayout.setSpacing(0)
+        self.restoreSourceButtonLayout.setObjectName(u"restoreSourceButtonLayout")
+
+        self.restore_source_layout.addLayout(self.restoreSourceButtonLayout)
+
+
+        self.restore_layout.addWidget(self.restoreSourceGroup)
+
+        self.restorePreviewGroup = QGroupBox(self.restoreTab)
+        self.restorePreviewGroup.setObjectName(u"restorePreviewGroup")
+        self.restorePreviewGroup.setVisible(False)
+        self.restorePreviewLayout = QVBoxLayout(self.restorePreviewGroup)
+        self.restorePreviewLayout.setSpacing(0)
+        self.restorePreviewLayout.setContentsMargins(0, 0, 0, 0)
+        self.restorePreviewLayout.setObjectName(u"restorePreviewLayout")
+        self.restorePreviewLayout.setContentsMargins(12, 12, 12, 12)
+        self.restorePreviewSummaryLayout = QHBoxLayout()
+        self.restorePreviewSummaryLayout.setSpacing(0)
+        self.restorePreviewSummaryLayout.setObjectName(u"restorePreviewSummaryLayout")
+        self.restorePreviewHostLabel = QLabel(self.restorePreviewGroup)
+        self.restorePreviewHostLabel.setObjectName(u"restorePreviewHostLabel")
+
+        self.restorePreviewSummaryLayout.addWidget(self.restorePreviewHostLabel)
+
+        self.restorePreviewCountLabel = QLabel(self.restorePreviewGroup)
+        self.restorePreviewCountLabel.setObjectName(u"restorePreviewCountLabel")
+
+        self.restorePreviewSummaryLayout.addWidget(self.restorePreviewCountLabel)
+
+        self.restorePreviewSizeLabel = QLabel(self.restorePreviewGroup)
+        self.restorePreviewSizeLabel.setObjectName(u"restorePreviewSizeLabel")
+
+        self.restorePreviewSummaryLayout.addWidget(self.restorePreviewSizeLabel)
+
+        self.restorePreviewSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.restorePreviewSummaryLayout.addItem(self.restorePreviewSpacer)
+
+
+        self.restorePreviewLayout.addLayout(self.restorePreviewSummaryLayout)
+
+        self.restorePreviewTree = QTreeWidget(self.restorePreviewGroup)
+        self.restorePreviewTree.setObjectName(u"restorePreviewTree")
+        self.restorePreviewTree.setMinimumSize(QSize(0, 150))
+        self.restorePreviewTree.setAlternatingRowColors(True)
+        self.restorePreviewTree.setRootIsDecorated(True)
+
+        self.restorePreviewLayout.addWidget(self.restorePreviewTree)
+
+
+        self.restore_layout.addWidget(self.restorePreviewGroup)
+
+        self.restoreInfoGroup = QWidget(self.restoreTab)
+        self.restoreInfoGroup.setObjectName(u"restoreInfoGroup")
+        sizePolicy.setHeightForWidth(self.restoreInfoGroup.sizePolicy().hasHeightForWidth())
+        self.restoreInfoGroup.setSizePolicy(sizePolicy)
+        self.restore_info_layout = QVBoxLayout(self.restoreInfoGroup)
+        self.restore_info_layout.setSpacing(6)
+        self.restore_info_layout.setContentsMargins(0, 0, 0, 0)
+        self.restore_info_layout.setObjectName(u"restore_info_layout")
+        self.restore_info_layout.setContentsMargins(-1, -1, 0, 0)
+        self.restoreInfoLabel = QLabel(self.restoreInfoGroup)
+        self.restoreInfoLabel.setObjectName(u"restoreInfoLabel")
+        sizePolicy9.setHeightForWidth(self.restoreInfoLabel.sizePolicy().hasHeightForWidth())
+        self.restoreInfoLabel.setSizePolicy(sizePolicy9)
+        font = QFont()
+        font.setBold(False)
+        self.restoreInfoLabel.setFont(font)
+        self.restoreInfoLabel.setMargin(6)
+
+        self.restore_info_layout.addWidget(self.restoreInfoLabel)
+
+        self.restoreInfoLine = QFrame(self.restoreInfoGroup)
+        self.restoreInfoLine.setObjectName(u"restoreInfoLine")
+        sizePolicy9.setHeightForWidth(self.restoreInfoLine.sizePolicy().hasHeightForWidth())
+        self.restoreInfoLine.setSizePolicy(sizePolicy9)
+        self.restoreInfoLine.setFrameShape(QFrame.Shape.HLine)
+        self.restoreInfoLine.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.restore_info_layout.addWidget(self.restoreInfoLine)
+
+        self.restoreInfoText = QLabel(self.restoreInfoGroup)
+        self.restoreInfoText.setObjectName(u"restoreInfoText")
+        sizePolicy5.setHeightForWidth(self.restoreInfoText.sizePolicy().hasHeightForWidth())
+        self.restoreInfoText.setSizePolicy(sizePolicy5)
+        self.restoreInfoText.setWordWrap(True)
+        self.restoreInfoText.setMargin(10)
+        self.restoreInfoText.setIndent(-1)
+
+        self.restore_info_layout.addWidget(self.restoreInfoText, 0, Qt.AlignmentFlag.AlignTop)
+
+
+        self.restore_layout.addWidget(self.restoreInfoGroup)
+
+        self.tab_widget.addTab(self.restoreTab, "")
         self.mainSplitter.addWidget(self.tab_widget)
         self.logPane = QWidget(self.mainSplitter)
         self.logPane.setObjectName(u"logPane")
@@ -1034,30 +1034,6 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.startBackupButton.setText(QCoreApplication.translate("MainWindow", u"Start Backup", None))
         self.tab_widget.setTabText(self.tab_widget.indexOf(self.backupTab), QCoreApplication.translate("MainWindow", u"Backup", None))
-        self.restoreSourceLabel.setText(QCoreApplication.translate("MainWindow", u"Restore Source Path", None))
-        self.restoreSourceInfoLabel.setText(QCoreApplication.translate("MainWindow", u"Select the backup directory containing the hostname folder.\n"
-"Example: ~/GitHub/dotfiles/ (containing hostname subdirectory)", None))
-        self.restoreSourceButton.setText(QCoreApplication.translate("MainWindow", u"Start Restore", None))
-        self.restoreSourceEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Path to backup directory with hostname", None))
-        self.restoreSourceBrowseButton.setText(QCoreApplication.translate("MainWindow", u"Browse...", None))
-        self.restorePreviewGroup.setTitle(QCoreApplication.translate("MainWindow", u"Backup Preview", None))
-        self.restorePreviewHostLabel.setText(QCoreApplication.translate("MainWindow", u"Hostname: \u2014", None))
-        self.restorePreviewCountLabel.setText(QCoreApplication.translate("MainWindow", u"Files: \u2014", None))
-        self.restorePreviewSizeLabel.setText(QCoreApplication.translate("MainWindow", u"Size: \u2014", None))
-        ___qtreewidgetitem = self.restorePreviewTree.headerItem()
-        ___qtreewidgetitem.setText(2, QCoreApplication.translate("MainWindow", u"Size", None));
-        ___qtreewidgetitem.setText(1, QCoreApplication.translate("MainWindow", u"Files", None));
-        ___qtreewidgetitem.setText(0, QCoreApplication.translate("MainWindow", u"Application", None));
-        self.restoreInfoLabel.setText(QCoreApplication.translate("MainWindow", u"Restore Information", None))
-        self.restoreInfoText.setText(QCoreApplication.translate("MainWindow", u"Restore will:\n"
-"\u2022 Discover all files in the selected backup directory\n"
-"\u2022 Reconstruct original file paths based on backup structure\n"
-"\u2022 Copy files back to their original locations\n"
-"\u2022 Create necessary parent directories\n"
-"\u2022 Preserve file metadata and permissions\n"
-"\n"
-"WARNING: This will overwrite existing files at destination paths.", None))
-        self.tab_widget.setTabText(self.tab_widget.indexOf(self.restoreTab), QCoreApplication.translate("MainWindow", u"Restore", None))
         self.backupPathsGroup.setTitle(QCoreApplication.translate("MainWindow", u"Backup Paths", None))
         self.mirror_path_label.setText(QCoreApplication.translate("MainWindow", u"Mirror Directory:", None))
         self.config_mirror_path_edit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Mirror backup directory", None))
@@ -1124,6 +1100,30 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.saveConfigButton.setText(QCoreApplication.translate("MainWindow", u"Save Configuration", None))
         self.tab_widget.setTabText(self.tab_widget.indexOf(self.configTab), QCoreApplication.translate("MainWindow", u"Configuration", None))
+        self.restoreSourceLabel.setText(QCoreApplication.translate("MainWindow", u"Restore Source Path", None))
+        self.restoreSourceInfoLabel.setText(QCoreApplication.translate("MainWindow", u"Select the backup directory containing the hostname folder.\n"
+"Example: ~/GitHub/dotfiles/ (containing hostname subdirectory)", None))
+        self.restoreSourceButton.setText(QCoreApplication.translate("MainWindow", u"Start Restore", None))
+        self.restoreSourceEdit.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Path to backup directory with hostname", None))
+        self.restoreSourceBrowseButton.setText(QCoreApplication.translate("MainWindow", u"Browse...", None))
+        self.restorePreviewGroup.setTitle(QCoreApplication.translate("MainWindow", u"Backup Preview", None))
+        self.restorePreviewHostLabel.setText(QCoreApplication.translate("MainWindow", u"Hostname: \u2014", None))
+        self.restorePreviewCountLabel.setText(QCoreApplication.translate("MainWindow", u"Files: \u2014", None))
+        self.restorePreviewSizeLabel.setText(QCoreApplication.translate("MainWindow", u"Size: \u2014", None))
+        ___qtreewidgetitem = self.restorePreviewTree.headerItem()
+        ___qtreewidgetitem.setText(2, QCoreApplication.translate("MainWindow", u"Size", None));
+        ___qtreewidgetitem.setText(1, QCoreApplication.translate("MainWindow", u"Files", None));
+        ___qtreewidgetitem.setText(0, QCoreApplication.translate("MainWindow", u"Application", None));
+        self.restoreInfoLabel.setText(QCoreApplication.translate("MainWindow", u"Restore Information", None))
+        self.restoreInfoText.setText(QCoreApplication.translate("MainWindow", u"Restore will:\n"
+"\u2022 Discover all files in the selected backup directory\n"
+"\u2022 Reconstruct original file paths based on backup structure\n"
+"\u2022 Copy files back to their original locations\n"
+"\u2022 Create necessary parent directories\n"
+"\u2022 Preserve file metadata and permissions\n"
+"\n"
+"WARNING: This will overwrite existing files at destination paths.", None))
+        self.tab_widget.setTabText(self.tab_widget.indexOf(self.restoreTab), QCoreApplication.translate("MainWindow", u"Restore", None))
         self.logHeader.setStyleSheet(QCoreApplication.translate("MainWindow", u"background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;", None))
         self.logPaneTitle.setStyleSheet(QCoreApplication.translate("MainWindow", u"font-weight: bold; font-size: 13px; color: #1E293B; border: none; background: transparent;", None))
         self.logPaneTitle.setText(QCoreApplication.translate("MainWindow", u"Operation Log", None))

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
@@ -228,7 +228,7 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <!-- Page 0: Empty state -->
+          
           <widget class="QWidget" name="backupEmptyPage">
            <layout class="QVBoxLayout" name="emptyStateLayout">
             <item>
@@ -247,7 +247,7 @@
             <item alignment="Qt::AlignmentFlag::AlignHCenter">
              <widget class="QLabel" name="emptyStateIcon">
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="pixmap">
                <pixmap>../resources/icons/dfbu.svg</pixmap>
@@ -321,7 +321,7 @@ or load an existing configuration.</string>
             </item>
            </layout>
           </widget>
-          <!-- Page 1: Normal content -->
+          
           <widget class="QWidget" name="backupContentPage">
            <layout class="QVBoxLayout" name="backupContentLayout">
             <property name="spacing">
@@ -339,7 +339,7 @@ or load an existing configuration.</string>
             <property name="bottomMargin">
              <number>0</number>
             </property>
-            <!-- Toolbar row: filter + add button -->
+            
             <item>
              <layout class="QHBoxLayout" name="backupToolbarLayout">
               <property name="spacing">
@@ -376,7 +376,7 @@ or load an existing configuration.</string>
               </item>
              </layout>
             </item>
-            <!-- Dotfile table (dominant, stretch=1) -->
+            
             <item>
              <widget class="QTableWidget" name="fileGroupFileTable">
               <property name="sizePolicy">
@@ -429,7 +429,7 @@ or load an existing configuration.</string>
               </column>
              </widget>
             </item>
-            <!-- Action bar: buttons + total size -->
+            
             <item>
              <layout class="QHBoxLayout" name="backupActionBarLayout">
               <property name="spacing">
@@ -513,7 +513,7 @@ or load an existing configuration.</string>
           </widget>
          </widget>
         </item>
-        <!-- Options strip: checkboxes + start backup -->
+        
         <item>
          <layout class="QHBoxLayout" name="backupOptionsStripLayout">
           <property name="spacing">
@@ -619,7 +619,527 @@ or load an existing configuration.</string>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="restoreTab">
+      <widget class="QWidget" name="configTab">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <attribute name="title">
+        <string>Configuration</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="config_tab_layout">
+        <property name="spacing">
+         <number>8</number>
+        </property>
+        <property name="leftMargin">
+         <number>12</number>
+        </property>
+        <property name="topMargin">
+         <number>12</number>
+        </property>
+        <property name="rightMargin">
+         <number>12</number>
+        </property>
+        <property name="bottomMargin">
+         <number>12</number>
+        </property>
+        <item>
+         <widget class="QScrollArea" name="configScrollArea">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::Shape::NoFrame</enum>
+          </property>
+          <widget class="QWidget" name="configScrollContent">
+           <layout class="QVBoxLayout" name="configScrollLayout">
+            <property name="spacing">
+             <number>12</number>
+            </property>
+            
+            <item>
+             <widget class="QGroupBox" name="backupPathsGroup">
+              <property name="title">
+               <string>Backup Paths</string>
+              </property>
+              <layout class="QFormLayout" name="backupPathsLayout">
+               <property name="horizontalSpacing">
+                <number>8</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>8</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="mirror_path_label">
+                 <property name="text">
+                  <string>Mirror Directory:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <layout class="QHBoxLayout" name="mirror_path_layout">
+                 <item>
+                  <widget class="QLineEdit" name="config_mirror_path_edit">
+                   <property name="placeholderText">
+                    <string>Mirror backup directory</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="browse_mirror_btn">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>Browse...</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="archivePathLabel">
+                 <property name="text">
+                  <string>Archive Directory:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <layout class="QHBoxLayout" name="archivePathLayout">
+                 <item>
+                  <widget class="QLineEdit" name="configArchivePathEdit">
+                   <property name="placeholderText">
+                    <string>Archive backup directory</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="browseArchiveButton">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>Browse...</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            
+            <item>
+             <widget class="QGroupBox" name="backupModesGroup">
+              <property name="title">
+               <string>Backup Modes</string>
+              </property>
+              <layout class="QGridLayout" name="backupModesLayout">
+               <property name="horizontalSpacing">
+                <number>16</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>8</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QCheckBox" name="config_mirror_checkbox">
+                 <property name="text">
+                  <string>Enable mirror backup (uncompressed)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QCheckBox" name="config_archive_checkbox">
+                 <property name="text">
+                  <string>Enable archive backup (compressed)</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="config_hostname_checkbox">
+                 <property name="text">
+                  <string>Include hostname in backup path</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QCheckBox" name="config_date_checkbox">
+                 <property name="text">
+                  <string>Include date in backup path</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            
+            <item>
+             <widget class="QGroupBox" name="archiveOptionsGroup">
+              <property name="title">
+               <string>Archive Options</string>
+              </property>
+              <layout class="QFormLayout" name="archiveOptionsLayout">
+               <property name="horizontalSpacing">
+                <number>8</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>8</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="compressionLabel">
+                 <property name="text">
+                  <string>Compression Level:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QSpinBox" name="config_compression_spinbox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>0 = no compression, 9 = maximum compression</string>
+                 </property>
+                 <property name="minimum">
+                  <number>0</number>
+                 </property>
+                 <property name="maximum">
+                  <number>9</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="rotate_label">
+                 <property name="text">
+                  <string>Rotate Archives:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QCheckBox" name="config_rotate_checkbox">
+                 <property name="text">
+                  <string>Enable archive rotation</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="max_archives_label">
+                 <property name="text">
+                  <string>Max Archives:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QSpinBox" name="config_max_archives_spinbox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>Maximum number of archives to keep</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            
+            <item>
+             <widget class="QGroupBox" name="preRestoreSafetyGroup">
+              <property name="title">
+               <string>Pre-Restore Safety</string>
+              </property>
+              <layout class="QFormLayout" name="preRestoreSafetyLayout">
+               <property name="horizontalSpacing">
+                <number>8</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>8</number>
+               </property>
+               <item row="0" column="0" colspan="2">
+                <widget class="QCheckBox" name="config_pre_restore_checkbox">
+                 <property name="toolTip">
+                  <string>Backup existing files before restore operations</string>
+                 </property>
+                 <property name="text">
+                  <string>Backup files before overwriting</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="maxRestoreBackupsLabel">
+                 <property name="text">
+                  <string>Max Restore Backups:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QSpinBox" name="config_max_restore_spinbox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>Maximum number of pre-restore backups to keep</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>100</number>
+                 </property>
+                 <property name="value">
+                  <number>5</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="restoreBackupDirLabel">
+                 <property name="text">
+                  <string>Restore Backup Dir:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <layout class="QHBoxLayout" name="restoreBackupDirLayout">
+                 <item>
+                  <widget class="QLineEdit" name="config_restore_path_edit">
+                   <property name="toolTip">
+                    <string>Directory to store pre-restore backups</string>
+                   </property>
+                   <property name="placeholderText">
+                    <string>~/.local/share/dfbu/restore-backups</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="browse_restore_btn">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="text">
+                    <string>Browse...</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            
+            <item>
+             <widget class="QGroupBox" name="verificationGroup">
+              <property name="title">
+               <string>Verification</string>
+              </property>
+              <layout class="QVBoxLayout" name="verificationLayout">
+               <property name="spacing">
+                <number>8</number>
+               </property>
+               <item>
+                <widget class="QCheckBox" name="config_verify_checkbox">
+                 <property name="toolTip">
+                  <string>Run verification after each backup operation</string>
+                 </property>
+                 <property name="text">
+                  <string>Automatically verify backup integrity</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="config_hash_checkbox">
+                 <property name="toolTip">
+                  <string>Compare file contents using cryptographic hash instead of size only</string>
+                 </property>
+                 <property name="text">
+                  <string>Use SHA-256 hash comparison (slower)</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            
+            <item>
+             <widget class="QGroupBox" name="sizeManagementGroup">
+              <property name="title">
+               <string>Size Management</string>
+              </property>
+              <layout class="QFormLayout" name="sizeManagementLayout">
+               <property name="horizontalSpacing">
+                <number>8</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>8</number>
+               </property>
+               <item row="0" column="0" colspan="2">
+                <widget class="QCheckBox" name="config_size_check_checkbox">
+                 <property name="toolTip">
+                  <string>Show warnings for large files before starting backup</string>
+                 </property>
+                 <property name="text">
+                  <string>Analyze file sizes before backup</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="sizeWarningLabel">
+                 <property name="text">
+                  <string>Warning Threshold (MB):</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QSpinBox" name="config_size_warning_spinbox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>Files larger than this show a warning (yellow)</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>10000</number>
+                 </property>
+                 <property name="value">
+                  <number>10</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="sizeAlertLabel">
+                 <property name="text">
+                  <string>Alert Threshold (MB):</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QSpinBox" name="config_size_alert_spinbox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>Files larger than this show an alert (orange)</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>10000</number>
+                 </property>
+                 <property name="value">
+                  <number>100</number>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="sizeCriticalLabel">
+                 <property name="text">
+                  <string>Critical Threshold (MB):</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QSpinBox" name="config_size_critical_spinbox">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>Files larger than this show critical warning (red)</string>
+                 </property>
+                 <property name="minimum">
+                  <number>1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>100000</number>
+                 </property>
+                 <property name="value">
+                  <number>1024</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="configButtonLayout">
+          <property name="spacing">
+           <number>8</number>
+          </property>
+          <item>
+           <spacer name="configButtonSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="saveConfigButton">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Save Configuration</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     <widget class="QWidget" name="restoreTab">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
          <horstretch>0</horstretch>
@@ -1032,527 +1552,7 @@ WARNING: This will overwrite existing files at destination paths.</string>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="configTab">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <attribute name="title">
-        <string>Configuration</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="config_tab_layout">
-        <property name="spacing">
-         <number>8</number>
-        </property>
-        <property name="leftMargin">
-         <number>12</number>
-        </property>
-        <property name="topMargin">
-         <number>12</number>
-        </property>
-        <property name="rightMargin">
-         <number>12</number>
-        </property>
-        <property name="bottomMargin">
-         <number>12</number>
-        </property>
-        <item>
-         <widget class="QScrollArea" name="configScrollArea">
-          <property name="widgetResizable">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Shape::NoFrame</enum>
-          </property>
-          <widget class="QWidget" name="configScrollContent">
-           <layout class="QVBoxLayout" name="configScrollLayout">
-            <property name="spacing">
-             <number>12</number>
-            </property>
-            <!-- Group 1: Backup Paths -->
-            <item>
-             <widget class="QGroupBox" name="backupPathsGroup">
-              <property name="title">
-               <string>Backup Paths</string>
-              </property>
-              <layout class="QFormLayout" name="backupPathsLayout">
-               <property name="horizontalSpacing">
-                <number>8</number>
-               </property>
-               <property name="verticalSpacing">
-                <number>8</number>
-               </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="mirror_path_label">
-                 <property name="text">
-                  <string>Mirror Directory:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <layout class="QHBoxLayout" name="mirror_path_layout">
-                 <item>
-                  <widget class="QLineEdit" name="config_mirror_path_edit">
-                   <property name="placeholderText">
-                    <string>Mirror backup directory</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="browse_mirror_btn">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>Browse...</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="archivePathLabel">
-                 <property name="text">
-                  <string>Archive Directory:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <layout class="QHBoxLayout" name="archivePathLayout">
-                 <item>
-                  <widget class="QLineEdit" name="configArchivePathEdit">
-                   <property name="placeholderText">
-                    <string>Archive backup directory</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="browseArchiveButton">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>Browse...</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <!-- Group 2: Backup Modes -->
-            <item>
-             <widget class="QGroupBox" name="backupModesGroup">
-              <property name="title">
-               <string>Backup Modes</string>
-              </property>
-              <layout class="QGridLayout" name="backupModesLayout">
-               <property name="horizontalSpacing">
-                <number>16</number>
-               </property>
-               <property name="verticalSpacing">
-                <number>8</number>
-               </property>
-               <item row="0" column="0">
-                <widget class="QCheckBox" name="config_mirror_checkbox">
-                 <property name="text">
-                  <string>Enable mirror backup (uncompressed)</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QCheckBox" name="config_archive_checkbox">
-                 <property name="text">
-                  <string>Enable archive backup (compressed)</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QCheckBox" name="config_hostname_checkbox">
-                 <property name="text">
-                  <string>Include hostname in backup path</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QCheckBox" name="config_date_checkbox">
-                 <property name="text">
-                  <string>Include date in backup path</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <!-- Group 3: Archive Options -->
-            <item>
-             <widget class="QGroupBox" name="archiveOptionsGroup">
-              <property name="title">
-               <string>Archive Options</string>
-              </property>
-              <layout class="QFormLayout" name="archiveOptionsLayout">
-               <property name="horizontalSpacing">
-                <number>8</number>
-               </property>
-               <property name="verticalSpacing">
-                <number>8</number>
-               </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="compressionLabel">
-                 <property name="text">
-                  <string>Compression Level:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QSpinBox" name="config_compression_spinbox">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="toolTip">
-                  <string>0 = no compression, 9 = maximum compression</string>
-                 </property>
-                 <property name="minimum">
-                  <number>0</number>
-                 </property>
-                 <property name="maximum">
-                  <number>9</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="rotate_label">
-                 <property name="text">
-                  <string>Rotate Archives:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QCheckBox" name="config_rotate_checkbox">
-                 <property name="text">
-                  <string>Enable archive rotation</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="max_archives_label">
-                 <property name="text">
-                  <string>Max Archives:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QSpinBox" name="config_max_archives_spinbox">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="toolTip">
-                  <string>Maximum number of archives to keep</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>100</number>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <!-- Group 4: Pre-Restore Safety -->
-            <item>
-             <widget class="QGroupBox" name="preRestoreSafetyGroup">
-              <property name="title">
-               <string>Pre-Restore Safety</string>
-              </property>
-              <layout class="QFormLayout" name="preRestoreSafetyLayout">
-               <property name="horizontalSpacing">
-                <number>8</number>
-               </property>
-               <property name="verticalSpacing">
-                <number>8</number>
-               </property>
-               <item row="0" column="0" colspan="2">
-                <widget class="QCheckBox" name="config_pre_restore_checkbox">
-                 <property name="toolTip">
-                  <string>Backup existing files before restore operations</string>
-                 </property>
-                 <property name="text">
-                  <string>Backup files before overwriting</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="maxRestoreBackupsLabel">
-                 <property name="text">
-                  <string>Max Restore Backups:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QSpinBox" name="config_max_restore_spinbox">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="toolTip">
-                  <string>Maximum number of pre-restore backups to keep</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>100</number>
-                 </property>
-                 <property name="value">
-                  <number>5</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="restoreBackupDirLabel">
-                 <property name="text">
-                  <string>Restore Backup Dir:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <layout class="QHBoxLayout" name="restoreBackupDirLayout">
-                 <item>
-                  <widget class="QLineEdit" name="config_restore_path_edit">
-                   <property name="toolTip">
-                    <string>Directory to store pre-restore backups</string>
-                   </property>
-                   <property name="placeholderText">
-                    <string>~/.local/share/dfbu/restore-backups</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="browse_restore_btn">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="text">
-                    <string>Browse...</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <!-- Group 5: Verification -->
-            <item>
-             <widget class="QGroupBox" name="verificationGroup">
-              <property name="title">
-               <string>Verification</string>
-              </property>
-              <layout class="QVBoxLayout" name="verificationLayout">
-               <property name="spacing">
-                <number>8</number>
-               </property>
-               <item>
-                <widget class="QCheckBox" name="config_verify_checkbox">
-                 <property name="toolTip">
-                  <string>Run verification after each backup operation</string>
-                 </property>
-                 <property name="text">
-                  <string>Automatically verify backup integrity</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="config_hash_checkbox">
-                 <property name="toolTip">
-                  <string>Compare file contents using cryptographic hash instead of size only</string>
-                 </property>
-                 <property name="text">
-                  <string>Use SHA-256 hash comparison (slower)</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <!-- Group 6: Size Management -->
-            <item>
-             <widget class="QGroupBox" name="sizeManagementGroup">
-              <property name="title">
-               <string>Size Management</string>
-              </property>
-              <layout class="QFormLayout" name="sizeManagementLayout">
-               <property name="horizontalSpacing">
-                <number>8</number>
-               </property>
-               <property name="verticalSpacing">
-                <number>8</number>
-               </property>
-               <item row="0" column="0" colspan="2">
-                <widget class="QCheckBox" name="config_size_check_checkbox">
-                 <property name="toolTip">
-                  <string>Show warnings for large files before starting backup</string>
-                 </property>
-                 <property name="text">
-                  <string>Analyze file sizes before backup</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="sizeWarningLabel">
-                 <property name="text">
-                  <string>Warning Threshold (MB):</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QSpinBox" name="config_size_warning_spinbox">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="toolTip">
-                  <string>Files larger than this show a warning (yellow)</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>10000</number>
-                 </property>
-                 <property name="value">
-                  <number>10</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="sizeAlertLabel">
-                 <property name="text">
-                  <string>Alert Threshold (MB):</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QSpinBox" name="config_size_alert_spinbox">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="toolTip">
-                  <string>Files larger than this show an alert (orange)</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>10000</number>
-                 </property>
-                 <property name="value">
-                  <number>100</number>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="sizeCriticalLabel">
-                 <property name="text">
-                  <string>Critical Threshold (MB):</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QSpinBox" name="config_size_critical_spinbox">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
-                 </property>
-                 <property name="toolTip">
-                  <string>Files larger than this show critical warning (red)</string>
-                 </property>
-                 <property name="minimum">
-                  <number>1</number>
-                 </property>
-                 <property name="maximum">
-                  <number>100000</number>
-                 </property>
-                 <property name="value">
-                  <number>1024</number>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="configButtonLayout">
-          <property name="spacing">
-           <number>8</number>
-          </property>
-          <item>
-           <spacer name="configButtonSpacer">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="saveConfigButton">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Save Configuration</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
       </widget>
-     </widget>
      <widget class="QWidget" name="logPane">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -1813,7 +1813,7 @@ WARNING: This will overwrite existing files at destination paths.</string>
    </widget>
   </widget>
  </widget>
- <layoutdefault spacing="0" margin="0"/>
- <resources/>
- <connections/>
+ <layoutdefault spacing="0" margin="0" />
+ <resources />
+ <connections />
 </ui>
