@@ -23,8 +23,23 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --dev
 
-      - name: Install EGL/OpenGL libraries and Xvfb
-        run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1 xvfb
+      - name: Install Qt and X11 dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libegl1 \
+            libgl1 \
+            xvfb \
+            libxkbcommon-x11-0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-xinerama0 \
+            libxcb-xfixes0 \
+            libxcb-shape0 \
+            x11-utils
 
       - name: Lint with Ruff
         run: uv run ruff check DFBU/
@@ -36,6 +51,9 @@ jobs:
         run: uv run mypy DFBU/
 
       - name: Run tests with Xvfb
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_DEBUG_PLUGINS: 0
         run: xvfb-run -a uv run pytest DFBU/tests/ --cov=DFBU --cov-report=xml
 
       # Optional: Upload coverage to Codecov
