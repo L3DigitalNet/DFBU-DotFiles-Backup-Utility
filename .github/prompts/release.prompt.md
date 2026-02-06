@@ -3,8 +3,6 @@ agent: agent
 description: "Walk through the full DFBU release process: validate, version bump, merge, tag, and publish."
 ---
 
-<!-- @format -->
-
 # DFBU Release Process
 
 You are guiding the developer through publishing a new DFBU release.
