@@ -1835,6 +1835,22 @@ class DFBUViewModel(QObject):
         if self.restore_source_directory:
             self.settings.setValue("restoreSource", str(self.restore_source_directory))
 
+    def save_theme_preference(self, theme_name: str) -> None:
+        """Save the user's theme preference to QSettings.
+
+        Args:
+            theme_name: Theme name to persist (e.g., "dfbu_light", "dfbu_dark")
+        """
+        self.settings.setValue("appearance/theme", theme_name)
+
+    def load_theme_preference(self) -> str:
+        """Load the user's theme preference from QSettings.
+
+        Returns:
+            Theme name string, defaults to "dfbu_light" if not set.
+        """
+        return str(self.settings.value("appearance/theme", "dfbu_light"))
+
     def _on_worker_progress(self, value: int) -> None:
         """
         Handle worker progress updates.

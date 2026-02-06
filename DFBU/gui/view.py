@@ -54,6 +54,7 @@ from PySide6.QtGui import (
 )
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QDialog,
     QDialogButtonBox,
@@ -84,6 +85,7 @@ from gui.input_validation import InputValidator
 from gui.recovery_dialog import RecoveryDialog
 from gui.size_warning_dialog import SizeWarningDialog
 from gui.theme import DFBUColors
+from gui.theme_loader import get_current_theme, load_theme
 from gui.tooltip_manager import TooltipManager
 from gui.viewmodel import DFBUViewModel
 
@@ -774,6 +776,9 @@ class MainWindow(QMainWindow):
         """Find and store references to header bar widgets."""
         self._help_btn: QPushButton = ui_widget.findChild(QPushButton, "helpButton")  # type: ignore[assignment]
         self._about_btn: QPushButton = ui_widget.findChild(QPushButton, "aboutButton")  # type: ignore[assignment]
+        self._theme_toggle_btn: QPushButton | None = ui_widget.findChild(
+            QPushButton, "themeToggleButton"
+        )
 
     def _connect_ui_signals(self) -> None:
         """Connect UI element signals to handler methods."""
@@ -862,6 +867,8 @@ class MainWindow(QMainWindow):
             self._help_btn.clicked.connect(self._show_user_guide)
         if self._about_btn:
             self._about_btn.clicked.connect(self._show_about)
+        if self._theme_toggle_btn:
+            self._theme_toggle_btn.clicked.connect(self._on_toggle_theme)
 
     def _setup_shortcuts(self) -> None:
         """Set up keyboard shortcuts for actions previously in menus."""
@@ -870,6 +877,7 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+B"), self, self._on_start_backup)
         QShortcut(QKeySequence("Ctrl+R"), self, self._on_start_restore)
         QShortcut(QKeySequence("Ctrl+V"), self, self._on_verify_backup)
+        QShortcut(QKeySequence("Ctrl+T"), self, self._on_toggle_theme)
 
     def _configure_table_widget(self) -> None:
         """Configure the dotfile table widget properties.
@@ -925,6 +933,9 @@ class MainWindow(QMainWindow):
         if settings.get("restore_source"):
             self.restore_source_edit.setText(settings["restore_source"])
             self.restore_btn.setEnabled(True)
+
+        # Initialize theme toggle button label
+        self._update_theme_toggle_button()
 
     def _on_start_backup(self) -> None:
         """Handle start backup button click."""
@@ -1472,6 +1483,26 @@ class MainWindow(QMainWindow):
         """Show user guide help dialog."""
         dialog = HelpDialog(self)
         dialog.exec()
+
+    def _on_toggle_theme(self) -> None:
+        """Toggle between light and dark themes."""
+        current = get_current_theme()
+        new_theme = "dfbu_dark" if current == "dfbu_light" else "dfbu_light"
+        app = QApplication.instance()
+        if app:
+            load_theme(app, new_theme)  # type: ignore[arg-type]
+            self._update_theme_toggle_button()
+            self.viewmodel.save_theme_preference(new_theme)
+
+    def _update_theme_toggle_button(self) -> None:
+        """Update theme toggle button text and tooltip to reflect current theme."""
+        if not self._theme_toggle_btn:
+            return
+        is_dark = get_current_theme() == "dfbu_dark"
+        self._theme_toggle_btn.setText("Light" if is_dark else "Dark")
+        self._theme_toggle_btn.setToolTip(
+            "Switch to light mode" if is_dark else "Switch to dark mode"
+        )
 
     def _show_recovery_dialog(self, result: OperationResultDict) -> None:
         """Show recovery dialog when operation has failures.

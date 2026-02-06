@@ -49,6 +49,7 @@ For contributors and developers working on DFBU.
 | Document | Description |
 |----------|-------------|
 | [tests/README.md](../DFBU/tests/README.md) | Test suite documentation, fixtures, and coverage |
+| [QT_PILOT_TESTING_NOTES.md](QT_PILOT_TESTING_NOTES.md) | Known Qt Pilot instability, safe usage profile, and policy guidance |
 
 ### Scripts & Setup
 

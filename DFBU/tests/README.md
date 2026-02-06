@@ -426,6 +426,32 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
 ```
 
+### Qt Pilot Segfaults During GUI Automation
+
+**Symptoms**:
+
+- Qt Pilot command returns `Expecting value: line 1 column 1 (char 0)`
+- App process exits with code `-11`
+- Stderr shows repaint/backing-store errors such as:
+  - `QWidget::repaint: Recursive repaint detected`
+  - `QBackingStore::endPaint() called with active painter`
+
+**What this means**:
+
+- Current evidence shows this can reproduce in a minimal standalone PySide6 app.
+- Treat these failures as Qt Pilot harness instability unless reproduced by pytest-qt or manual testing.
+
+**Recommended approach**:
+
+1. Use Qt Pilot for smoke checks (launch, widget discovery, screenshots).
+2. Prefer `click_widget` over `click_at`.
+3. Use `wait_for_idle` between each interaction.
+4. Validate dialog-heavy behavior with pytest-qt and manual tests.
+
+For full details and investigation artifacts, see:
+
+- `docs/QT_PILOT_TESTING_NOTES.md`
+
 ## Best Practices Summary
 
 ✅ **DO**:
@@ -457,6 +483,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "gui"))
 
 ---
 
-**Last Updated**: November 3, 2025
+**Last Updated**: February 6, 2026
 **Maintainer**: Chris Purcell <chris@l3digital.net>
 **License**: MIT
