@@ -81,12 +81,20 @@ fi
 
 # --- Step 6: Build AppImage ---
 echo "[6/6] Building AppImage..."
-ARCH="$ARCH" "$APPIMAGETOOL" "$APPDIR" "$DIST_DIR/DFBU-$ARCH.AppImage"
+
+# Embed update information for AppImageUpdate / zsync delta updates
+# Format: gh-releases-zsync|owner|repo|latest|pattern
+UPDATE_INFO="gh-releases-zsync|L3DigitalNet|dfbu-dotfiles-backup-utility|latest|DFBU-*$ARCH.AppImage.zsync"
+
+ARCH="$ARCH" "$APPIMAGETOOL" \
+    --updateinformation "$UPDATE_INFO" \
+    "$APPDIR" "$DIST_DIR/DFBU-$ARCH.AppImage"
 
 echo ""
 echo "=== Build Complete ==="
 echo "AppImage: $DIST_DIR/DFBU-$ARCH.AppImage"
 echo "Size: $(du -h "$DIST_DIR/DFBU-$ARCH.AppImage" | cut -f1)"
+echo "Update info: $UPDATE_INFO"
 echo ""
 echo "Test it with:"
 echo "  chmod +x $DIST_DIR/DFBU-$ARCH.AppImage"
