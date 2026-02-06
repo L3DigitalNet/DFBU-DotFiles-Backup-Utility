@@ -1,3 +1,5 @@
+<!-- @format -->
+
 # Contributing to DFBU - DotFiles Backup Utility
 
 Thank you for your interest in contributing to DFBU! This guide will help you get started.
@@ -24,7 +26,7 @@ Thank you for your interest in contributing to DFBU! This guide will help you ge
 2. Run the setup script (installs UV, creates venv, installs dependencies):
 
    ```bash
-   ./setup.sh
+   ./scripts/setup.sh
    ```
 
 3. Activate the virtual environment:
@@ -311,7 +313,8 @@ DFBU-DotFiles-Backup-Utility/
 │   ├── data/
 │   │   ├── settings.yaml           # Application settings
 │   │   ├── dotfiles.yaml           # Dotfile library
-│   │   └── session.yaml            # Session exclusions
+│   │   ├── session.yaml            # Session exclusions
+│   │   └── .dfbuignore             # Size analysis exclusion patterns
 │   ├── gui/                        # GUI components (MVVM)
 │   │   ├── model.py                # Model facade
 │   │   ├── viewmodel.py            # Presentation logic
@@ -324,28 +327,51 @@ DFBU-DotFiles-Backup-Utility/
 │   │   ├── verification_manager.py # Backup integrity verification
 │   │   ├── restore_backup_manager.py # Pre-restore safety backups
 │   │   ├── size_analyzer.py        # File size analysis
+│   │   ├── backup_history.py       # Backup operation history
+│   │   ├── profile_manager.py      # User profile management
+│   │   ├── preview_generator.py    # Backup preview generation
 │   │   ├── protocols.py            # Protocol interfaces for DI
 │   │   ├── input_validation.py     # Input validation framework
 │   │   ├── config_workers.py       # QThread workers
 │   │   ├── logging_config.py       # Logging configuration
 │   │   ├── constants.py            # Application constants
+│   │   ├── theme.py                # Color palette, spacing, typography
+│   │   ├── theme_loader.py         # QSS stylesheet loader
+│   │   ├── help_dialog.py          # Help/documentation dialog
+│   │   ├── profile_dialog.py       # Profile create/edit dialog
+│   │   ├── recovery_dialog.py      # Recovery options dialog
+│   │   ├── size_warning_dialog.py  # File size warning dialog
+│   │   ├── tooltip_manager.py      # Widget tooltip management
+│   │   ├── styles/                 # QSS theme stylesheets
+│   │   │   ├── dfbu_light.qss      # Light theme
+│   │   │   └── dfbu_dark.qss       # Dark theme
 │   │   └── designer/               # Qt Designer .ui files
 │   ├── core/                       # Shared utilities
 │   │   ├── common_types.py         # TypedDict definitions
 │   │   └── yaml_config.py          # YAML config loading/saving
+│   ├── resources/
+│   │   ├── help/                   # Help content (HTML)
+│   │   └── icons/                  # Application icons
 │   ├── tests/                      # Test suite
 │   │   ├── README.md               # Testing documentation
 │   │   ├── conftest.py             # Pytest fixtures
 │   │   └── test_*.py               # Unit/integration tests
 │   └── docs/                       # Project documentation
+│       ├── ARCHITECTURE.md         # MVVM architecture docs
+│       └── CHANGELOG.md            # Version history
 ├── .github/
 │   ├── copilot-instructions.md     # GitHub Copilot guidelines
-│   └── prompts/                    # Development prompts
+│   └── workflows/                  # CI/CD workflows
 ├── .agents/                        # AI agent tools
 │   ├── memory.instruction.md       # Coding preferences
 │   └── branch_protection.py        # Branch protection checker
+├── docs/                           # Top-level documentation
+│   ├── INDEX.md                    # Documentation index
+│   ├── BRANCH_PROTECTION.md        # Branch protection rules
+│   └── plans/                      # Implementation plans
 ├── scripts/                        # Setup and utility scripts
 ├── AGENTS.md                       # Quick agent reference
+├── CLAUDE.md                       # Claude Code instructions
 ├── CONTRIBUTING.md                 # This file
 ├── README.md                       # Project overview
 └── pyproject.toml                  # Project configuration

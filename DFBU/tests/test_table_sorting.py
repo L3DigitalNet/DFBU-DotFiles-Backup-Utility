@@ -216,7 +216,7 @@ class TestDotfileTableSorting:
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
-            window = MainWindow(viewmodel, "1.1.0")
+            window = MainWindow(viewmodel, "1.2.0")
 
         # Mock size data (small, large, medium)
         size_data = {
@@ -278,7 +278,7 @@ class TestDotfileTableSorting:
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
-            window = MainWindow(viewmodel, "1.1.0")
+            window = MainWindow(viewmodel, "1.2.0")
 
         with patch.object(
             viewmodel, "get_dotfile_sizes", return_value={0: 0, 1: 0, 2: 0}
@@ -327,7 +327,7 @@ class TestDotfileTableSorting:
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
-            window = MainWindow(viewmodel, "1.1.0")
+            window = MainWindow(viewmodel, "1.2.0")
 
         with patch.object(
             viewmodel, "get_dotfile_sizes", return_value={0: 0, 1: 0, 2: 0}
@@ -372,7 +372,7 @@ class TestDotfileTableSorting:
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
-            window = MainWindow(viewmodel, "1.1.0")
+            window = MainWindow(viewmodel, "1.2.0")
 
         with patch.object(
             viewmodel, "get_dotfile_sizes", return_value={0: 2048, 1: 1024}
@@ -419,7 +419,7 @@ class TestDotfileTableSorting:
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
-            window = MainWindow(viewmodel, "1.1.0")
+            window = MainWindow(viewmodel, "1.2.0")
 
         with patch.object(
             viewmodel, "get_dotfile_sizes", return_value={0: 0, 1: 0, 2: 0}
@@ -462,7 +462,7 @@ class TestTableOriginalIndexRetrieval:
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
-            window = MainWindow(viewmodel, "1.1.0")
+            window = MainWindow(viewmodel, "1.2.0")
 
         with patch.object(viewmodel, "get_dotfile_sizes", return_value={0: 0}):
             window._update_dotfile_table()
@@ -494,7 +494,7 @@ class TestTableOriginalIndexRetrieval:
         viewmodel = DFBUViewModel(model)
 
         with patch.object(viewmodel, "load_settings", return_value={}):
-            window = MainWindow(viewmodel, "1.1.0")
+            window = MainWindow(viewmodel, "1.2.0")
 
         with patch.object(viewmodel, "get_dotfile_sizes", return_value={0: 0}):
             window._update_dotfile_table()

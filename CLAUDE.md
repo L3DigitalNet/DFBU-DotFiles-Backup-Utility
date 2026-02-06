@@ -1,3 +1,5 @@
+<!-- @format -->
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -6,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 DFBU (DotFiles Backup Utility) is a Python 3.14+ Linux desktop application for configuration file backup/restoration with a PySide6 GUI interface. Uses UV for package management.
 
-**Current Version:** 1.1.0 — Production ready with full error handling and file size management
+**Current Version:** 1.2.0 — UI enhancements: verbose logging, config management, smart browse picker
 
 ## Essential Commands
 
@@ -61,14 +63,30 @@ ViewModel (DFBUViewModel, viewmodel.py)
 Model (DFBUModel, model.py - Facade)
     ↕ delegates to
 Components (implement Protocol interfaces):
-    ├── ConfigManager (config_manager.py)        # Config I/O, YAML, CRUD
-    ├── FileOperations (file_operations.py)      # Path handling, copying, archives
+    ├── ConfigManager (config_manager.py)           # Config I/O, YAML, CRUD
+    ├── FileOperations (file_operations.py)         # Path handling, copying, archives
     ├── BackupOrchestrator (backup_orchestrator.py) # Backup/restore coordination
     ├── StatisticsTracker (statistics_tracker.py)   # Operation metrics
     ├── RestoreBackupManager (restore_backup_manager.py) # Pre-restore safety backups
     ├── VerificationManager (verification_manager.py)    # Backup integrity verification
-    ├── ErrorHandler (error_handler.py)          # Structured error handling
-    └── SizeAnalyzer (size_analyzer.py)          # File size analysis, .dfbuignore
+    ├── ErrorHandler (error_handler.py)             # Structured error handling
+    ├── SizeAnalyzer (size_analyzer.py)             # File size analysis, .dfbuignore
+    ├── BackupHistory (backup_history.py)           # Backup operation history
+    ├── ProfileManager (profile_manager.py)         # User profile management
+    └── PreviewGenerator (preview_generator.py)     # Backup preview generation
+
+Dialogs & UI Helpers:
+    ├── ProfileDialog (profile_dialog.py)           # Profile create/edit dialog
+    ├── RecoveryDialog (recovery_dialog.py)         # Recovery options dialog
+    ├── SizeWarningDialog (size_warning_dialog.py)  # File size warning dialog
+    ├── HelpDialog (help_dialog.py)                 # Help/documentation dialog
+    └── TooltipManager (tooltip_manager.py)         # Widget tooltip management
+
+Infrastructure:
+    ├── LoggingConfig (logging_config.py)           # Logging setup
+    ├── Constants (constants.py)                    # Application constants
+    ├── Theme (theme.py)                            # Color palette, spacing, typography
+    └── ThemeLoader (theme_loader.py)               # QSS stylesheet loader
 ```
 
 ### Layer Responsibilities
@@ -189,8 +207,6 @@ excluded:
   - Steam
 ```
 
-**library.yaml** - Alternate dotfile library format (application catalog):
-
 Also in `DFBU/data/`: `.dfbuignore` - patterns for files to skip during size analysis.
 
 ## Testing Patterns
@@ -224,15 +240,23 @@ For comprehensive testing documentation, see [DFBU/tests/README.md](DFBU/tests/R
 - `DFBU/core/yaml_config.py` - YAML config loading/saving with schema validation
 - `DFBU/gui/input_validation.py` - Input validation framework
 - `DFBU/gui/theme.py` - Centralized color palette (DFBUColors), spacing, and typography constants
-- `DFBU/gui/theme_loader.py` - QSS stylesheet loader (applies dfbu_light.qss to QApplication)
+- `DFBU/gui/theme_loader.py` - QSS stylesheet loader (applies theme QSS to QApplication)
 - `DFBU/gui/styles/dfbu_light.qss` - Qt Style Sheet for branded light theme
+- `DFBU/gui/styles/dfbu_dark.qss` - Qt Style Sheet for dark theme
+- `DFBU/gui/backup_history.py` - Backup operation history tracking
+- `DFBU/gui/profile_manager.py` - User profile management
+- `DFBU/gui/preview_generator.py` - Backup preview generation
+- `DFBU/gui/constants.py` - Application constants
+- `DFBU/gui/logging_config.py` - Logging configuration
 - `DFBU/resources/help/` - Externalized help content (quick_start.html, config_reference.html)
 - `DFBU/tests/conftest.py` - Pytest fixtures for Qt and file testing
 - `docs/plans/` - Implementation plans for production readiness features
 - `docs/INDEX.md` - Complete documentation index
 
 <!-- BEGIN ContextStream -->
+
 # Claude Code Instructions
+
 <contextstream_rules>
 | Message | Required |
 |---------|----------|
@@ -248,4 +272,5 @@ For comprehensive testing documentation, see [DFBU/tests/README.md](DFBU/tests/R
 **Notices:** [LESSONS_WARNING] → apply lessons | [PREFERENCE] → follow user preferences | [RULES_NOTICE] → run `mcp__contextstream__generate_rules()` | [VERSION_NOTICE/CRITICAL] → tell user about update
 
 v0.4.58
+
 <!-- END ContextStream -->

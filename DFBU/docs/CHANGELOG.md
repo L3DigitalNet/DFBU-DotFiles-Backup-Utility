@@ -12,6 +12,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **PATCH**: Bug fixes and code refactoring
 - **Development Stages**: `.dev`, `.a` (alpha), `.b` (beta), `.rc` (release candidate)
 
+## [1.2.0] - 2026-02-06
+
+### Added
+
+- **Verbose Log Mode**: Checkable "Verbose" toggle button in log pane toolbar shows full destination paths in backup log entries
+- **Individual Skip Logging**: Each unchanged/skipped file is now logged individually by name instead of batch summaries every 10 files
+- **Hide Missing Checkbox**: Filter checkbox on backup tab hides dotfiles whose source paths don't exist on disk
+- **Edit Config Button**: Opens `dotfiles.yaml` in the system's default text editor via `xdg-open`
+- **Validate Config Button**: Checks `dotfiles.yaml` and `settings.yaml` for YAML syntax and structure errors with reload option
+- **Export Config Button**: Exports `dotfiles.yaml` and `settings.yaml` to a user-chosen directory for safekeeping
+- **Unified Browse Picker**: Replaced the file/directory selection prompt with a single non-native QFileDialog that accepts both files and directories
+
+### Changed
+
+- **Backup Tab**: "Update" button renamed to "Edit" for clarity
+- **Skip Logging**: Removed `SKIP_LOG_INTERVAL` constant and batch throttling; verbose mode shows full path for skipped files too
+- **Log Output**: Verbose mode integrates with both processed and skipped file logging
+
+### Removed
+
+- `SKIP_LOG_INTERVAL` constant (no longer needed with individual logging)
+- `_last_logged_skip_count` tracking variable (batch counting removed)
+- File/directory type selection `QMessageBox` prompt in AddDotfileDialog (replaced by unified picker)
+
 ## [1.1.0] - 2026-02-01
 
 ### Added
