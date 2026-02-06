@@ -1771,6 +1771,28 @@ WARNING: This will overwrite existing files at destination paths.</string>
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="logPaneVerboseButton">
+            <property name="text">
+             <string>Verbose</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Show full destination paths in log entries</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="logHeaderSpacer2">
             <property name="orientation">
              <enum>Qt::Orientation::Horizontal</enum>

@@ -784,6 +784,9 @@ class MainWindow(QMainWindow):
         self._log_clear_btn: QPushButton = ui_widget.findChild(
             QPushButton, "logPaneClearButton"
         )  # type: ignore[assignment]
+        self._log_verbose_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logPaneVerboseButton"
+        )  # type: ignore[assignment]
 
     def _find_status_widgets(self) -> None:
         """Find and store references to status bar widgets."""
@@ -1131,7 +1134,10 @@ class MainWindow(QMainWindow):
 
     def _on_item_processed(self, source: str, destination: str) -> None:
         """Handle item processed signal."""
-        log_message = f"✓ {Path(source).name} → {Path(destination).name}"
+        if self._log_verbose_btn and self._log_verbose_btn.isChecked():
+            log_message = f"✓ {Path(source).name} → {destination}"
+        else:
+            log_message = f"✓ {Path(source).name} → {Path(destination).name}"
         self._append_log(log_message, "success")
 
     def _on_item_skipped(self, path: str, reason: str) -> None:
