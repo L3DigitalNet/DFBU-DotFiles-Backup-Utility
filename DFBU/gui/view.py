@@ -264,43 +264,49 @@ class AddDotfileDialog(QDialog):
         self.button_box.rejected.connect(self.reject)
 
     def _on_browse_path(self) -> None:
-        """Handle browse button click to select file or directory."""
-        # Create custom message box to ask user what type to select
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("Select Type")
-        msg_box.setText("What would you like to select?")
-        msg_box.setIcon(QMessageBox.Icon.Question)
+        """Open a unified file/directory picker.
 
-        # Add custom buttons with clear labels
-        file_button = msg_box.addButton("File", QMessageBox.ButtonRole.YesRole)
-        dir_button = msg_box.addButton("Directory", QMessageBox.ButtonRole.NoRole)
-        _cancel_button = msg_box.addButton("Cancel", QMessageBox.ButtonRole.RejectRole)
+        Uses a non-native QFileDialog that allows selecting either files
+        or directories from a single dialog, without a type prompt.
+        """
+        dialog = QFileDialog(self, "Select File or Directory", str(Path.home()))
+        dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setLabelText(QFileDialog.DialogLabel.Accept, "Select")
+        dialog.setNameFilter("All Files (*)")
 
-        msg_box.setDefaultButton(file_button)
-        msg_box.exec()
+        # Helper to get path candidate from the dialog's filename line edit
+        def get_path_from_line_edit() -> Path | None:
+            """Get path candidate from the dialog's filename line edit."""
+            line_edit = dialog.findChild(QLineEdit, "fileNameEdit")
+            if line_edit:
+                name = line_edit.text().strip()
+                if name:
+                    return Path(dialog.directory().absolutePath()) / name
+            return None
 
-        clicked_button = msg_box.clickedButton()
+        # Override accept to also allow directory selection.
+        # By default, clicking "Select" on a highlighted directory enters it.
+        # This patch makes it accept the directory path instead.
+        def accept_with_dirs() -> None:
+            candidate = get_path_from_line_edit()
+            if candidate and candidate.is_dir():
+                dialog.done(QDialog.DialogCode.Accepted)
+                return
+            QFileDialog.accept(dialog)
 
-        if clicked_button == file_button:
-            # Select a file
-            file_path, _ = QFileDialog.getOpenFileName(
-                self,
-                "Select File",
-                str(Path.home()),
-                "All Files (*)",
-            )
+        dialog.accept = accept_with_dirs  # type: ignore[method-assign]
 
-            if file_path:
-                self.path_input_edit.setText(file_path)
-
-        elif clicked_button == dir_button:
-            # Select a directory
-            dir_path = QFileDialog.getExistingDirectory(
-                self, "Select Directory", str(Path.home())
-            )
-
-            if dir_path:
-                self.path_input_edit.setText(dir_path)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            selected = dialog.selectedFiles()
+            if selected:
+                chosen = selected[0]
+                # Verify selection — construct from line edit if needed
+                if not Path(chosen).exists():
+                    candidate = get_path_from_line_edit()
+                    if candidate and candidate.exists():
+                        chosen = str(candidate)
+                self.path_input_edit.setText(chosen)
 
     def _on_add_path(self) -> None:
         """Add path from input field to paths list."""
