@@ -31,6 +31,15 @@ datas = [
     (str(project_root / 'DFBU' / 'gui' / 'designer' / 'add_dotfile_dialog.ui'), 'gui/designer'),
     (str(project_root / 'DFBU' / 'gui' / 'designer' / 'recovery_dialog.ui'), 'gui/designer'),
     (str(project_root / 'DFBU' / 'gui' / 'designer' / 'size_warning_dialog.ui'), 'gui/designer'),
+    (str(project_root / 'DFBU' / 'gui' / 'designer' / 'profile_dialog.ui'), 'gui/designer'),
+    # QSS theme stylesheets
+    # Destination matches theme_loader.py: Path(__file__).parent / "styles"
+    (str(project_root / 'DFBU' / 'gui' / 'styles' / 'dfbu_light.qss'), 'gui/styles'),
+    (str(project_root / 'DFBU' / 'gui' / 'styles' / 'dfbu_dark.qss'), 'gui/styles'),
+    # Help content HTML files
+    # Destination matches help_dialog.py: Path(__file__).parent.parent / "resources" / "help"
+    (str(project_root / 'DFBU' / 'resources' / 'help' / 'quick_start.html'), 'resources/help'),
+    (str(project_root / 'DFBU' / 'resources' / 'help' / 'config_reference.html'), 'resources/help'),
 ]
 
 # Hidden imports that PyInstaller might miss
