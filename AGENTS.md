@@ -9,29 +9,41 @@
 - **Principles**: SOLID
 - **Testing**: Pytest with pytest-qt
 - **Package Manager**: UV
+- **Distribution**: AppImage (GitHub Releases)
 - **UI Design**: Qt Designer (.ui files - NO hardcoded UI)
 
 ## Essential Files
 
 - `CLAUDE.md` - Claude Code / AI assistant instructions
 - `.github/copilot-instructions.md` - GitHub Copilot instructions
-- `.agents/memory.instruction.md` - Coding preferences and critical rules
-- `.agents/branch_protection.py` - Branch protection checker for AI agents
+- `.agents/memory.instruction.md` - Additional agent preferences (if present)
+- `.agents/branch_protection.py` - Branch protection checker (if present)
 - `docs/BRANCH_PROTECTION.md` - Complete branch protection documentation
+- `CONTRIBUTING.md` - Development workflow and code standards
+- `DFBU/docs/ARCHITECTURE.md` - MVVM architecture details
 
 ## Critical: Branch Protection
 
-**BEFORE ANY FILE MODIFICATION, RUN:**
+**BEFORE ANY FILE MODIFICATION:**
 
-```bash
-python .agents/branch_protection.py
-```
+1. Confirm you are not on `main`: `git branch --show-current`
+2. If the repo contains `.agents/branch_protection.py`, run: `python .agents/branch_protection.py`
 
 - ❌ NEVER modify files on `main` branch
 - ✅ ALWAYS work on `testing` branch
 - ✅ ONLY assist with merges when human explicitly authorizes
 
 See [docs/BRANCH_PROTECTION.md](docs/BRANCH_PROTECTION.md) for full details.
+
+## Dev Environment (uv)
+
+This repo’s CI uses `uv` + Python 3.14.
+
+```bash
+uv python install 3.14
+uv sync --all-extras --dev
+uv run python DFBU/dfbu_gui.py
+```
 
 ## Architecture Rules (Non-Negotiable)
 
@@ -80,22 +92,26 @@ For comprehensive architecture documentation, see [DFBU/docs/ARCHITECTURE.md](DF
 ## Running Tests
 
 ```bash
-# All tests
-pytest DFBU/tests/
+# All tests (preferred)
+uv run pytest DFBU/tests/
 
 # With coverage
-pytest DFBU/tests/ --cov=DFBU --cov-report=html
+uv run pytest DFBU/tests/ --cov=DFBU --cov-report=html
 
 # Specific test file
-pytest DFBU/tests/test_model.py -v
+uv run pytest DFBU/tests/test_model.py -v
 
 # By marker
-pytest DFBU/tests/ -m unit
-pytest DFBU/tests/ -m integration
-pytest DFBU/tests/ -m gui
+uv run pytest DFBU/tests/ -m unit
+uv run pytest DFBU/tests/ -m integration
+uv run pytest DFBU/tests/ -m gui
 
 # Type checking
-mypy DFBU/
+uv run mypy DFBU/
+
+# Lint / format
+uv run ruff check DFBU/
+uv run ruff format --check DFBU/
 ```
 
 For comprehensive testing documentation, see [DFBU/tests/README.md](DFBU/tests/README.md).
@@ -182,18 +198,19 @@ def qapp():
 
 ## AI Agent Workflow
 
-1. **Check branch**: Run `python .agents/branch_protection.py`
-2. **Read memory**: Check `.agents/memory.instruction.md` for preferences
+1. **Check branch**: Ensure you’re on `testing` (never modify `main`)
+2. **Branch protection**: If present, run `python .agents/branch_protection.py`
 3. **Follow MVVM strictly**: Never mix concerns between layers
-4. **Use type hints**: Modern Python 3.10+ syntax (see [CONTRIBUTING.md](CONTRIBUTING.md))
+4. **Use type hints**: Modern Python 3.14+ syntax (see [CONTRIBUTING.md](CONTRIBUTING.md))
 5. **Write tests**: TDD approach preferred (see [DFBU/tests/README.md](DFBU/tests/README.md))
-6. **Run tests after changes**: `pytest DFBU/tests/` and `mypy DFBU/`
+6. **Run checks after changes**: `uv run pytest DFBU/tests/` and `uv run mypy DFBU/`
 
 <!-- BEGIN ContextStream -->
-### When to Use ContextStream Search:
-✅ Project is indexed and fresh
-✅ Looking for code by meaning/concept
-✅ Need semantic understanding
+### ContextStream (Codex CLI)
 
----
+| When | Required |
+|------|----------|
+| **Every message** | `mcp__contextstream__context(user_message="...")` FIRST |
+| **Before file reads/search** | `mcp__contextstream__search(mode="hybrid", query="...")` BEFORE any local glob/grep/read |
+| **Local tools** | Only if ContextStream search returns **0** results after retry |
 <!-- END ContextStream -->
