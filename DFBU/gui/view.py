@@ -90,10 +90,6 @@ from gui.tooltip_manager import TooltipManager
 from gui.viewmodel import DFBUViewModel
 
 
-# Constants for view configuration
-SKIP_LOG_INTERVAL: Final[int] = 10  # Log every N skipped files to avoid log spam
-
-
 class NumericTableWidgetItem(QTableWidgetItem):
     """
     Custom QTableWidgetItem for proper numeric sorting.
@@ -492,9 +488,8 @@ class MainWindow(QMainWindow):
         self.viewmodel: DFBUViewModel = viewmodel
         self.version: str = version
 
-        # Track skipped items for periodic log updates
+        # Track skipped items for operation summary
         self._skipped_count: int = 0
-        self._last_logged_skip_count: int = 0
 
         # Track log entries for filtering
         self._log_entries: list[tuple[str, str]] = []
@@ -988,7 +983,6 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Reset skip tracking for new operation
             self._skipped_count = 0
-            self._last_logged_skip_count = 0
 
             # Clear operation log
             self.operation_log.clear()
@@ -1141,21 +1135,15 @@ class MainWindow(QMainWindow):
         self._append_log(log_message, "success")
 
     def _on_item_skipped(self, path: str, reason: str) -> None:
-        """
-        Handle item skipped signal.
-
-        Shows periodic summary of skipped files to avoid overwhelming the log
-        with potentially hundreds of individual "unchanged" messages.
-        """
+        """Handle item skipped signal — log each file individually."""
         self._skipped_count += 1
+        name = Path(path).name
 
-        # Show progress at intervals to indicate activity without overwhelming the log
-        if self._skipped_count % SKIP_LOG_INTERVAL == 0:
-            new_skips = self._skipped_count - self._last_logged_skip_count
-            self._last_logged_skip_count = self._skipped_count
-
-            log_message = f"⊘ Skipped {new_skips} unchanged files (total: {self._skipped_count})..."
-            self._append_log(log_message, "skip")
+        if self._log_verbose_btn and self._log_verbose_btn.isChecked():
+            log_message = f"⊘ {name} ({reason}) [{path}]"
+        else:
+            log_message = f"⊘ {name} ({reason})"
+        self._append_log(log_message, "skip")
 
     def _on_operation_finished(self, summary: str) -> None:
         """Handle operation finished signal."""
@@ -1173,11 +1161,10 @@ class MainWindow(QMainWindow):
             and not self.viewmodel.backup_worker.isRunning()
         ):
             # Backup just completed
-            # Log any remaining skipped files
-            if self._skipped_count > self._last_logged_skip_count:
-                remaining = self._skipped_count - self._last_logged_skip_count
+            # Log skip summary
+            if self._skipped_count > 0:
                 self._append_log(
-                    f"⊘ Skipped {remaining} unchanged files (total: {self._skipped_count})...",
+                    f"⊘ Total unchanged files: {self._skipped_count}",
                     "skip",
                 )
             self._append_log("=== Backup Operation Completed ===", "header")
