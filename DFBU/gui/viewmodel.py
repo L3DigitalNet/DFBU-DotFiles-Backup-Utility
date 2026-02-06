@@ -39,6 +39,7 @@ Functions:
     None
 """
 
+import shutil
 import time
 from pathlib import Path
 from typing import Any, Final
@@ -1535,6 +1536,45 @@ class DFBUViewModel(QObject):
         if errors:
             return False, "Validation errors:\n" + "\n".join(errors)
         return True, "Configuration is valid. No errors found."
+
+    def command_export_config(self, dest_dir: Path) -> tuple[bool, str]:
+        """
+        Export dotfiles.yaml and settings.yaml to the specified directory.
+
+        Args:
+            dest_dir: Destination directory for the exported files
+
+        Returns:
+            Tuple of (success, message)
+        """
+        if not dest_dir.exists():
+            return False, f"Destination directory does not exist: {dest_dir}"
+
+        if not dest_dir.is_dir():
+            return False, f"Destination is not a directory: {dest_dir}"
+
+        config_dir = self.model.config_path
+        files_to_export = ["dotfiles.yaml", "settings.yaml"]
+        copied: list[str] = []
+        errors: list[str] = []
+
+        for filename in files_to_export:
+            src = config_dir / filename
+            dest = dest_dir / filename
+            if src.exists():
+                try:
+                    shutil.copy2(src, dest)
+                    copied.append(filename)
+                except OSError as e:  # Includes PermissionError
+                    errors.append(f"{filename}: {e}")
+            else:
+                errors.append(f"{filename}: Source file not found")
+
+        if errors:
+            return False, f"Exported {len(copied)} file(s), errors:\n" + "\n".join(
+                errors
+            )
+        return True, f"Exported {len(copied)} file(s) to {dest_dir}"
 
     def get_config_dir(self) -> Path:
         """Return the path to the configuration directory."""

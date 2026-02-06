@@ -645,6 +645,9 @@ class MainWindow(QMainWindow):
         self.validate_config_btn: QPushButton = ui_widget.findChild(
             QPushButton, "validateConfigButton"
         )  # type: ignore[assignment]
+        self.export_config_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "exportConfigButton"
+        )  # type: ignore[assignment]
         # Empty state widgets
         self._backup_stacked_widget: QStackedWidget | None = ui_widget.findChild(
             QStackedWidget, "backupStackedWidget"
@@ -813,6 +816,7 @@ class MainWindow(QMainWindow):
         )
         self.edit_config_btn.clicked.connect(self._on_edit_config)
         self.validate_config_btn.clicked.connect(self._on_validate_config)
+        self.export_config_btn.clicked.connect(self._on_export_config)
 
         # Filter input connection
         if self._filter_input:
@@ -1811,6 +1815,22 @@ class MainWindow(QMainWindow):
                 self.viewmodel.command_load_config()
         else:
             QMessageBox.warning(self, "Validation Failed", message)
+
+    def _on_export_config(self) -> None:
+        """Export configuration files to a user-chosen directory."""
+        dest_dir = QFileDialog.getExistingDirectory(
+            self, "Select Export Destination", str(Path.home())
+        )
+
+        if not dest_dir:
+            return
+
+        success, message = self.viewmodel.command_export_config(Path(dest_dir))
+
+        if success:
+            self.status_bar.showMessage(message, STATUS_MESSAGE_TIMEOUT_MS)
+        else:
+            QMessageBox.warning(self, "Export Failed", message)
 
     def _get_original_dotfile_index(self, table_row: int) -> int:
         """

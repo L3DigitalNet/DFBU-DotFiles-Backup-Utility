@@ -525,6 +525,16 @@ or load an existing configuration.</string>
                </widget>
               </item>
               <item>
+               <widget class="QPushButton" name="exportConfigButton">
+                <property name="text">
+                 <string>Export Config</string>
+                </property>
+                <property name="toolTip">
+                 <string>Export dotfiles.yaml and settings.yaml to a location of your choice</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <spacer name="actionBarSpacer">
                 <property name="orientation">
                  <enum>Qt::Orientation::Horizontal</enum>
