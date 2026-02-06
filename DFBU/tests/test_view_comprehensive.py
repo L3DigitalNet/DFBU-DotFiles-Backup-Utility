@@ -18,11 +18,11 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from gui.model import DFBUModel
-
 # Import Qt modules for testing
 from PySide6.QtCore import QByteArray, Qt
 from PySide6.QtWidgets import QApplication, QMessageBox
+
+from gui.model import DFBUModel
 from gui.view import AddDotfileDialog, MainWindow, NumericTableWidgetItem
 from gui.viewmodel import DFBUViewModel
 
@@ -33,7 +33,7 @@ def qapp():
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
-    yield app
+    return app
 
 
 @pytest.fixture
@@ -267,7 +267,6 @@ class TestAddDotfileDialog:
         Testing this requires complex mocking of Qt dialog lifecycle.
         The functionality is verified through manual testing and integration tests.
         """
-        pass
 
     @pytest.mark.skip(
         reason="Complex UI interaction test - requires intricate QMessageBox mocking. "
@@ -286,7 +285,6 @@ class TestAddDotfileDialog:
         Testing this requires complex mocking of Qt dialog lifecycle.
         The functionality is verified through manual testing and integration tests.
         """
-        pass
 
 
 class TestMainWindow:
@@ -449,17 +447,16 @@ class TestMainWindowBackupRestore:
         # Arrange
         window = MainWindow(viewmodel_with_config, "1.1.0")
 
-        # Mock directory dialog - user cancels
-        with patch("PySide6.QtWidgets.QFileDialog.getExistingDirectory") as mock_dialog:
-            mock_dialog.return_value = ""  # No directory selected
-
+        # Mock the warning dialog that appears when no source is selected
+        with patch("PySide6.QtWidgets.QMessageBox.warning") as mock_warning:
             with patch.object(
                 viewmodel_with_config, "command_start_restore"
             ) as mock_start_restore:
                 # Act
                 window._on_start_restore()
 
-                # Assert
+                # Assert - warning shown, restore not started
+                mock_warning.assert_called_once()
                 mock_start_restore.assert_not_called()
 
     def test_progress_updated_displays_correctly(self, qapp, viewmodel_with_config):

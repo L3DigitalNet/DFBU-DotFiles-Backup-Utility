@@ -220,9 +220,7 @@ class TestLogRotation:
         # Check for rotating file handler
         from logging.handlers import RotatingFileHandler
 
-        rotating_handlers = [
-            h for h in handlers if isinstance(h, RotatingFileHandler)
-        ]
+        rotating_handlers = [h for h in handlers if isinstance(h, RotatingFileHandler)]
         assert len(rotating_handlers) > 0
         logging.root.handlers.clear()
 

@@ -228,7 +228,7 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          
+
           <widget class="QWidget" name="backupEmptyPage">
            <layout class="QVBoxLayout" name="emptyStateLayout">
             <item>
@@ -321,7 +321,7 @@ or load an existing configuration.</string>
             </item>
            </layout>
           </widget>
-          
+
           <widget class="QWidget" name="backupContentPage">
            <layout class="QVBoxLayout" name="backupContentLayout">
             <property name="spacing">
@@ -339,7 +339,7 @@ or load an existing configuration.</string>
             <property name="bottomMargin">
              <number>0</number>
             </property>
-            
+
             <item>
              <layout class="QHBoxLayout" name="backupToolbarLayout">
               <property name="spacing">
@@ -376,7 +376,7 @@ or load an existing configuration.</string>
               </item>
              </layout>
             </item>
-            
+
             <item>
              <widget class="QTableWidget" name="fileGroupFileTable">
               <property name="sizePolicy">
@@ -429,7 +429,7 @@ or load an existing configuration.</string>
               </column>
              </widget>
             </item>
-            
+
             <item>
              <layout class="QHBoxLayout" name="backupActionBarLayout">
               <property name="spacing">
@@ -513,7 +513,7 @@ or load an existing configuration.</string>
           </widget>
          </widget>
         </item>
-        
+
         <item>
          <layout class="QHBoxLayout" name="backupOptionsStripLayout">
           <property name="spacing">
@@ -658,7 +658,7 @@ or load an existing configuration.</string>
             <property name="spacing">
              <number>12</number>
             </property>
-            
+
             <item>
              <widget class="QGroupBox" name="backupPathsGroup">
               <property name="title">
@@ -736,7 +736,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="backupModesGroup">
               <property name="title">
@@ -780,7 +780,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="archiveOptionsGroup">
               <property name="title">
@@ -862,7 +862,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="preRestoreSafetyGroup">
               <property name="title">
@@ -951,7 +951,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="verificationGroup">
               <property name="title">
@@ -984,7 +984,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="sizeManagementGroup">
               <property name="title">

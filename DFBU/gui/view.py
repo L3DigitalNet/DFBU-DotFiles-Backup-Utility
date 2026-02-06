@@ -44,7 +44,14 @@ from typing import Any, Final
 # Local imports
 from core.common_types import LegacyDotFileDict, OperationResultDict, SizeReportDict
 from PySide6.QtCore import QFile, Qt
-from PySide6.QtGui import QCloseEvent, QColor, QKeySequence, QPixmap, QShortcut, QTextCursor
+from PySide6.QtGui import (
+    QCloseEvent,
+    QColor,
+    QKeySequence,
+    QPixmap,
+    QShortcut,
+    QTextCursor,
+)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -72,11 +79,11 @@ from PySide6.QtWidgets import (
 )
 
 from gui.constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
-from gui.theme import DFBUColors
 from gui.help_dialog import HelpDialog
 from gui.input_validation import InputValidator
 from gui.recovery_dialog import RecoveryDialog
 from gui.size_warning_dialog import SizeWarningDialog
+from gui.theme import DFBUColors
 from gui.tooltip_manager import TooltipManager
 from gui.viewmodel import DFBUViewModel
 
@@ -574,7 +581,9 @@ class MainWindow(QMainWindow):
 
         # Find widgets for each tab and pane
         self._find_backup_tab_widgets(ui_widget)
-        self._find_logs_tab_widgets(ui_widget)  # Must be before restore to set operation_log
+        self._find_logs_tab_widgets(
+            ui_widget
+        )  # Must be before restore to set operation_log
         self._find_restore_tab_widgets(ui_widget)
         self._find_config_tab_widgets(ui_widget)
         self._find_status_widgets()
@@ -725,9 +734,7 @@ class MainWindow(QMainWindow):
     def _find_logs_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to log pane widgets (split view)."""
         # Log pane text area (replaces old logBox in logTab)
-        self.operation_log: QTextEdit = ui_widget.findChild(
-            QTextEdit, "logPaneBox"
-        )  # type: ignore[assignment]
+        self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "logPaneBox")  # type: ignore[assignment]
 
         # Validate critical widget was found
         if not self.operation_log:
@@ -765,12 +772,8 @@ class MainWindow(QMainWindow):
 
     def _find_header_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to header bar widgets."""
-        self._help_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "helpButton"
-        )  # type: ignore[assignment]
-        self._about_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "aboutButton"
-        )  # type: ignore[assignment]
+        self._help_btn: QPushButton = ui_widget.findChild(QPushButton, "helpButton")  # type: ignore[assignment]
+        self._about_btn: QPushButton = ui_widget.findChild(QPushButton, "aboutButton")  # type: ignore[assignment]
 
     def _connect_ui_signals(self) -> None:
         """Connect UI element signals to handler methods."""
@@ -1007,9 +1010,7 @@ class MainWindow(QMainWindow):
         self.restore_preview_host_label.setText(
             f"Hostname: {metadata['hostname'] or 'Unknown'}"
         )
-        self.restore_preview_count_label.setText(
-            f"Files: {metadata['file_count']}"
-        )
+        self.restore_preview_count_label.setText(f"Files: {metadata['file_count']}")
         self.restore_preview_size_label.setText(
             f"Size: {self._format_size(metadata['total_size'])}"
         )
@@ -1018,18 +1019,23 @@ class MainWindow(QMainWindow):
         self.restore_preview_tree.clear()
         for entry in metadata["entries"]:
             file_count: int = entry["file_count"]
-            app_item = QTreeWidgetItem([
-                entry["application"],
-                f"{file_count} file{'s' if file_count != 1 else ''}",
-                self._format_size(entry["total_size"]),
-            ])
+            app_item = QTreeWidgetItem(
+                [
+                    entry["application"],
+                    f"{file_count} file{'s' if file_count != 1 else ''}",
+                    self._format_size(entry["total_size"]),
+                ]
+            )
 
             for file_info in entry["files"]:
-                QTreeWidgetItem(app_item, [
-                    file_info["name"],
-                    "",
-                    self._format_size(file_info["size"]),
-                ])
+                QTreeWidgetItem(
+                    app_item,
+                    [
+                        file_info["name"],
+                        "",
+                        self._format_size(file_info["size"]),
+                    ],
+                )
 
             self.restore_preview_tree.addTopLevelItem(app_item)
 
@@ -1041,10 +1047,9 @@ class MainWindow(QMainWindow):
         """Format a byte count as a human-readable string."""
         if size_bytes < 1024:
             return f"{size_bytes} B"
-        elif size_bytes < 1024 * 1024:
+        if size_bytes < 1024 * 1024:
             return f"{size_bytes / 1024:.1f} KB"
-        else:
-            return f"{size_bytes / (1024 * 1024):.1f} MB"
+        return f"{size_bytes / (1024 * 1024):.1f} MB"
 
     def _on_start_restore(self) -> None:
         """Handle start restore button click."""
@@ -1446,10 +1451,17 @@ class MainWindow(QMainWindow):
             "GitHub: https://github.com/L3DigitalNet"
         )
 
-        icon_path = Path(__file__).resolve().parent.parent / "resources" / "icons" / "dfbu-256.png"
+        icon_path = (
+            Path(__file__).resolve().parent.parent
+            / "resources"
+            / "icons"
+            / "dfbu-256.png"
+        )
         if icon_path.exists():
             pixmap = QPixmap(str(icon_path)).scaled(
-                64, 64, Qt.AspectRatioMode.KeepAspectRatio,
+                64,
+                64,
+                Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation,
             )
             about_box.setIconPixmap(pixmap)
@@ -1653,7 +1665,9 @@ class MainWindow(QMainWindow):
 
             # Save to file
             if self.viewmodel.command_save_config():
-                self.status_bar.showMessage("✓ Configuration saved", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Configuration saved", STATUS_MESSAGE_TIMEOUT_MS
+                )
 
                 # Update backup tab checkboxes to reflect changes
                 self.mirror_checkbox.setChecked(self.config_mirror_checkbox.isChecked())
@@ -1680,7 +1694,9 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Save to file
             if self.viewmodel.command_save_config():
-                self.status_bar.showMessage("✓ Dotfile configuration saved", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Dotfile configuration saved", STATUS_MESSAGE_TIMEOUT_MS
+                )
             else:
                 QMessageBox.critical(
                     self,
@@ -1750,7 +1766,9 @@ class MainWindow(QMainWindow):
             )
 
             if success:
-                self.status_bar.showMessage("✓ Dotfile added", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Dotfile added", STATUS_MESSAGE_TIMEOUT_MS
+                )
             else:
                 QMessageBox.critical(self, "Add Failed", "Failed to add dotfile entry.")
 
@@ -1803,7 +1821,9 @@ class MainWindow(QMainWindow):
             )
 
             if success:
-                self.status_bar.showMessage("✓ Dotfile updated", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Dotfile updated", STATUS_MESSAGE_TIMEOUT_MS
+                )
             else:
                 QMessageBox.critical(
                     self, "Update Failed", "Failed to update dotfile entry."
@@ -1841,7 +1861,9 @@ class MainWindow(QMainWindow):
             success = self.viewmodel.command_remove_dotfile(original_idx)
 
             if success:
-                self.status_bar.showMessage("✓ Dotfile removed", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Dotfile removed", STATUS_MESSAGE_TIMEOUT_MS
+                )
             else:
                 QMessageBox.critical(
                     self, "Remove Failed", "Failed to remove dotfile entry."

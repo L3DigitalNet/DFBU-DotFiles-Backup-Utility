@@ -12,8 +12,6 @@ Date Created: 10-31-2025
 License: MIT
 """
 
-from pathlib import Path
-
 import pytest
 
 from gui.model import DFBUModel

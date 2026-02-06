@@ -10,9 +10,6 @@ Author: Chris Purcell
 """
 
 from pathlib import Path
-from typing import Protocol, runtime_checkable
-
-import pytest
 
 from gui.protocols import RestoreBackupManagerProtocol
 
@@ -260,7 +257,7 @@ class TestCleanupOldBackups:
 
         manager = RestoreBackupManager(backup_base_dir=tmp_path, max_backups=1)
         for i in range(5):
-            (tmp_path / f"2026-01-{25+i:02d}_100000").mkdir()
+            (tmp_path / f"2026-01-{25 + i:02d}_100000").mkdir()
 
         # Act
         removed = manager.cleanup_old_backups()
@@ -492,7 +489,10 @@ class TestManifestCreation:
             manifest = tomllib.load(f)
 
         assert "restore_operation" in manifest
-        assert manifest["restore_operation"]["source_backup"] == "/backups/mirror/2026-01-28"
+        assert (
+            manifest["restore_operation"]["source_backup"]
+            == "/backups/mirror/2026-01-28"
+        )
         assert manifest["restore_operation"]["file_count"] == 1
         assert "timestamp" in manifest["restore_operation"]
         assert "hostname" in manifest["restore_operation"]

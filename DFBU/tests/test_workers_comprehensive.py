@@ -12,14 +12,12 @@ Date Created: 11-01-2025
 License: MIT
 """
 
-from pathlib import Path
-
 import pytest
-
-from gui.model import DFBUModel
 
 # Import Qt for signal testing
 from PySide6.QtWidgets import QApplication
+
+from gui.model import DFBUModel
 from gui.viewmodel import BackupWorker, RestoreWorker
 
 
@@ -29,7 +27,7 @@ def qapp():
     app = QApplication.instance()
     if app is None:
         app = QApplication([])
-    yield app
+    return app
 
 
 class TestBackupWorkerSignals:

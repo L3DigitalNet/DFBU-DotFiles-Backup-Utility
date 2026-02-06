@@ -14,9 +14,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from ruamel.yaml import YAML
-
 from core.common_types import BackupHistoryEntry, DashboardMetrics
+from ruamel.yaml import YAML
 
 
 class BackupHistoryManager:

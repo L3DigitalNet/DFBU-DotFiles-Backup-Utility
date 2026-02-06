@@ -39,9 +39,7 @@ class ProfileDialog(QDialog):
     Uses Qt Designer UI file for layout.
     """
 
-    def __init__(
-        self, viewmodel: DFBUViewModel, parent: QWidget | None = None
-    ) -> None:
+    def __init__(self, viewmodel: DFBUViewModel, parent: QWidget | None = None) -> None:
         """
         Initialize ProfileDialog.
 
@@ -83,18 +81,10 @@ class ProfileDialog(QDialog):
         self.resize(loaded.size())
 
         # Find widgets by object name
-        self.profile_list: QListWidget = loaded.findChild(
-            QListWidget, "profileList"
-        )  # type: ignore[assignment]
-        self.btn_new: QPushButton = loaded.findChild(
-            QPushButton, "btnNewProfile"
-        )  # type: ignore[assignment]
-        self.btn_edit: QPushButton = loaded.findChild(
-            QPushButton, "btnEditProfile"
-        )  # type: ignore[assignment]
-        self.btn_delete: QPushButton = loaded.findChild(
-            QPushButton, "btnDeleteProfile"
-        )  # type: ignore[assignment]
+        self.profile_list: QListWidget = loaded.findChild(QListWidget, "profileList")  # type: ignore[assignment]
+        self.btn_new: QPushButton = loaded.findChild(QPushButton, "btnNewProfile")  # type: ignore[assignment]
+        self.btn_edit: QPushButton = loaded.findChild(QPushButton, "btnEditProfile")  # type: ignore[assignment]
+        self.btn_delete: QPushButton = loaded.findChild(QPushButton, "btnDeleteProfile")  # type: ignore[assignment]
         self.button_box: QDialogButtonBox = loaded.findChild(
             QDialogButtonBox, "buttonBox"
         )  # type: ignore[assignment]
@@ -144,7 +134,6 @@ class ProfileDialog(QDialog):
         The button is present but functionality is not yet available.
         """
         # Profile editor dialog will be implemented in a future task
-        pass
 
     def _on_edit_profile(self) -> None:
         """Handle edit profile button click.
@@ -153,7 +142,6 @@ class ProfileDialog(QDialog):
         The button is present but functionality is not yet available.
         """
         # Profile editor dialog will be implemented in a future task
-        pass
 
     def _on_delete_profile(self) -> None:
         """Handle delete profile button click."""

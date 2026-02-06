@@ -6,10 +6,10 @@ signal when backup operations complete with recoverable failures.
 """
 
 import pytest
-
 from core.common_types import OperationResultDict
-from gui.viewmodel import DFBUViewModel
+
 from gui.model import DFBUModel
+from gui.viewmodel import DFBUViewModel
 
 
 @pytest.fixture

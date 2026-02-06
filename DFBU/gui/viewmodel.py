@@ -1344,21 +1344,25 @@ class DFBUViewModel(QObject):
             for file_path in app_dir.rglob("*"):
                 if file_path.is_file():
                     size = file_path.stat().st_size
-                    app_files.append({
-                        "name": file_path.name,
-                        "path": str(file_path.relative_to(scan_root)),
-                        "size": size,
-                    })
+                    app_files.append(
+                        {
+                            "name": file_path.name,
+                            "path": str(file_path.relative_to(scan_root)),
+                            "size": size,
+                        }
+                    )
                     app_size += size
                     total_files += 1
 
             if app_files:
-                entries.append({
-                    "application": app_dir.name,
-                    "files": app_files,
-                    "file_count": len(app_files),
-                    "total_size": app_size,
-                })
+                entries.append(
+                    {
+                        "application": app_dir.name,
+                        "files": app_files,
+                        "file_count": len(app_files),
+                        "total_size": app_size,
+                    }
+                )
                 total_size += app_size
 
         return {
@@ -1512,7 +1516,9 @@ class DFBUViewModel(QObject):
         Returns:
             True if profile was created successfully
         """
-        success = self.model.create_profile(name, description, excluded, options_overrides)
+        success = self.model.create_profile(
+            name, description, excluded, options_overrides
+        )
         if success:
             self.profiles_changed.emit()
         return success

@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import cast
 
 import pytest
-
 from core.common_types import DotFileDict, SessionDict, SettingsDict
 from core.yaml_config import YAMLConfigLoader
 
@@ -95,27 +94,30 @@ excluded:
         """Save settings to YAML file."""
         loader = YAMLConfigLoader(tmp_path)
         # Cast needed: test uses partial OptionsDict (missing v1.0.0 size fields)
-        settings = cast(SettingsDict, {
-            "paths": {
-                "mirror_dir": "~/test/mirror",
-                "archive_dir": "~/test/archives",
-                "restore_backup_dir": "~/.local/share/dfbu/restore-backups",
+        settings = cast(
+            SettingsDict,
+            {
+                "paths": {
+                    "mirror_dir": "~/test/mirror",
+                    "archive_dir": "~/test/archives",
+                    "restore_backup_dir": "~/.local/share/dfbu/restore-backups",
+                },
+                "options": {
+                    "mirror": True,
+                    "archive": False,
+                    "hostname_subdir": True,
+                    "date_subdir": False,
+                    "archive_format": "tar.gz",
+                    "archive_compression_level": 5,
+                    "rotate_archives": True,
+                    "max_archives": 5,
+                    "pre_restore_backup": True,
+                    "max_restore_backups": 5,
+                    "verify_after_backup": False,
+                    "hash_verification": False,
+                },
             },
-            "options": {
-                "mirror": True,
-                "archive": False,
-                "hostname_subdir": True,
-                "date_subdir": False,
-                "archive_format": "tar.gz",
-                "archive_compression_level": 5,
-                "rotate_archives": True,
-                "max_archives": 5,
-                "pre_restore_backup": True,
-                "max_restore_backups": 5,
-                "verify_after_backup": False,
-                "hash_verification": False,
-            },
-        })
+        )
         loader.save_settings(settings)
 
         content = (tmp_path / "settings.yaml").read_text()

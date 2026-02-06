@@ -2,15 +2,15 @@
 
 import pytest
 from core.common_types import (
-    DotFileDict,
-    SettingsDict,
-    PathsDict,
-    OptionsDict,
-    SessionDict,
-    LegacyDotFileDict,
-    ProfileDict,
-    PreviewItemDict,
     BackupPreviewDict,
+    DotFileDict,
+    LegacyDotFileDict,
+    OptionsDict,
+    PathsDict,
+    PreviewItemDict,
+    ProfileDict,
+    SessionDict,
+    SettingsDict,
 )
 
 

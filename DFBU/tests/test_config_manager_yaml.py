@@ -167,9 +167,7 @@ class TestConfigManagerDotfileList:
             assert "paths" in df
 
     @pytest.mark.unit
-    def test_get_dotfile_list_includes_description(
-        self, yaml_config_dir: Path
-    ) -> None:
+    def test_get_dotfile_list_includes_description(self, yaml_config_dir: Path) -> None:
         """Dotfile list includes correct descriptions."""
         # Arrange
         config_manager = ConfigManager(yaml_config_dir, expand_path)
@@ -253,9 +251,7 @@ class TestConfigManagerExclusions:
         assert exclusions == ["Vim"]
 
     @pytest.mark.unit
-    def test_is_excluded_true(
-        self, yaml_config_dir_with_exclusions: Path
-    ) -> None:
+    def test_is_excluded_true(self, yaml_config_dir_with_exclusions: Path) -> None:
         """Check if specific dotfile is excluded returns True."""
         # Arrange
         config_manager = ConfigManager(yaml_config_dir_with_exclusions, expand_path)
@@ -266,9 +262,7 @@ class TestConfigManagerExclusions:
         assert config_manager.is_excluded("Konsole") is True
 
     @pytest.mark.unit
-    def test_is_excluded_false(
-        self, yaml_config_dir_with_exclusions: Path
-    ) -> None:
+    def test_is_excluded_false(self, yaml_config_dir_with_exclusions: Path) -> None:
         """Check if specific dotfile is not excluded returns False."""
         # Arrange
         config_manager = ConfigManager(yaml_config_dir_with_exclusions, expand_path)
@@ -357,9 +351,7 @@ class TestConfigManagerIncludedDotfiles:
         assert included[0]["application"] == "Bash"
 
     @pytest.mark.unit
-    def test_get_included_dotfiles_after_toggle(
-        self, yaml_config_dir: Path
-    ) -> None:
+    def test_get_included_dotfiles_after_toggle(self, yaml_config_dir: Path) -> None:
         """Get included dotfiles updates after toggle."""
         # Arrange
         config_manager = ConfigManager(yaml_config_dir, expand_path)

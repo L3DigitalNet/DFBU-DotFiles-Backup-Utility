@@ -107,7 +107,7 @@ def create_rotating_backup(
     # Create backup directory if needed
     try:
         backup_dir.mkdir(parents=True, exist_ok=True)
-    except (OSError, PermissionError):
+    except OSError, PermissionError:
         return None
 
     # Generate timestamped backup filename with collision handling
@@ -125,7 +125,7 @@ def create_rotating_backup(
     # Copy file to backup location
     try:
         shutil.copy2(source_path, backup_path)
-    except (OSError, PermissionError, shutil.Error):
+    except OSError, PermissionError, shutil.Error:
         return None
 
     # Rotate old backups to maintain maximum count
@@ -320,7 +320,7 @@ class FileOperations:
             time_diff = abs(src_stat.st_mtime - dest_stat.st_mtime)
             return time_diff <= FILE_MTIME_TOLERANCE_SECONDS
 
-        except (OSError, PermissionError):
+        except OSError, PermissionError:
             return False
 
     def copy_file(
@@ -360,7 +360,7 @@ class FileOperations:
             try:
                 shutil.copy2(src_path, dest_path)
                 return True
-            except (OSError, shutil.Error):
+            except OSError, shutil.Error:
                 return False
         except OSError:
             # Copy operation failed
@@ -419,10 +419,10 @@ class FileOperations:
                         )
                         results.append((file_path, file_dest, success, False))
 
-                except (ValueError, OSError):
+                except ValueError, OSError:
                     results.append((file_path, None, False, False))
 
-        except (OSError, PermissionError):
+        except OSError, PermissionError:
             return results
 
         return results
@@ -454,12 +454,12 @@ class FileOperations:
                     if item.is_file():
                         try:
                             total_size += item.stat().st_size
-                        except (OSError, PermissionError):
+                        except OSError, PermissionError:
                             # Skip inaccessible files (e.g., permission denied)
                             continue
                 return total_size
 
-        except (OSError, PermissionError):
+        except OSError, PermissionError:
             # Error during directory traversal or stat operation
             pass
 
@@ -550,13 +550,13 @@ class FileOperations:
                     if exists:
                         try:
                             tar.add(path)
-                        except (OSError, ValueError, tarfile.TarError):
+                        except OSError, ValueError, tarfile.TarError:
                             # Skip files that can't be added (symlink loops, permission issues, invalid paths)
                             continue
 
             return archive_path
 
-        except (OSError, tarfile.TarError):
+        except OSError, tarfile.TarError:
             return None
 
     def rotate_archives(
@@ -663,7 +663,7 @@ class FileOperations:
                     # Cannot determine original location
                     restore_paths.append((src_path, None))
 
-            except (ValueError, IndexError):
+            except ValueError, IndexError:
                 # Reconstruction failed
                 restore_paths.append((src_path, None))
 
