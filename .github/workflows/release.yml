@@ -1,0 +1,61 @@
+# @format
+
+name: Release AppImage
+
+on:
+  push:
+    tags:
+      - "v*" # Triggered by version tags like v1.2.0
+
+permissions:
+  contents: write # Required to create releases and upload assets
+
+jobs:
+  build-appimage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.14
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Install system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libfuse2
+
+      - name: Run tests
+        run: uv run pytest DFBU/tests/ -x -q
+
+      - name: Build AppImage
+        run: |
+          chmod +x packaging/build-appimage.sh
+          packaging/build-appimage.sh
+
+      - name: Get version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: DFBU v${{ steps.version.outputs.version }}
+          body: |
+            ## DFBU DotFiles Backup Utility v${{ steps.version.outputs.version }}
+
+            ### Installation
+            1. Download `DFBU-x86_64.AppImage` below
+            2. Make it executable: `chmod +x DFBU-x86_64.AppImage`
+            3. Run it: `./DFBU-x86_64.AppImage`
+          files: |
+            dist/DFBU-x86_64.AppImage
+            dist/DFBU-x86_64.AppImage.zsync
+          fail_on_unmatched_files: true
+          draft: false
+          prerelease: false

@@ -30,6 +30,11 @@
     <binary>dfbu</binary>
   </provides>
   <releases>
+    <release version="1.2.1" date="2026-02-06">
+      <description>
+        <p>AppImage release with auto-update support, .gitignore cleanup, and CI release workflow.</p>
+      </description>
+    </release>
     <release version="1.0.0" date="2026-02-01">
       <description>
         <p>Production release with full error handling and file size management.</p>

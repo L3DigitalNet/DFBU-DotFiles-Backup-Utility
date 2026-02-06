@@ -91,7 +91,7 @@ setup_default_logging()
 logger = get_logger(__name__)
 
 # Application version
-__version__: Final[str] = "1.2.0"
+__version__: Final[str] = "1.2.1"
 PROJECT_NAME: Final[str] = "DFBU GUI"
 # User config directory - writable location for user settings
 USER_CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu"

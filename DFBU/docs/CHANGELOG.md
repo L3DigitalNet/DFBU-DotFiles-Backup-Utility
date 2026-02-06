@@ -1,3 +1,5 @@
+<!-- @format -->
+
 # Changelog - Dotfiles Backup Utility
 
 All notable changes to this project will be documented in this file.
@@ -11,6 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MINOR**: New functionality additions
 - **PATCH**: Bug fixes and code refactoring
 - **Development Stages**: `.dev`, `.a` (alpha), `.b` (beta), `.rc` (release candidate)
+
+## [1.2.1] - 2026-02-06
+
+### Added
+
+- **GitHub Release Workflow**: CI automatically builds and publishes AppImage on version tags
+- **AppImage Auto-Update Support**: Embedded zsync update info for delta updates via AppImageUpdate
+- **Release Prompt File**: Copilot prompt to walk through the full publish process
+
+### Changed
+
+- **`.gitignore` Rewrite**: Replaced generic Python template with clean project-specific rules; removed 47 unnecessary tracked files (AI configs, screenshots, test artifacts)
 
 ## [1.2.0] - 2026-02-06
 
@@ -160,6 +174,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added test coverage reports in `TEST_COVERAGE_REPORT.md`, `UI_INTEGRATION_CHECKLIST.md`, and `UI_INTEGRATION_SUMMARY.md`
 
 ### Changed
+
 - **Widget Naming Convention**: Updated all UI widgets to follow lowerCamelCase naming convention
   - Standardized button, label, and widget naming for consistency
   - Updated widget references throughout View layer to match Qt Designer naming
@@ -174,6 +189,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MyPy Configuration**: Updated mypy.ini with improved type checking settings
 
 ### Fixed
+
 - **UI Integration**: Resolved widget reference issues in main window and dialog components
 - **Test Reliability**: Updated test files to reflect widget naming changes and improve reliability
 
@@ -531,7 +547,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Duplicate path assembly methods (_assemble_mirror_dest_path, _assemble_archive_dest_path) from DotFile
+- Duplicate path assembly methods (\_assemble_mirror_dest_path, \_assemble_archive_dest_path) from DotFile
 - Redundant validation logic replaced with centralized ConfigValidator
 - ~300+ lines of duplicated/redundant code through consolidation
 
