@@ -653,6 +653,7 @@ class TestModelProfileManagement:
 
         # Assert
         from gui.profile_manager import ProfileManager
+
         assert isinstance(pm, ProfileManager)
 
 

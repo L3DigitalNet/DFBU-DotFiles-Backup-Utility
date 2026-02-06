@@ -10,12 +10,13 @@ Date Created: 2026-02-05
 License: MIT
 """
 
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
-import sys
 from typing import Any
 
 from ruamel.yaml import YAML
+
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -106,7 +107,7 @@ class ProfileManager:
 
             return True, ""
 
-        except (OSError, IOError) as e:
+        except OSError as e:
             return False, f"Failed to load profiles: {e}"
 
     def save_profiles(self) -> tuple[bool, str]:
@@ -139,7 +140,7 @@ class ProfileManager:
 
             return True, ""
 
-        except (OSError, IOError) as e:
+        except OSError as e:
             return False, f"Failed to save profiles: {e}"
 
     def create_profile(

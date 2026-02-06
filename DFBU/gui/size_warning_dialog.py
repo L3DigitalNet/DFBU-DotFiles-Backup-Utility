@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Final
 
 from core.common_types import SizeReportDict
-from gui.theme import DFBUColors
 from PySide6.QtCore import QFile
 from PySide6.QtGui import QColor
 from PySide6.QtUiTools import QUiLoader
@@ -20,6 +19,8 @@ from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QWidget,
 )
+
+from gui.theme import DFBUColors
 
 
 # Path to UI file relative to this module

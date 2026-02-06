@@ -188,9 +188,7 @@ class TestConfigTabSizeOptions:
         assert success
         assert model.options.get("size_warning_threshold_mb") == 10
 
-    def test_size_thresholds_saved(
-        self, yaml_config_with_size_options: Path
-    ) -> None:
+    def test_size_thresholds_saved(self, yaml_config_with_size_options: Path) -> None:
         """Size threshold options save correctly."""
         # Arrange - pass directory path, not file path
         model = DFBUModel(yaml_config_with_size_options)

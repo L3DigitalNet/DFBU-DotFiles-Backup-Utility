@@ -471,7 +471,7 @@ class TestArchiveValidation:
     def test_validate_archive_compression_level_valid(self) -> None:
         """Test that valid compression level (0-9) passes."""
         # Arrange & Act & Assert
-        for level in range(0, 10):
+        for level in range(10):
             result = InputValidator.validate_archive_compression_level(level)
             assert result.success is True
             assert result.sanitized_value == str(level)

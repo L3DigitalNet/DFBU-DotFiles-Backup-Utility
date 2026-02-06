@@ -1,8 +1,0 @@
-{
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-    "python.analysis.typeCheckingMode": "basic",
-    "python.analysis.diagnosticSeverityOverrides": {
-        "reportMissingImports": "error",
-        "reportOptionalMemberAccess": "warning"
-    }
-}

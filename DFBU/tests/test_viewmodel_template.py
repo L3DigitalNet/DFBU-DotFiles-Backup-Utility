@@ -36,13 +36,16 @@ Requirements:
 
 from __future__ import annotations
 
-from typing import Any, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 from unittest.mock import MagicMock
 
 import pytest
 from PySide6.QtCore import QObject, Signal, Slot
-from pytest_mock import MockerFixture
 from pytestqt.qtbot import QtBot
+
+
+if TYPE_CHECKING:
+    from pytest_mock import MockerFixture
 
 
 # =============================================================================

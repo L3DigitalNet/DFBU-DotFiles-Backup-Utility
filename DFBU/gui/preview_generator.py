@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from core.common_types import BackupPreviewDict, PreviewItemDict
+
 from gui.file_operations import FileOperations
 
 
@@ -69,9 +70,7 @@ class PreviewGenerator:
 
         # Count total paths for progress tracking
         total_paths = sum(
-            len(df.get("paths", []))
-            for df in dotfiles
-            if df.get("enabled", True)
+            len(df.get("paths", [])) for df in dotfiles if df.get("enabled", True)
         )
         processed = 0
 
@@ -170,12 +169,11 @@ class PreviewGenerator:
         """
         if item["status"] == "new":
             return new_count + 1, changed_count, unchanged_count, error_count
-        elif item["status"] == "changed":
+        if item["status"] == "changed":
             return new_count, changed_count + 1, unchanged_count, error_count
-        elif item["status"] == "unchanged":
+        if item["status"] == "unchanged":
             return new_count, changed_count, unchanged_count + 1, error_count
-        else:
-            return new_count, changed_count, unchanged_count, error_count + 1
+        return new_count, changed_count, unchanged_count, error_count + 1
 
     def _preview_file(
         self, src_path: Path, dest_path: Path, app_name: str
@@ -209,7 +207,7 @@ class PreviewGenerator:
                 application=app_name,
             )
 
-        except (OSError, PermissionError):
+        except OSError, PermissionError:
             # Expected for permission/access issues on protected files
             return PreviewItemDict(
                 path=str(src_path),

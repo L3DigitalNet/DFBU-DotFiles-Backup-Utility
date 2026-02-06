@@ -28,21 +28,17 @@ if [[ ! "$python_version" =~ ^3\.14 ]]; then
 	exit 1
 fi
 
-# Create virtual environment with UV
-echo "Creating virtual environment with UV..."
-uv venv
+# Create virtual environment and sync dependencies with UV
+echo "Creating virtual environment and syncing dependencies..."
+uv sync
 
 # Activate virtual environment
 echo "Activating virtual environment..."
 source .venv/bin/activate
 
-# Install dependencies with UV
-echo "Installing dependencies with UV..."
-uv pip install -r requirements.txt
-
-# Install development dependencies
-echo "Installing development dependencies..."
-uv pip install black isort mypy pylint
+# Install pre-commit hooks
+echo "Installing pre-commit git hooks..."
+pre-commit install
 
 echo ""
 echo "✅ Setup complete!"
@@ -51,14 +47,14 @@ echo "To activate the virtual environment, run:"
 echo "  source .venv/bin/activate"
 echo ""
 echo "To run the application:"
-echo "  python src/main.py"
+echo "  python -m DFBU"
 echo ""
 echo "To run tests:"
-echo "  pytest tests/"
+echo "  pytest DFBU/tests/"
 echo ""
-echo "To edit UI files:"
-echo "  designer src/views/ui/main_window.ui"
+echo "To run pre-commit hooks manually:"
+echo "  pre-commit run --all-files"
 echo ""
 echo "To run tests with coverage:"
-echo "  pytest --cov=src --cov-report=html tests/"
+echo "  pytest DFBU/tests/ --cov=DFBU --cov-report=html"
 echo ""

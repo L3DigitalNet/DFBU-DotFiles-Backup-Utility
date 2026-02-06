@@ -36,6 +36,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Final
 
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.common_types import VerificationReportDict, VerificationResultDict
 
@@ -210,7 +211,9 @@ class VerificationManager:
         lines.append(f"Timestamp:    {report['timestamp']}")
         lines.append(f"Backup Type:  {report['backup_type']}")
         lines.append(f"Backup Path:  {report['backup_path']}")
-        lines.append(f"Hash Check:   {'Enabled' if report['hash_verified'] else 'Disabled'}")
+        lines.append(
+            f"Hash Check:   {'Enabled' if report['hash_verified'] else 'Disabled'}"
+        )
         lines.append("")
 
         # Results summary
@@ -350,7 +353,7 @@ class VerificationManager:
             OSError: If file cannot be read
         """
         sha256_hash = hashlib.sha256()
-        with open(file_path, "rb") as f:
+        with Path(file_path).open("rb") as f:
             for chunk in iter(lambda: f.read(HASH_CHUNK_SIZE), b""):
                 sha256_hash.update(chunk)
         return sha256_hash.hexdigest()

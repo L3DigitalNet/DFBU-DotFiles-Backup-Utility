@@ -101,9 +101,7 @@ class TestCommandToggleExclusion:
         # Assert
         mock_config_manager.toggle_exclusion.assert_called_once_with("Bash")
 
-    def test_toggle_exclusion_emits_signal(
-        self, viewmodel: Any, qtbot: Any
-    ) -> None:
+    def test_toggle_exclusion_emits_signal(self, viewmodel: Any, qtbot: Any) -> None:
         """Toggle exclusion should emit exclusions_changed signal."""
         # Arrange
         with qtbot.waitSignal(viewmodel.exclusions_changed, timeout=1000):

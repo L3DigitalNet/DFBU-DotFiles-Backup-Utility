@@ -39,6 +39,7 @@ Functions:
     None
 """
 
+import shutil
 import time
 from pathlib import Path
 from typing import Any, Final
@@ -50,7 +51,9 @@ from core.common_types import (
     OptionsDict,
     SizeReportDict,
 )
+from core.yaml_config import YAMLConfigLoader
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
+from ruamel.yaml.error import YAMLError
 
 from gui.config_workers import ConfigLoadWorker, ConfigSaveWorker
 from gui.input_validation import InputValidator
@@ -1344,21 +1347,25 @@ class DFBUViewModel(QObject):
             for file_path in app_dir.rglob("*"):
                 if file_path.is_file():
                     size = file_path.stat().st_size
-                    app_files.append({
-                        "name": file_path.name,
-                        "path": str(file_path.relative_to(scan_root)),
-                        "size": size,
-                    })
+                    app_files.append(
+                        {
+                            "name": file_path.name,
+                            "path": str(file_path.relative_to(scan_root)),
+                            "size": size,
+                        }
+                    )
                     app_size += size
                     total_files += 1
 
             if app_files:
-                entries.append({
-                    "application": app_dir.name,
-                    "files": app_files,
-                    "file_count": len(app_files),
-                    "total_size": app_size,
-                })
+                entries.append(
+                    {
+                        "application": app_dir.name,
+                        "files": app_files,
+                        "file_count": len(app_files),
+                        "total_size": app_size,
+                    }
+                )
                 total_size += app_size
 
         return {
@@ -1490,6 +1497,90 @@ class DFBUViewModel(QObject):
         return self.model.verify_last_backup()
 
     # =========================================================================
+    # Config Editor Commands
+    # =========================================================================
+
+    def command_validate_config(self) -> tuple[bool, str]:
+        """
+        Validate the dotfiles.yaml and settings.yaml configuration files.
+
+        Returns:
+            Tuple of (success, message). Message contains error details on failure.
+        """
+        config_dir = self.model.config_path
+        errors: list[str] = []
+
+        # Create loader once and reuse for both validations
+        loader = YAMLConfigLoader(config_dir)
+
+        # Validate dotfiles.yaml
+        dotfiles_path = config_dir / "dotfiles.yaml"
+        if dotfiles_path.exists():
+            try:
+                loader.load_dotfiles()
+            except (ValueError, KeyError, TypeError, OSError, YAMLError) as e:
+                errors.append(f"dotfiles.yaml: {e}")
+        else:
+            errors.append("dotfiles.yaml: File not found")
+
+        # Validate settings.yaml
+        settings_path = config_dir / "settings.yaml"
+        if settings_path.exists():
+            try:
+                loader.load_settings()
+            except (ValueError, KeyError, TypeError, OSError, YAMLError) as e:
+                errors.append(f"settings.yaml: {e}")
+        else:
+            errors.append("settings.yaml: File not found")
+
+        if errors:
+            return False, "Validation errors:\n" + "\n".join(errors)
+        return True, "Configuration is valid. No errors found."
+
+    def command_export_config(self, dest_dir: Path) -> tuple[bool, str]:
+        """
+        Export dotfiles.yaml and settings.yaml to the specified directory.
+
+        Args:
+            dest_dir: Destination directory for the exported files
+
+        Returns:
+            Tuple of (success, message)
+        """
+        if not dest_dir.exists():
+            return False, f"Destination directory does not exist: {dest_dir}"
+
+        if not dest_dir.is_dir():
+            return False, f"Destination is not a directory: {dest_dir}"
+
+        config_dir = self.model.config_path
+        files_to_export = ["dotfiles.yaml", "settings.yaml"]
+        copied: list[str] = []
+        errors: list[str] = []
+
+        for filename in files_to_export:
+            src = config_dir / filename
+            dest = dest_dir / filename
+            if src.exists():
+                try:
+                    shutil.copy2(src, dest)
+                    copied.append(filename)
+                except OSError as e:  # Includes PermissionError
+                    errors.append(f"{filename}: {e}")
+            else:
+                errors.append(f"{filename}: Source file not found")
+
+        if errors:
+            return False, f"Exported {len(copied)} file(s), errors:\n" + "\n".join(
+                errors
+            )
+        return True, f"Exported {len(copied)} file(s) to {dest_dir}"
+
+    def get_config_dir(self) -> Path:
+        """Return the path to the configuration directory."""
+        return self.model.config_path
+
+    # =========================================================================
     # Profile Commands (v1.1.0)
     # =========================================================================
 
@@ -1512,7 +1603,9 @@ class DFBUViewModel(QObject):
         Returns:
             True if profile was created successfully
         """
-        success = self.model.create_profile(name, description, excluded, options_overrides)
+        success = self.model.create_profile(
+            name, description, excluded, options_overrides
+        )
         if success:
             self.profiles_changed.emit()
         return success
@@ -1828,6 +1921,22 @@ class DFBUViewModel(QObject):
 
         if self.restore_source_directory:
             self.settings.setValue("restoreSource", str(self.restore_source_directory))
+
+    def save_theme_preference(self, theme_name: str) -> None:
+        """Save the user's theme preference to QSettings.
+
+        Args:
+            theme_name: Theme name to persist (e.g., "dfbu_light", "dfbu_dark")
+        """
+        self.settings.setValue("appearance/theme", theme_name)
+
+    def load_theme_preference(self) -> str:
+        """Load the user's theme preference from QSettings.
+
+        Returns:
+            Theme name string, defaults to "dfbu_light" if not set.
+        """
+        return str(self.settings.value("appearance/theme", "dfbu_light"))
 
     def _on_worker_progress(self, value: int) -> None:
         """

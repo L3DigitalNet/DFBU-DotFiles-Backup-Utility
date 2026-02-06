@@ -1,0 +1,4 @@
+ImportError while loading conftest '/home/chris/projects/DFBU-DotFiles-Backup-Utility/DFBU/tests/conftest.py'.
+DFBU/tests/conftest.py:36: in <module>
+    from PySide6.QtWidgets import QApplication
+E   ModuleNotFoundError: No module named 'PySide6'

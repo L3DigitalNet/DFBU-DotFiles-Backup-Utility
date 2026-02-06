@@ -424,6 +424,19 @@ QToolTip {
 
 
 /* ==========================================================================
+   13b. Empty State — Backup tab empty state messaging
+   ========================================================================== */
+
+#emptyStateTitle {
+    color: #1E293B;
+}
+
+#emptyStateDescription {
+    color: #64748B;
+}
+
+
+/* ==========================================================================
    14. Header Bar — Application branding and quick actions
    ========================================================================== */
 
@@ -442,7 +455,8 @@ QToolTip {
 
 /* Header bar buttons - compact, icon-focused style */
 #helpButton,
-#aboutButton {
+#aboutButton,
+#themeToggleButton {
     background-color: transparent;
     border: none;
     border-radius: 4px;
@@ -452,12 +466,14 @@ QToolTip {
 }
 
 #helpButton:hover,
-#aboutButton:hover {
+#aboutButton:hover,
+#themeToggleButton:hover {
     background-color: #EFF6FF;
 }
 
 #helpButton:pressed,
-#aboutButton:pressed {
+#aboutButton:pressed,
+#themeToggleButton:pressed {
     background-color: #DBEAFE;
 }
 

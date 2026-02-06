@@ -113,7 +113,7 @@ class YAMLConfigLoader:
             raise FileNotFoundError(f"Settings file not found: {self.settings_path}")
 
         with self.settings_path.open("r", encoding="utf-8") as f:
-            data = self._yaml.load(f)
+            data: Any = self._yaml.load(f)  # pyright: ignore[reportUnknownMemberType]
 
         if data is None:
             raise ValueError("Settings file is empty")
@@ -136,7 +136,7 @@ class YAMLConfigLoader:
             raise FileNotFoundError(f"Dotfiles file not found: {self.dotfiles_path}")
 
         with self.dotfiles_path.open("r", encoding="utf-8") as f:
-            data = self._yaml.load(f)
+            data: Any = self._yaml.load(f)  # pyright: ignore[reportUnknownMemberType]
 
         if data is None:
             return {}
@@ -160,16 +160,27 @@ class YAMLConfigLoader:
             return {"excluded": []}
 
         with self.session_path.open("r", encoding="utf-8") as f:
-            data = self._yaml.load(f)
+            data: Any = self._yaml.load(f)  # pyright: ignore[reportUnknownMemberType]
 
         if data is None:
             return {"excluded": []}
 
-        excluded = data.get("excluded", [])
-        if excluded is None:
-            excluded = []
+        # Get excluded list with type validation
+        excluded_raw = data.get("excluded", [])
+        if excluded_raw is None:
+            excluded_raw = []
 
-        return {"excluded": list(excluded)}
+        # Convert to list of strings with validation
+        excluded: list[str] = []
+        if isinstance(excluded_raw, list):
+            for item in excluded_raw:  # pyright: ignore[reportUnknownVariableType]
+                if isinstance(item, str):
+                    excluded.append(item)
+                else:
+                    # Convert non-string items to string
+                    excluded.append(str(item))  # pyright: ignore[reportUnknownArgumentType]
+
+        return {"excluded": excluded}
 
     def save_settings(self, settings: SettingsDict) -> None:
         """
@@ -181,7 +192,7 @@ class YAMLConfigLoader:
         self._config_dir.mkdir(parents=True, exist_ok=True)
 
         with self.settings_path.open("w", encoding="utf-8") as f:
-            self._yaml.dump(dict(settings), f)
+            self._yaml.dump(dict(settings), f)  # pyright: ignore[reportUnknownMemberType]
 
     def save_dotfiles(self, dotfiles: dict[str, DotFileDict]) -> None:
         """
@@ -193,7 +204,7 @@ class YAMLConfigLoader:
         self._config_dir.mkdir(parents=True, exist_ok=True)
 
         with self.dotfiles_path.open("w", encoding="utf-8") as f:
-            self._yaml.dump(dict(dotfiles), f)
+            self._yaml.dump(dict(dotfiles), f)  # pyright: ignore[reportUnknownMemberType]
 
     def save_session(self, session: SessionDict) -> None:
         """
@@ -205,7 +216,7 @@ class YAMLConfigLoader:
         self._config_dir.mkdir(parents=True, exist_ok=True)
 
         with self.session_path.open("w", encoding="utf-8") as f:
-            self._yaml.dump(dict(session), f)
+            self._yaml.dump(dict(session), f)  # pyright: ignore[reportUnknownMemberType]
 
     def _validate_settings(self, data: dict[str, Any]) -> None:
         """

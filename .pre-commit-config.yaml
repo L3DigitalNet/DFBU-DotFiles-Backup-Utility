@@ -1,0 +1,51 @@
+# @format
+
+# Pre-commit hooks configuration
+# Run `pre-commit install` to set up the git hooks
+# Run `pre-commit run --all-files` to run all hooks on all files
+
+repos:
+  # Standard file hygiene hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        exclude: \.aider
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  # Ruff - linting and formatting (replaces flake8, isort, and parts of black)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
+    hooks:
+      # Linter
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+      # Formatter
+      - id: ruff-format
+
+  # MyPy - static type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.19.1
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - PySide6>=6.6.0
+          - ruamel-yaml>=0.19.1
+          - tomli-w>=1.0.0
+          - pytest>=7.0.0
+          - pytest-qt>=4.0.0
+          - pytest-mock>=3.0.0
+        args: ["--config-file=pyproject.toml"]
+        pass_filenames: false
+        entry: mypy DFBU/
+
+# CI configuration
+ci:
+  autofix_prs: false
+  autoupdate_schedule: monthly

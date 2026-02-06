@@ -371,6 +371,7 @@ class TestDialogTagsField:
 
         # Assert - tags_edit should be a QLineEdit
         from PySide6.QtWidgets import QLineEdit
+
         assert isinstance(dialog.tags_edit, QLineEdit)
 
 

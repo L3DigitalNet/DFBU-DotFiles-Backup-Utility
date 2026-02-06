@@ -17,10 +17,10 @@ import pytest
 
 from gui.error_handler import (
     ERRNO_TO_ERROR_TYPE,
-    ErrorHandler,
     NON_RETRYABLE_ERROR_TYPES,
     RETRYABLE_ERROR_TYPES,
     USER_MESSAGE_TEMPLATES,
+    ErrorHandler,
 )
 
 

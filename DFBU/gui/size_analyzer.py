@@ -35,9 +35,11 @@ from __future__ import annotations
 import fnmatch
 import logging
 import sys
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Final
+from typing import TYPE_CHECKING, Final
+
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.common_types import DotFileDict, SizeItemDict, SizeReportDict
@@ -192,9 +194,7 @@ class SizeAnalyzer:
         }
 
         # Calculate total paths for progress
-        total_paths = sum(
-            len(self._get_dotfile_paths(df)) for df in dotfiles
-        )
+        total_paths = sum(len(self._get_dotfile_paths(df)) for df in dotfiles)
         processed_paths = 0
 
         for dotfile in dotfiles:
@@ -284,13 +284,13 @@ class SizeAnalyzer:
             return patterns
 
         try:
-            with open(ignore_file, encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
+            with Path(ignore_file).open(encoding="utf-8") as f:
+                for raw_line in f:
+                    stripped = raw_line.strip()
                     # Skip empty lines and comments
-                    if not line or line.startswith("#"):
+                    if not stripped or stripped.startswith("#"):
                         continue
-                    patterns.append(line)
+                    patterns.append(stripped)
 
             logger.info(f"Loaded {len(patterns)} patterns from {ignore_file}")
             return patterns
@@ -363,9 +363,9 @@ class SizeAnalyzer:
 
         if size_mb >= self._critical_threshold_mb:
             return "critical"
-        elif size_mb >= self._alert_threshold_mb:
+        if size_mb >= self._alert_threshold_mb:
             return "alert"
-        elif size_mb >= self._warning_threshold_mb:
+        if size_mb >= self._warning_threshold_mb:
             return "warning"
         return "info"
 
@@ -395,11 +395,19 @@ class SizeAnalyzer:
 
         # Threshold summary
         by_level = report["items_by_level"]
-        lines.append(f"Items by threshold:")
-        lines.append(f"  Info (<{self._warning_threshold_mb} MB):     {by_level['info']}")
-        lines.append(f"  Warning ({self._warning_threshold_mb}-{self._alert_threshold_mb} MB):  {by_level['warning']}")
-        lines.append(f"  Alert ({self._alert_threshold_mb}-{self._critical_threshold_mb} MB):   {by_level['alert']}")
-        lines.append(f"  Critical (>{self._critical_threshold_mb} MB): {by_level['critical']}")
+        lines.append("Items by threshold:")
+        lines.append(
+            f"  Info (<{self._warning_threshold_mb} MB):     {by_level['info']}"
+        )
+        lines.append(
+            f"  Warning ({self._warning_threshold_mb}-{self._alert_threshold_mb} MB):  {by_level['warning']}"
+        )
+        lines.append(
+            f"  Alert ({self._alert_threshold_mb}-{self._critical_threshold_mb} MB):   {by_level['alert']}"
+        )
+        lines.append(
+            f"  Critical (>{self._critical_threshold_mb} MB): {by_level['critical']}"
+        )
         lines.append("")
 
         # Large items details

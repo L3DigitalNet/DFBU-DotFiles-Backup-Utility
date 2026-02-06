@@ -62,7 +62,7 @@ class BackupStatistics:
     skipped_items: int = 0
     failed_items: int = 0
     total_time: float = 0.0
-    processing_times: list[float] = field(default_factory=lambda: [])
+    processing_times: list[float] = field(default_factory=list)
 
     @property
     def average_time(self) -> float:

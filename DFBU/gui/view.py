@@ -44,9 +44,17 @@ from typing import Any, Final
 # Local imports
 from core.common_types import LegacyDotFileDict, OperationResultDict, SizeReportDict
 from PySide6.QtCore import QFile, Qt
-from PySide6.QtGui import QCloseEvent, QColor, QKeySequence, QPixmap, QShortcut, QTextCursor
+from PySide6.QtGui import (
+    QCloseEvent,
+    QColor,
+    QKeySequence,
+    QPixmap,
+    QShortcut,
+    QTextCursor,
+)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QDialog,
     QDialogButtonBox,
@@ -72,17 +80,14 @@ from PySide6.QtWidgets import (
 )
 
 from gui.constants import MIN_DIALOG_HEIGHT, MIN_DIALOG_WIDTH, STATUS_MESSAGE_TIMEOUT_MS
-from gui.theme import DFBUColors
 from gui.help_dialog import HelpDialog
 from gui.input_validation import InputValidator
 from gui.recovery_dialog import RecoveryDialog
 from gui.size_warning_dialog import SizeWarningDialog
+from gui.theme import DFBUColors
+from gui.theme_loader import get_current_theme, load_theme
 from gui.tooltip_manager import TooltipManager
 from gui.viewmodel import DFBUViewModel
-
-
-# Constants for view configuration
-SKIP_LOG_INTERVAL: Final[int] = 10  # Log every N skipped files to avoid log spam
 
 
 class NumericTableWidgetItem(QTableWidgetItem):
@@ -255,43 +260,49 @@ class AddDotfileDialog(QDialog):
         self.button_box.rejected.connect(self.reject)
 
     def _on_browse_path(self) -> None:
-        """Handle browse button click to select file or directory."""
-        # Create custom message box to ask user what type to select
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("Select Type")
-        msg_box.setText("What would you like to select?")
-        msg_box.setIcon(QMessageBox.Icon.Question)
+        """Open a unified file/directory picker.
 
-        # Add custom buttons with clear labels
-        file_button = msg_box.addButton("File", QMessageBox.ButtonRole.YesRole)
-        dir_button = msg_box.addButton("Directory", QMessageBox.ButtonRole.NoRole)
-        _cancel_button = msg_box.addButton("Cancel", QMessageBox.ButtonRole.RejectRole)
+        Uses a non-native QFileDialog that allows selecting either files
+        or directories from a single dialog, without a type prompt.
+        """
+        dialog = QFileDialog(self, "Select File or Directory", str(Path.home()))
+        dialog.setOption(QFileDialog.Option.DontUseNativeDialog, True)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setLabelText(QFileDialog.DialogLabel.Accept, "Select")
+        dialog.setNameFilter("All Files (*)")
 
-        msg_box.setDefaultButton(file_button)
-        msg_box.exec()
+        # Helper to get path candidate from the dialog's filename line edit
+        def get_path_from_line_edit() -> Path | None:
+            """Get path candidate from the dialog's filename line edit."""
+            line_edit = dialog.findChild(QLineEdit, "fileNameEdit")
+            if line_edit:
+                name = line_edit.text().strip()
+                if name:
+                    return Path(dialog.directory().absolutePath()) / name
+            return None
 
-        clicked_button = msg_box.clickedButton()
+        # Override accept to also allow directory selection.
+        # By default, clicking "Select" on a highlighted directory enters it.
+        # This patch makes it accept the directory path instead.
+        def accept_with_dirs() -> None:
+            candidate = get_path_from_line_edit()
+            if candidate and candidate.is_dir():
+                dialog.done(QDialog.DialogCode.Accepted)
+                return
+            QFileDialog.accept(dialog)
 
-        if clicked_button == file_button:
-            # Select a file
-            file_path, _ = QFileDialog.getOpenFileName(
-                self,
-                "Select File",
-                str(Path.home()),
-                "All Files (*)",
-            )
+        dialog.accept = accept_with_dirs  # type: ignore[method-assign]
 
-            if file_path:
-                self.path_input_edit.setText(file_path)
-
-        elif clicked_button == dir_button:
-            # Select a directory
-            dir_path = QFileDialog.getExistingDirectory(
-                self, "Select Directory", str(Path.home())
-            )
-
-            if dir_path:
-                self.path_input_edit.setText(dir_path)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            selected = dialog.selectedFiles()
+            if selected:
+                chosen = selected[0]
+                # Verify selection — construct from line edit if needed
+                if not Path(chosen).exists():
+                    candidate = get_path_from_line_edit()
+                    if candidate and candidate.exists():
+                        chosen = str(candidate)
+                self.path_input_edit.setText(chosen)
 
     def _on_add_path(self) -> None:
         """Add path from input field to paths list."""
@@ -477,9 +488,8 @@ class MainWindow(QMainWindow):
         self.viewmodel: DFBUViewModel = viewmodel
         self.version: str = version
 
-        # Track skipped items for periodic log updates
+        # Track skipped items for operation summary
         self._skipped_count: int = 0
-        self._last_logged_skip_count: int = 0
 
         # Track log entries for filtering
         self._log_entries: list[tuple[str, str]] = []
@@ -574,7 +584,9 @@ class MainWindow(QMainWindow):
 
         # Find widgets for each tab and pane
         self._find_backup_tab_widgets(ui_widget)
-        self._find_logs_tab_widgets(ui_widget)  # Must be before restore to set operation_log
+        self._find_logs_tab_widgets(
+            ui_widget
+        )  # Must be before restore to set operation_log
         self._find_restore_tab_widgets(ui_widget)
         self._find_config_tab_widgets(ui_widget)
         self._find_status_widgets()
@@ -616,6 +628,20 @@ class MainWindow(QMainWindow):
         )  # type: ignore[assignment]
         self.backup_btn: QPushButton = ui_widget.findChild(
             QPushButton, "startBackupButton"
+        )  # type: ignore[assignment]
+        # Hide missing checkbox for filtering non-existent dotfiles
+        self._hide_missing_checkbox: QCheckBox | None = ui_widget.findChild(
+            QCheckBox, "hideMissingCheckbox"
+        )
+        # Config editor buttons
+        self.edit_config_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "editConfigButton"
+        )  # type: ignore[assignment]
+        self.validate_config_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "validateConfigButton"
+        )  # type: ignore[assignment]
+        self.export_config_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "exportConfigButton"
         )  # type: ignore[assignment]
         # Empty state widgets
         self._backup_stacked_widget: QStackedWidget | None = ui_widget.findChild(
@@ -725,9 +751,7 @@ class MainWindow(QMainWindow):
     def _find_logs_tab_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to log pane widgets (split view)."""
         # Log pane text area (replaces old logBox in logTab)
-        self.operation_log: QTextEdit = ui_widget.findChild(
-            QTextEdit, "logPaneBox"
-        )  # type: ignore[assignment]
+        self.operation_log: QTextEdit = ui_widget.findChild(QTextEdit, "logPaneBox")  # type: ignore[assignment]
 
         # Validate critical widget was found
         if not self.operation_log:
@@ -755,6 +779,9 @@ class MainWindow(QMainWindow):
         self._log_clear_btn: QPushButton = ui_widget.findChild(
             QPushButton, "logPaneClearButton"
         )  # type: ignore[assignment]
+        self._log_verbose_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "logPaneVerboseButton"
+        )  # type: ignore[assignment]
 
     def _find_status_widgets(self) -> None:
         """Find and store references to status bar widgets."""
@@ -765,12 +792,11 @@ class MainWindow(QMainWindow):
 
     def _find_header_widgets(self, ui_widget: QWidget) -> None:
         """Find and store references to header bar widgets."""
-        self._help_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "helpButton"
-        )  # type: ignore[assignment]
-        self._about_btn: QPushButton = ui_widget.findChild(
-            QPushButton, "aboutButton"
-        )  # type: ignore[assignment]
+        self._help_btn: QPushButton = ui_widget.findChild(QPushButton, "helpButton")  # type: ignore[assignment]
+        self._about_btn: QPushButton = ui_widget.findChild(QPushButton, "aboutButton")  # type: ignore[assignment]
+        self._theme_toggle_btn: QPushButton | None = ui_widget.findChild(
+            QPushButton, "themeToggleButton"
+        )
 
     def _connect_ui_signals(self) -> None:
         """Connect UI element signals to handler methods."""
@@ -786,10 +812,19 @@ class MainWindow(QMainWindow):
         self.dotfile_table.itemSelectionChanged.connect(
             self._on_dotfile_selection_changed
         )
+        self.edit_config_btn.clicked.connect(self._on_edit_config)
+        self.validate_config_btn.clicked.connect(self._on_validate_config)
+        self.export_config_btn.clicked.connect(self._on_export_config)
 
         # Filter input connection
         if self._filter_input:
-            self._filter_input.textChanged.connect(self._apply_filter)
+            self._filter_input.textChanged.connect(self._apply_combined_filters)
+
+        # Hide missing checkbox connection
+        if self._hide_missing_checkbox:
+            self._hide_missing_checkbox.stateChanged.connect(
+                self._apply_combined_filters
+            )
 
         # Empty state add button
         if self._empty_state_add_btn:
@@ -859,6 +894,8 @@ class MainWindow(QMainWindow):
             self._help_btn.clicked.connect(self._show_user_guide)
         if self._about_btn:
             self._about_btn.clicked.connect(self._show_about)
+        if self._theme_toggle_btn:
+            self._theme_toggle_btn.clicked.connect(self._on_toggle_theme)
 
     def _setup_shortcuts(self) -> None:
         """Set up keyboard shortcuts for actions previously in menus."""
@@ -867,6 +904,7 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+B"), self, self._on_start_backup)
         QShortcut(QKeySequence("Ctrl+R"), self, self._on_start_restore)
         QShortcut(QKeySequence("Ctrl+V"), self, self._on_verify_backup)
+        QShortcut(QKeySequence("Ctrl+T"), self, self._on_toggle_theme)
 
     def _configure_table_widget(self) -> None:
         """Configure the dotfile table widget properties.
@@ -923,6 +961,9 @@ class MainWindow(QMainWindow):
             self.restore_source_edit.setText(settings["restore_source"])
             self.restore_btn.setEnabled(True)
 
+        # Initialize theme toggle button label
+        self._update_theme_toggle_button()
+
     def _on_start_backup(self) -> None:
         """Handle start backup button click."""
         if self.viewmodel.get_dotfile_count() == 0:
@@ -942,7 +983,6 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Reset skip tracking for new operation
             self._skipped_count = 0
-            self._last_logged_skip_count = 0
 
             # Clear operation log
             self.operation_log.clear()
@@ -1007,9 +1047,7 @@ class MainWindow(QMainWindow):
         self.restore_preview_host_label.setText(
             f"Hostname: {metadata['hostname'] or 'Unknown'}"
         )
-        self.restore_preview_count_label.setText(
-            f"Files: {metadata['file_count']}"
-        )
+        self.restore_preview_count_label.setText(f"Files: {metadata['file_count']}")
         self.restore_preview_size_label.setText(
             f"Size: {self._format_size(metadata['total_size'])}"
         )
@@ -1018,18 +1056,23 @@ class MainWindow(QMainWindow):
         self.restore_preview_tree.clear()
         for entry in metadata["entries"]:
             file_count: int = entry["file_count"]
-            app_item = QTreeWidgetItem([
-                entry["application"],
-                f"{file_count} file{'s' if file_count != 1 else ''}",
-                self._format_size(entry["total_size"]),
-            ])
+            app_item = QTreeWidgetItem(
+                [
+                    entry["application"],
+                    f"{file_count} file{'s' if file_count != 1 else ''}",
+                    self._format_size(entry["total_size"]),
+                ]
+            )
 
             for file_info in entry["files"]:
-                QTreeWidgetItem(app_item, [
-                    file_info["name"],
-                    "",
-                    self._format_size(file_info["size"]),
-                ])
+                QTreeWidgetItem(
+                    app_item,
+                    [
+                        file_info["name"],
+                        "",
+                        self._format_size(file_info["size"]),
+                    ],
+                )
 
             self.restore_preview_tree.addTopLevelItem(app_item)
 
@@ -1041,10 +1084,9 @@ class MainWindow(QMainWindow):
         """Format a byte count as a human-readable string."""
         if size_bytes < 1024:
             return f"{size_bytes} B"
-        elif size_bytes < 1024 * 1024:
+        if size_bytes < 1024 * 1024:
             return f"{size_bytes / 1024:.1f} KB"
-        else:
-            return f"{size_bytes / (1024 * 1024):.1f} MB"
+        return f"{size_bytes / (1024 * 1024):.1f} MB"
 
     def _on_start_restore(self) -> None:
         """Handle start restore button click."""
@@ -1086,25 +1128,22 @@ class MainWindow(QMainWindow):
 
     def _on_item_processed(self, source: str, destination: str) -> None:
         """Handle item processed signal."""
-        log_message = f"✓ {Path(source).name} → {Path(destination).name}"
+        if self._log_verbose_btn and self._log_verbose_btn.isChecked():
+            log_message = f"✓ {Path(source).name} → {destination}"
+        else:
+            log_message = f"✓ {Path(source).name} → {Path(destination).name}"
         self._append_log(log_message, "success")
 
     def _on_item_skipped(self, path: str, reason: str) -> None:
-        """
-        Handle item skipped signal.
-
-        Shows periodic summary of skipped files to avoid overwhelming the log
-        with potentially hundreds of individual "unchanged" messages.
-        """
+        """Handle item skipped signal — log each file individually."""
         self._skipped_count += 1
+        name = Path(path).name
 
-        # Show progress at intervals to indicate activity without overwhelming the log
-        if self._skipped_count % SKIP_LOG_INTERVAL == 0:
-            new_skips = self._skipped_count - self._last_logged_skip_count
-            self._last_logged_skip_count = self._skipped_count
-
-            log_message = f"⊘ Skipped {new_skips} unchanged files (total: {self._skipped_count})..."
-            self._append_log(log_message, "skip")
+        if self._log_verbose_btn and self._log_verbose_btn.isChecked():
+            log_message = f"⊘ {name} ({reason}) [{path}]"
+        else:
+            log_message = f"⊘ {name} ({reason})"
+        self._append_log(log_message, "skip")
 
     def _on_operation_finished(self, summary: str) -> None:
         """Handle operation finished signal."""
@@ -1122,11 +1161,10 @@ class MainWindow(QMainWindow):
             and not self.viewmodel.backup_worker.isRunning()
         ):
             # Backup just completed
-            # Log any remaining skipped files
-            if self._skipped_count > self._last_logged_skip_count:
-                remaining = self._skipped_count - self._last_logged_skip_count
+            # Log skip summary
+            if self._skipped_count > 0:
                 self._append_log(
-                    f"⊘ Skipped {remaining} unchanged files (total: {self._skipped_count})...",
+                    f"⊘ Total unchanged files: {self._skipped_count}",
                     "skip",
                 )
             self._append_log("=== Backup Operation Completed ===", "header")
@@ -1446,10 +1484,17 @@ class MainWindow(QMainWindow):
             "GitHub: https://github.com/L3DigitalNet"
         )
 
-        icon_path = Path(__file__).resolve().parent.parent / "resources" / "icons" / "dfbu-256.png"
+        icon_path = (
+            Path(__file__).resolve().parent.parent
+            / "resources"
+            / "icons"
+            / "dfbu-256.png"
+        )
         if icon_path.exists():
             pixmap = QPixmap(str(icon_path)).scaled(
-                64, 64, Qt.AspectRatioMode.KeepAspectRatio,
+                64,
+                64,
+                Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation,
             )
             about_box.setIconPixmap(pixmap)
@@ -1460,6 +1505,26 @@ class MainWindow(QMainWindow):
         """Show user guide help dialog."""
         dialog = HelpDialog(self)
         dialog.exec()
+
+    def _on_toggle_theme(self) -> None:
+        """Toggle between light and dark themes."""
+        current = get_current_theme()
+        new_theme = "dfbu_dark" if current == "dfbu_light" else "dfbu_light"
+        app = QApplication.instance()
+        if app:
+            load_theme(app, new_theme)  # type: ignore[arg-type]
+            self._update_theme_toggle_button()
+            self.viewmodel.save_theme_preference(new_theme)
+
+    def _update_theme_toggle_button(self) -> None:
+        """Update theme toggle button text and tooltip to reflect current theme."""
+        if not self._theme_toggle_btn:
+            return
+        is_dark = get_current_theme() == "dfbu_dark"
+        self._theme_toggle_btn.setText("Light" if is_dark else "Dark")
+        self._theme_toggle_btn.setToolTip(
+            "Switch to light mode" if is_dark else "Switch to dark mode"
+        )
 
     def _show_recovery_dialog(self, result: OperationResultDict) -> None:
         """Show recovery dialog when operation has failures.
@@ -1653,7 +1718,9 @@ class MainWindow(QMainWindow):
 
             # Save to file
             if self.viewmodel.command_save_config():
-                self.status_bar.showMessage("✓ Configuration saved", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Configuration saved", STATUS_MESSAGE_TIMEOUT_MS
+                )
 
                 # Update backup tab checkboxes to reflect changes
                 self.mirror_checkbox.setChecked(self.config_mirror_checkbox.isChecked())
@@ -1680,13 +1747,83 @@ class MainWindow(QMainWindow):
         if reply == QMessageBox.StandardButton.Yes:
             # Save to file
             if self.viewmodel.command_save_config():
-                self.status_bar.showMessage("✓ Dotfile configuration saved", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Dotfile configuration saved", STATUS_MESSAGE_TIMEOUT_MS
+                )
             else:
                 QMessageBox.critical(
                     self,
                     "Save Failed",
                     "Failed to save configuration. Check file permissions.",
                 )
+
+    def _on_edit_config(self) -> None:
+        """Open dotfiles.yaml in the user's default text editor."""
+        import subprocess
+
+        config_dir = self.viewmodel.get_config_dir()
+        dotfiles_path = config_dir / "dotfiles.yaml"
+
+        if not dotfiles_path.exists():
+            QMessageBox.warning(
+                self,
+                "File Not Found",
+                f"Configuration file not found:\n{dotfiles_path}",
+            )
+            return
+
+        try:
+            subprocess.Popen(["xdg-open", str(dotfiles_path)])
+            self.status_bar.showMessage(
+                "Opened dotfiles.yaml in external editor",
+                STATUS_MESSAGE_TIMEOUT_MS,
+            )
+        except FileNotFoundError:
+            QMessageBox.warning(
+                self,
+                "Editor Not Found",
+                "Could not open file: xdg-open not found.\n"
+                "Please open manually:\n" + str(dotfiles_path),
+            )
+        except OSError as e:
+            QMessageBox.warning(
+                self,
+                "Cannot Open File",
+                f"Failed to open external editor: {e}\n"
+                f"Please open manually:\n{dotfiles_path}",
+            )
+
+    def _on_validate_config(self) -> None:
+        """Validate YAML configuration files and show results."""
+        success, message = self.viewmodel.command_validate_config()
+
+        if success:
+            reply = QMessageBox.information(
+                self,
+                "Validation Passed",
+                f"{message}\n\nReload configuration from disk?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                self.viewmodel.command_load_config()
+        else:
+            QMessageBox.warning(self, "Validation Failed", message)
+
+    def _on_export_config(self) -> None:
+        """Export configuration files to a user-chosen directory."""
+        dest_dir = QFileDialog.getExistingDirectory(
+            self, "Select Export Destination", str(Path.home())
+        )
+
+        if not dest_dir:
+            return
+
+        success, message = self.viewmodel.command_export_config(Path(dest_dir))
+
+        if success:
+            self.status_bar.showMessage(message, STATUS_MESSAGE_TIMEOUT_MS)
+        else:
+            QMessageBox.warning(self, "Export Failed", message)
 
     def _get_original_dotfile_index(self, table_row: int) -> int:
         """
@@ -1750,7 +1887,9 @@ class MainWindow(QMainWindow):
             )
 
             if success:
-                self.status_bar.showMessage("✓ Dotfile added", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Dotfile added", STATUS_MESSAGE_TIMEOUT_MS
+                )
             else:
                 QMessageBox.critical(self, "Add Failed", "Failed to add dotfile entry.")
 
@@ -1803,7 +1942,9 @@ class MainWindow(QMainWindow):
             )
 
             if success:
-                self.status_bar.showMessage("✓ Dotfile updated", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Dotfile updated", STATUS_MESSAGE_TIMEOUT_MS
+                )
             else:
                 QMessageBox.critical(
                     self, "Update Failed", "Failed to update dotfile entry."
@@ -1841,7 +1982,9 @@ class MainWindow(QMainWindow):
             success = self.viewmodel.command_remove_dotfile(original_idx)
 
             if success:
-                self.status_bar.showMessage("✓ Dotfile removed", STATUS_MESSAGE_TIMEOUT_MS)
+                self.status_bar.showMessage(
+                    "✓ Dotfile removed", STATUS_MESSAGE_TIMEOUT_MS
+                )
             else:
                 QMessageBox.critical(
                     self, "Remove Failed", "Failed to remove dotfile entry."
@@ -1901,38 +2044,45 @@ class MainWindow(QMainWindow):
         """
         self._update_dotfile_table_fast()
 
-    def _apply_filter(self, text: str) -> None:
-        """Filter dotfile table by search text.
+    def _apply_combined_filters(self) -> None:
+        """Apply all active filters (text search + hide missing) to the dotfile table.
 
-        Filters rows based on matches in application name, tags, or path columns.
-        Empty search text shows all rows.
+        Combines text search filtering with hide-missing status filtering.
+        Both filters must pass for a row to be visible.
 
         Column structure:
             0: Included, 1: Status, 2: Application, 3: Tags, 4: Size, 5: Path
-
-        Args:
-            text: Search text to filter by (case-insensitive)
         """
-        text = text.lower().strip()
+        text = ""
+        if self._filter_input:
+            text = self._filter_input.text().lower().strip()
+
+        hide_missing = False
+        if self._hide_missing_checkbox:
+            hide_missing = self._hide_missing_checkbox.isChecked()
 
         for row in range(self.dotfile_table.rowCount()):
-            # Get items from searchable columns
-            app_item = self.dotfile_table.item(row, 2)  # Application column
-            tags_item = self.dotfile_table.item(row, 3)  # Tags column
-            path_item = self.dotfile_table.item(row, 5)  # Path column
+            # Text filter check
+            text_matches = True
+            if text:
+                app_item = self.dotfile_table.item(row, 2)
+                tags_item = self.dotfile_table.item(row, 3)
+                path_item = self.dotfile_table.item(row, 5)
+                app_text = app_item.text().lower() if app_item else ""
+                tags_text = tags_item.text().lower() if tags_item else ""
+                path_text = path_item.text().lower() if path_item else ""
+                text_matches = (
+                    text in app_text or text in tags_text or text in path_text
+                )
 
-            # Extract text from items (handle None safely)
-            app_text = app_item.text().lower() if app_item else ""
-            tags_text = tags_item.text().lower() if tags_item else ""
-            path_text = path_item.text().lower() if path_item else ""
+            # Missing status filter check
+            status_matches = True
+            if hide_missing:
+                status_item = self.dotfile_table.item(row, 1)
+                if status_item and status_item.text() == "\u2717":
+                    status_matches = False
 
-            # Show row if any column matches, or if search text is empty
-            if not text:
-                matches = True
-            else:
-                matches = text in app_text or text in tags_text or text in path_text
-
-            self.dotfile_table.setRowHidden(row, not matches)
+            self.dotfile_table.setRowHidden(row, not (text_matches and status_matches))
 
     def _append_log(self, message: str, level: str = "info") -> None:
         """Append a color-coded log entry to the operation log.

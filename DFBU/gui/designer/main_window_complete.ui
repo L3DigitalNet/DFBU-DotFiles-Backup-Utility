@@ -62,9 +62,6 @@
         <height>48</height>
        </size>
       </property>
-      <property name="styleSheet">
-       <string>background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;</string>
-      </property>
       <layout class="QHBoxLayout" name="headerBarLayout">
        <property name="spacing">
         <number>12</number>
@@ -100,7 +97,7 @@
        <item>
         <widget class="QLabel" name="headerTitle">
          <property name="styleSheet">
-          <string>font-size: 15px; font-weight: bold; color: #1E293B; border: none; background: transparent;</string>
+          <string>font-size: 15px; font-weight: bold; border: none; background: transparent;</string>
          </property>
          <property name="text">
           <string>DFBU - Dotfiles Backup Utility</string>
@@ -119,6 +116,28 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="themeToggleButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>32</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Toggle dark/light theme</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="helpButton">
@@ -228,7 +247,7 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          
+
           <widget class="QWidget" name="backupEmptyPage">
            <layout class="QVBoxLayout" name="emptyStateLayout">
             <item>
@@ -275,7 +294,7 @@
                <set>Qt::AlignmentFlag::AlignCenter</set>
               </property>
               <property name="styleSheet">
-               <string>font-size: 16px; font-weight: bold; color: #1E293B;</string>
+               <string>font-size: 16px; font-weight: bold;</string>
               </property>
              </widget>
             </item>
@@ -287,9 +306,6 @@ or load an existing configuration.</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignmentFlag::AlignCenter</set>
-              </property>
-              <property name="styleSheet">
-               <string>color: #64748B;</string>
               </property>
              </widget>
             </item>
@@ -321,7 +337,7 @@ or load an existing configuration.</string>
             </item>
            </layout>
           </widget>
-          
+
           <widget class="QWidget" name="backupContentPage">
            <layout class="QVBoxLayout" name="backupContentLayout">
             <property name="spacing">
@@ -339,7 +355,7 @@ or load an existing configuration.</string>
             <property name="bottomMargin">
              <number>0</number>
             </property>
-            
+
             <item>
              <layout class="QHBoxLayout" name="backupToolbarLayout">
               <property name="spacing">
@@ -362,6 +378,16 @@ or load an existing configuration.</string>
                </widget>
               </item>
               <item>
+               <widget class="QCheckBox" name="hideMissingCheckbox">
+                <property name="text">
+                 <string>Hide missing</string>
+                </property>
+                <property name="toolTip">
+                 <string>Hide dotfiles whose paths don't exist on this system</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="fileGroupAddFileButton">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -376,7 +402,7 @@ or load an existing configuration.</string>
               </item>
              </layout>
             </item>
-            
+
             <item>
              <widget class="QTableWidget" name="fileGroupFileTable">
               <property name="sizePolicy">
@@ -429,7 +455,7 @@ or load an existing configuration.</string>
               </column>
              </widget>
             </item>
-            
+
             <item>
              <layout class="QHBoxLayout" name="backupActionBarLayout">
               <property name="spacing">
@@ -441,7 +467,7 @@ or load an existing configuration.</string>
                  <bool>false</bool>
                 </property>
                 <property name="text">
-                 <string>Update</string>
+                 <string>Edit</string>
                 </property>
                </widget>
               </item>
@@ -475,6 +501,36 @@ or load an existing configuration.</string>
                 </property>
                 <property name="text">
                  <string>Save Config</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="editConfigButton">
+                <property name="text">
+                 <string>Edit Config</string>
+                </property>
+                <property name="toolTip">
+                 <string>Open dotfiles.yaml in your system text editor</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="validateConfigButton">
+                <property name="text">
+                 <string>Validate Config</string>
+                </property>
+                <property name="toolTip">
+                 <string>Check dotfiles.yaml for syntax and structure errors</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="exportConfigButton">
+                <property name="text">
+                 <string>Export Config</string>
+                </property>
+                <property name="toolTip">
+                 <string>Export dotfiles.yaml and settings.yaml to a location of your choice</string>
                 </property>
                </widget>
               </item>
@@ -513,7 +569,7 @@ or load an existing configuration.</string>
           </widget>
          </widget>
         </item>
-        
+
         <item>
          <layout class="QHBoxLayout" name="backupOptionsStripLayout">
           <property name="spacing">
@@ -658,7 +714,7 @@ or load an existing configuration.</string>
             <property name="spacing">
              <number>12</number>
             </property>
-            
+
             <item>
              <widget class="QGroupBox" name="backupPathsGroup">
               <property name="title">
@@ -736,7 +792,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="backupModesGroup">
               <property name="title">
@@ -780,7 +836,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="archiveOptionsGroup">
               <property name="title">
@@ -862,7 +918,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="preRestoreSafetyGroup">
               <property name="title">
@@ -951,7 +1007,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="verificationGroup">
               <property name="title">
@@ -984,7 +1040,7 @@ or load an existing configuration.</string>
               </layout>
              </widget>
             </item>
-            
+
             <item>
              <widget class="QGroupBox" name="sizeManagementGroup">
               <property name="title">
@@ -1583,7 +1639,7 @@ WARNING: This will overwrite existing files at destination paths.</string>
         <number>0</number>
        </property>
        <item>
-        <widget class="QWidget" name="logHeader">
+        <widget class="QWidget" name="logPaneHeader">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -1595,9 +1651,6 @@ WARNING: This will overwrite existing files at destination paths.</string>
            <width>0</width>
            <height>48</height>
           </size>
-         </property>
-         <property name="styleSheet">
-          <string>background-color: #F8FAFC; border-bottom: 1px solid #E2E8F0;</string>
          </property>
          <layout class="QHBoxLayout" name="logHeaderLayout">
           <property name="spacing">
@@ -1618,7 +1671,7 @@ WARNING: This will overwrite existing files at destination paths.</string>
           <item>
            <widget class="QLabel" name="logPaneTitle">
             <property name="styleSheet">
-             <string>font-weight: bold; font-size: 13px; color: #1E293B; border: none; background: transparent;</string>
+             <string>font-weight: bold; font-size: 13px; border: none; background: transparent;</string>
             </property>
             <property name="text">
              <string>Operation Log</string>
@@ -1708,6 +1761,28 @@ WARNING: This will overwrite existing files at destination paths.</string>
             </property>
             <property name="checked">
              <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="logPaneVerboseButton">
+            <property name="text">
+             <string>Verbose</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>Show full destination paths in log entries</string>
             </property>
             <property name="sizePolicy">
              <sizepolicy hsizetype="Maximum" vsizetype="Maximum">

@@ -15,7 +15,9 @@ from gui.model import DFBUModel
 from gui.viewmodel import DFBUViewModel
 
 
-def create_yaml_config(config_dir: Path, dotfiles: list[dict[str, Any]] | None = None) -> Path:
+def create_yaml_config(
+    config_dir: Path, dotfiles: list[dict[str, Any]] | None = None
+) -> Path:
     """Create YAML config files for testing."""
     config_dir.mkdir(parents=True, exist_ok=True)
 

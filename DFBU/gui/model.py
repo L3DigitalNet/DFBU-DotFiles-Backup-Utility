@@ -51,10 +51,10 @@ from core.common_types import (
     SizeReportDict,
 )
 
+from gui.backup_history import BackupHistoryManager
 from gui.backup_orchestrator import BackupOrchestrator
 from gui.config_manager import ConfigManager
 from gui.error_handler import ErrorHandler
-from gui.backup_history import BackupHistoryManager
 from gui.file_operations import FileOperations
 from gui.preview_generator import PreviewGenerator
 from gui.profile_manager import ProfileManager
@@ -973,9 +973,7 @@ class DFBUModel:
         """
         return self._history_manager.get_metrics()
 
-    def get_recent_backup_history(
-        self, count: int = 10
-    ) -> list[BackupHistoryEntry]:
+    def get_recent_backup_history(self, count: int = 10) -> list[BackupHistoryEntry]:
         """
         Get recent backup history entries.
 

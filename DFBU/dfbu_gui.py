@@ -59,7 +59,7 @@ Functions:
 import shutil
 import sys
 from pathlib import Path
-from typing import Final
+from typing import Final, cast
 
 
 # Add DFBU directory to Python path for module imports BEFORE importing local modules
@@ -78,6 +78,7 @@ from gui.viewmodel import DFBUViewModel
 
 # External dependency: PySide6 required for desktop GUI framework (Qt bindings for Python)
 try:
+    from PySide6.QtCore import QSettings
     from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QApplication
 except ImportError:
@@ -97,11 +98,10 @@ USER_CONFIG_DIR: Final[Path] = Path.home() / ".config" / "dfbu"
 
 # Bundled config path - read-only defaults inside AppImage/PyInstaller bundle
 # When frozen by PyInstaller, data files are bundled under sys._MEIPASS
-_data_base = (
-    Path(sys._MEIPASS)
-    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
-    else Path(__file__).parent
-)
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    _data_base = Path(cast(str, sys._MEIPASS))
+else:
+    _data_base = Path(__file__).parent
 BUNDLED_CONFIG_PATH: Final[Path] = (_data_base / "data").resolve()
 
 # Determine if running as frozen app (AppImage/PyInstaller)
@@ -171,7 +171,12 @@ class Application:
         self.app.setApplicationName(PROJECT_NAME)
         self.app.setApplicationVersion(__version__)
         self.app.setOrganizationName("L3DigitalNet")
-        load_theme(self.app)
+
+        # Load user's preferred theme (read QSettings directly — ViewModel not yet created)
+        settings = QSettings("L3DigitalNet", "dfbu_gui_settings")
+        saved_theme = str(settings.value("appearance/theme", "dfbu_light"))
+        if not load_theme(self.app, saved_theme):
+            load_theme(self.app)  # Fallback to default light theme
 
         icon_path = Path(__file__).parent / "resources" / "icons" / "dfbu.svg"
         if icon_path.exists():

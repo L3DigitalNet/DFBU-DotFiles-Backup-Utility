@@ -1,9 +1,9 @@
 """Tests for the RecoveryDialog component."""
 
 import pytest
-from PySide6.QtWidgets import QApplication, QDialog
-
 from core.common_types import OperationResultDict
+from PySide6.QtWidgets import QDialog
+
 from gui.recovery_dialog import RecoveryDialog
 
 
@@ -15,20 +15,50 @@ def sample_operation_result() -> OperationResultDict:
         "operation_type": "mirror_backup",
         "total_items": 5,
         "completed": [
-            {"path": "/home/.bashrc", "dest_path": "/backup/.bashrc", "status": "success",
-             "error_type": None, "error_message": "", "can_retry": False},
-            {"path": "/home/.profile", "dest_path": "/backup/.profile", "status": "success",
-             "error_type": None, "error_message": "", "can_retry": False},
+            {
+                "path": "/home/.bashrc",
+                "dest_path": "/backup/.bashrc",
+                "status": "success",
+                "error_type": None,
+                "error_message": "",
+                "can_retry": False,
+            },
+            {
+                "path": "/home/.profile",
+                "dest_path": "/backup/.profile",
+                "status": "success",
+                "error_type": None,
+                "error_message": "",
+                "can_retry": False,
+            },
         ],
         "failed": [
-            {"path": "/home/.vimrc", "dest_path": "/backup/.vimrc", "status": "failed",
-             "error_type": "permission", "error_message": "Permission denied", "can_retry": True},
-            {"path": "/home/.ssh/config", "dest_path": "/backup/.ssh/config", "status": "failed",
-             "error_type": "not_found", "error_message": "File not found", "can_retry": False},
+            {
+                "path": "/home/.vimrc",
+                "dest_path": "/backup/.vimrc",
+                "status": "failed",
+                "error_type": "permission",
+                "error_message": "Permission denied",
+                "can_retry": True,
+            },
+            {
+                "path": "/home/.ssh/config",
+                "dest_path": "/backup/.ssh/config",
+                "status": "failed",
+                "error_type": "not_found",
+                "error_message": "File not found",
+                "can_retry": False,
+            },
         ],
         "skipped": [
-            {"path": "/home/.gitconfig", "dest_path": None, "status": "skipped",
-             "error_type": None, "error_message": "No changes detected", "can_retry": False},
+            {
+                "path": "/home/.gitconfig",
+                "dest_path": None,
+                "status": "skipped",
+                "error_type": None,
+                "error_message": "No changes detected",
+                "can_retry": False,
+            },
         ],
         "warnings": [],
         "can_retry": ["/home/.vimrc"],
@@ -74,8 +104,14 @@ class TestRecoveryDialogInit:
             "total_items": 1,
             "completed": [],
             "failed": [
-                {"path": "/home/.vimrc", "dest_path": "/backup/.vimrc", "status": "failed",
-                 "error_type": "not_found", "error_message": "File not found", "can_retry": False},
+                {
+                    "path": "/home/.vimrc",
+                    "dest_path": "/backup/.vimrc",
+                    "status": "failed",
+                    "error_type": "not_found",
+                    "error_message": "File not found",
+                    "can_retry": False,
+                },
             ],
             "skipped": [],
             "warnings": [],

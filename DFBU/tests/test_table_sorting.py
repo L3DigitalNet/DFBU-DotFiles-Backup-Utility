@@ -18,7 +18,7 @@ from gui.viewmodel import DFBUViewModel
 def create_yaml_config(
     config_dir: Path,
     dotfiles: list[dict[str, Any]],
-    exclusions: list[str] | None = None
+    exclusions: list[str] | None = None,
 ) -> Path:
     """
     Create YAML configuration files for testing.
@@ -189,10 +189,25 @@ class TestDotfileTableSorting:
         config_dir = create_yaml_config(
             tmp_path / "config",
             dotfiles=[
-                {"name": "App1", "description": "Small file", "path": "~/.test1", "tags": "Test1"},
-                {"name": "App2", "description": "Large file", "path": "~/.test2", "tags": "Test2"},
-                {"name": "App3", "description": "Medium file", "path": "~/.test3", "tags": "Test3"},
-            ]
+                {
+                    "name": "App1",
+                    "description": "Small file",
+                    "path": "~/.test1",
+                    "tags": "Test1",
+                },
+                {
+                    "name": "App2",
+                    "description": "Large file",
+                    "path": "~/.test2",
+                    "tags": "Test2",
+                },
+                {
+                    "name": "App3",
+                    "description": "Medium file",
+                    "path": "~/.test3",
+                    "tags": "Test3",
+                },
+            ],
         )
 
         model = DFBUModel(config_dir)
@@ -235,11 +250,26 @@ class TestDotfileTableSorting:
         config_dir = create_yaml_config(
             tmp_path / "config",
             dotfiles=[
-                {"name": "App1", "description": "Enabled", "path": "~/.test1", "tags": "Test1"},
-                {"name": "App2", "description": "Disabled", "path": "~/.test2", "tags": "Test2"},
-                {"name": "App3", "description": "Enabled", "path": "~/.test3", "tags": "Test3"},
+                {
+                    "name": "App1",
+                    "description": "Enabled",
+                    "path": "~/.test1",
+                    "tags": "Test1",
+                },
+                {
+                    "name": "App2",
+                    "description": "Disabled",
+                    "path": "~/.test2",
+                    "tags": "Test2",
+                },
+                {
+                    "name": "App3",
+                    "description": "Enabled",
+                    "path": "~/.test3",
+                    "tags": "Test3",
+                },
             ],
-            exclusions=["App2"]  # App2 is disabled
+            exclusions=["App2"],  # App2 is disabled
         )
 
         model = DFBUModel(config_dir)
@@ -270,10 +300,25 @@ class TestDotfileTableSorting:
         config_dir = create_yaml_config(
             tmp_path / "config",
             dotfiles=[
-                {"name": "App1", "description": "Last", "path": "~/.test1", "tags": "Zulu"},
-                {"name": "App2", "description": "First", "path": "~/.test2", "tags": "Alpha"},
-                {"name": "App3", "description": "Middle", "path": "~/.test3", "tags": "Mike"},
-            ]
+                {
+                    "name": "App1",
+                    "description": "Last",
+                    "path": "~/.test1",
+                    "tags": "Zulu",
+                },
+                {
+                    "name": "App2",
+                    "description": "First",
+                    "path": "~/.test2",
+                    "tags": "Alpha",
+                },
+                {
+                    "name": "App3",
+                    "description": "Middle",
+                    "path": "~/.test3",
+                    "tags": "Mike",
+                },
+            ],
         )
 
         model = DFBUModel(config_dir)
@@ -306,9 +351,19 @@ class TestDotfileTableSorting:
         config_dir = create_yaml_config(
             tmp_path / "config",
             dotfiles=[
-                {"name": "App1", "description": "First", "path": "~/.test1", "tags": "Cat1"},
-                {"name": "App2", "description": "Second", "path": "~/.test2", "tags": "Cat2"},
-            ]
+                {
+                    "name": "App1",
+                    "description": "First",
+                    "path": "~/.test1",
+                    "tags": "Cat1",
+                },
+                {
+                    "name": "App2",
+                    "description": "Second",
+                    "path": "~/.test2",
+                    "tags": "Cat2",
+                },
+            ],
         )
 
         model = DFBUModel(config_dir)
@@ -337,10 +392,25 @@ class TestDotfileTableSorting:
         config_dir = create_yaml_config(
             tmp_path / "config",
             dotfiles=[
-                {"name": "AppA", "description": "Test", "path": "~/.test1", "tags": "A"},
-                {"name": "AppB", "description": "Test", "path": "~/.test2", "tags": "B"},
-                {"name": "AppC", "description": "Test", "path": "~/.test3", "tags": "C"},
-            ]
+                {
+                    "name": "AppA",
+                    "description": "Test",
+                    "path": "~/.test1",
+                    "tags": "A",
+                },
+                {
+                    "name": "AppB",
+                    "description": "Test",
+                    "path": "~/.test2",
+                    "tags": "B",
+                },
+                {
+                    "name": "AppC",
+                    "description": "Test",
+                    "path": "~/.test3",
+                    "tags": "C",
+                },
+            ],
         )
 
         model = DFBUModel(config_dir)
@@ -377,8 +447,13 @@ class TestTableOriginalIndexRetrieval:
         config_dir = create_yaml_config(
             tmp_path / "config",
             dotfiles=[
-                {"name": "App", "description": "Test", "path": "~/.test", "tags": "Cat"},
-            ]
+                {
+                    "name": "App",
+                    "description": "Test",
+                    "path": "~/.test",
+                    "tags": "Cat",
+                },
+            ],
         )
 
         model = DFBUModel(config_dir)
@@ -404,8 +479,13 @@ class TestTableOriginalIndexRetrieval:
         config_dir = create_yaml_config(
             tmp_path / "config",
             dotfiles=[
-                {"name": "App", "description": "Test", "path": "~/.test", "tags": "Cat"},
-            ]
+                {
+                    "name": "App",
+                    "description": "Test",
+                    "path": "~/.test",
+                    "tags": "Cat",
+                },
+            ],
         )
 
         model = DFBUModel(config_dir)
