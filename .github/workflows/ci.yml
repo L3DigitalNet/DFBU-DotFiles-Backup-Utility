@@ -23,8 +23,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --dev
 
-      - name: Install EGL/OpenGL libraries
-        run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1
+      - name: Install EGL/OpenGL libraries and Xvfb
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1 xvfb
 
       - name: Lint with Ruff
         run: uv run ruff check DFBU/
@@ -35,8 +35,8 @@ jobs:
       - name: Type check with MyPy
         run: uv run mypy DFBU/
 
-      - name: Run tests
-        run: uv run pytest DFBU/tests/ --cov=DFBU --cov-report=xml
+      - name: Run tests with Xvfb
+        run: xvfb-run -a uv run pytest DFBU/tests/ --cov=DFBU --cov-report=xml
 
       # Optional: Upload coverage to Codecov
       # - uses: codecov/codecov-action@v4
