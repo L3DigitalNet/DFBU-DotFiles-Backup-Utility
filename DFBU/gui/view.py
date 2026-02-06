@@ -632,6 +632,13 @@ class MainWindow(QMainWindow):
         self._hide_missing_checkbox: QCheckBox | None = ui_widget.findChild(
             QCheckBox, "hideMissingCheckbox"
         )
+        # Config editor buttons
+        self.edit_config_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "editConfigButton"
+        )  # type: ignore[assignment]
+        self.validate_config_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "validateConfigButton"
+        )  # type: ignore[assignment]
         # Empty state widgets
         self._backup_stacked_widget: QStackedWidget | None = ui_widget.findChild(
             QStackedWidget, "backupStackedWidget"
@@ -798,6 +805,8 @@ class MainWindow(QMainWindow):
         self.dotfile_table.itemSelectionChanged.connect(
             self._on_dotfile_selection_changed
         )
+        self.edit_config_btn.clicked.connect(self._on_edit_config)
+        self.validate_config_btn.clicked.connect(self._on_validate_config)
 
         # Filter input connection
         if self._filter_input:
@@ -1744,6 +1753,58 @@ class MainWindow(QMainWindow):
                     "Save Failed",
                     "Failed to save configuration. Check file permissions.",
                 )
+
+    def _on_edit_config(self) -> None:
+        """Open dotfiles.yaml in the user's default text editor."""
+        import subprocess
+
+        config_dir = self.viewmodel.get_config_dir()
+        dotfiles_path = config_dir / "dotfiles.yaml"
+
+        if not dotfiles_path.exists():
+            QMessageBox.warning(
+                self,
+                "File Not Found",
+                f"Configuration file not found:\n{dotfiles_path}",
+            )
+            return
+
+        try:
+            subprocess.Popen(["xdg-open", str(dotfiles_path)])
+            self.status_bar.showMessage(
+                "Opened dotfiles.yaml in external editor",
+                STATUS_MESSAGE_TIMEOUT_MS,
+            )
+        except FileNotFoundError:
+            QMessageBox.warning(
+                self,
+                "Editor Not Found",
+                "Could not open file: xdg-open not found.\n"
+                "Please open manually:\n" + str(dotfiles_path),
+            )
+        except OSError as e:
+            QMessageBox.warning(
+                self,
+                "Cannot Open File",
+                f"Failed to open external editor: {e}\n"
+                f"Please open manually:\n{dotfiles_path}",
+            )
+
+    def _on_validate_config(self) -> None:
+        """Validate YAML configuration files and show results."""
+        success, message = self.viewmodel.command_validate_config()
+
+        if success:
+            reply = QMessageBox.information(
+                self,
+                "Validation Passed",
+                f"{message}\n\nReload configuration from disk?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+            if reply == QMessageBox.StandardButton.Yes:
+                self.viewmodel.command_load_config()
+        else:
+            QMessageBox.warning(self, "Validation Failed", message)
 
     def _get_original_dotfile_index(self, table_row: int) -> int:
         """

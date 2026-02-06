@@ -505,6 +505,26 @@ or load an existing configuration.</string>
                </widget>
               </item>
               <item>
+               <widget class="QPushButton" name="editConfigButton">
+                <property name="text">
+                 <string>Edit Config</string>
+                </property>
+                <property name="toolTip">
+                 <string>Open dotfiles.yaml in your system text editor</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="validateConfigButton">
+                <property name="text">
+                 <string>Validate Config</string>
+                </property>
+                <property name="toolTip">
+                 <string>Check dotfiles.yaml for syntax and structure errors</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <spacer name="actionBarSpacer">
                 <property name="orientation">
                  <enum>Qt::Orientation::Horizontal</enum>

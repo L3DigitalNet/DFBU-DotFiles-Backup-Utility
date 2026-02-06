@@ -50,7 +50,9 @@ from core.common_types import (
     OptionsDict,
     SizeReportDict,
 )
+from core.yaml_config import YAMLConfigLoader
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
+from ruamel.yaml.error import YAMLError
 
 from gui.config_workers import ConfigLoadWorker, ConfigSaveWorker
 from gui.input_validation import InputValidator
@@ -1492,6 +1494,51 @@ class DFBUViewModel(QObject):
         if file_count == 0:
             return None
         return self.model.verify_last_backup()
+
+    # =========================================================================
+    # Config Editor Commands
+    # =========================================================================
+
+    def command_validate_config(self) -> tuple[bool, str]:
+        """
+        Validate the dotfiles.yaml and settings.yaml configuration files.
+
+        Returns:
+            Tuple of (success, message). Message contains error details on failure.
+        """
+        config_dir = self.model.config_path
+        errors: list[str] = []
+
+        # Create loader once and reuse for both validations
+        loader = YAMLConfigLoader(config_dir)
+
+        # Validate dotfiles.yaml
+        dotfiles_path = config_dir / "dotfiles.yaml"
+        if dotfiles_path.exists():
+            try:
+                loader.load_dotfiles()
+            except (ValueError, KeyError, TypeError, OSError, YAMLError) as e:
+                errors.append(f"dotfiles.yaml: {e}")
+        else:
+            errors.append("dotfiles.yaml: File not found")
+
+        # Validate settings.yaml
+        settings_path = config_dir / "settings.yaml"
+        if settings_path.exists():
+            try:
+                loader.load_settings()
+            except (ValueError, KeyError, TypeError, OSError, YAMLError) as e:
+                errors.append(f"settings.yaml: {e}")
+        else:
+            errors.append("settings.yaml: File not found")
+
+        if errors:
+            return False, "Validation errors:\n" + "\n".join(errors)
+        return True, "Configuration is valid. No errors found."
+
+    def get_config_dir(self) -> Path:
+        """Return the path to the configuration directory."""
+        return self.model.config_path
 
     # =========================================================================
     # Profile Commands (v1.1.0)
