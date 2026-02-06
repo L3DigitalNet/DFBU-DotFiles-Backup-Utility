@@ -224,6 +224,17 @@ paths:
         assert "Dotfiles file not found" in str(exc_info.value)
 
     @pytest.mark.unit
+    def test_load_dotfiles_empty_file(self, tmp_path: Path) -> None:
+        """Return empty dict when dotfiles.yaml exists but is empty."""
+        dotfiles_file = tmp_path / "dotfiles.yaml"
+        dotfiles_file.write_text("")
+        loader = YAMLConfigLoader(tmp_path)
+
+        dotfiles = loader.load_dotfiles()
+
+        assert dotfiles == {}
+
+    @pytest.mark.unit
     def test_validate_dotfile_missing_description(self, tmp_path: Path) -> None:
         """Raise ValueError when dotfile is missing description."""
         dotfiles_file = tmp_path / "dotfiles.yaml"
@@ -252,3 +263,88 @@ Bash:
             loader.load_dotfiles()
 
         assert "must have either 'path' or 'paths'" in str(exc_info.value)
+
+    @pytest.mark.unit
+    def test_load_session_empty_file(self, tmp_path: Path) -> None:
+        """Return empty session when session.yaml exists but is empty."""
+        session_file = tmp_path / "session.yaml"
+        session_file.write_text("")
+        loader = YAMLConfigLoader(tmp_path)
+
+        session = loader.load_session()
+
+        assert session["excluded"] == []
+
+    @pytest.mark.unit
+    def test_load_session_null_excluded(self, tmp_path: Path) -> None:
+        """Return empty list when excluded is explicitly null."""
+        session_file = tmp_path / "session.yaml"
+        session_file.write_text("""
+excluded: null
+""")
+        loader = YAMLConfigLoader(tmp_path)
+
+        session = loader.load_session()
+
+        assert session["excluded"] == []
+
+    @pytest.mark.unit
+    def test_load_settings_missing_required_path_field(self, tmp_path: Path) -> None:
+        """Raise ValueError when required path field is missing."""
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("""
+paths:
+  archive_dir: ~/backups/archives
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
+
+options:
+  mirror: true
+  archive: true
+  hostname_subdir: true
+  date_subdir: false
+  archive_format: tar.gz
+  archive_compression_level: 5
+  rotate_archives: true
+  max_archives: 5
+  pre_restore_backup: true
+  max_restore_backups: 5
+""")
+        loader = YAMLConfigLoader(tmp_path)
+
+        with pytest.raises(ValueError) as exc_info:
+            loader.load_settings()
+
+        assert "Settings paths missing required field: mirror_dir" in str(
+            exc_info.value
+        )
+
+    @pytest.mark.unit
+    def test_load_settings_missing_required_option_field(self, tmp_path: Path) -> None:
+        """Raise ValueError when required option field is missing."""
+        settings_file = tmp_path / "settings.yaml"
+        settings_file.write_text("""
+paths:
+  mirror_dir: ~/backups/mirror
+  archive_dir: ~/backups/archives
+  restore_backup_dir: ~/.local/share/dfbu/restore-backups
+
+options:
+  mirror: true
+  archive: true
+  hostname_subdir: true
+  date_subdir: false
+  archive_format: tar.gz
+  rotate_archives: true
+  max_archives: 5
+  pre_restore_backup: true
+  max_restore_backups: 5
+""")
+        loader = YAMLConfigLoader(tmp_path)
+
+        with pytest.raises(ValueError) as exc_info:
+            loader.load_settings()
+
+        assert (
+            "Settings options missing required field: archive_compression_level"
+            in str(exc_info.value)
+        )
