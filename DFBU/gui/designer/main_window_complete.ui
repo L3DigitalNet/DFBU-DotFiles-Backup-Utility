@@ -378,6 +378,16 @@ or load an existing configuration.</string>
                </widget>
               </item>
               <item>
+               <widget class="QCheckBox" name="hideMissingCheckbox">
+                <property name="text">
+                 <string>Hide missing</string>
+                </property>
+                <property name="toolTip">
+                 <string>Hide dotfiles whose paths don't exist on this system</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="fileGroupAddFileButton">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Fixed">

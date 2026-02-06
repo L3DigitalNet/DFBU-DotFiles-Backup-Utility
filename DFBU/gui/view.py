@@ -628,6 +628,10 @@ class MainWindow(QMainWindow):
         self.backup_btn: QPushButton = ui_widget.findChild(
             QPushButton, "startBackupButton"
         )  # type: ignore[assignment]
+        # Hide missing checkbox for filtering non-existent dotfiles
+        self._hide_missing_checkbox: QCheckBox | None = ui_widget.findChild(
+            QCheckBox, "hideMissingCheckbox"
+        )
         # Empty state widgets
         self._backup_stacked_widget: QStackedWidget | None = ui_widget.findChild(
             QStackedWidget, "backupStackedWidget"
@@ -797,7 +801,13 @@ class MainWindow(QMainWindow):
 
         # Filter input connection
         if self._filter_input:
-            self._filter_input.textChanged.connect(self._apply_filter)
+            self._filter_input.textChanged.connect(self._apply_combined_filters)
+
+        # Hide missing checkbox connection
+        if self._hide_missing_checkbox:
+            self._hide_missing_checkbox.stateChanged.connect(
+                self._apply_combined_filters
+            )
 
         # Empty state add button
         if self._empty_state_add_btn:
@@ -1954,38 +1964,45 @@ class MainWindow(QMainWindow):
         """
         self._update_dotfile_table_fast()
 
-    def _apply_filter(self, text: str) -> None:
-        """Filter dotfile table by search text.
+    def _apply_combined_filters(self) -> None:
+        """Apply all active filters (text search + hide missing) to the dotfile table.
 
-        Filters rows based on matches in application name, tags, or path columns.
-        Empty search text shows all rows.
+        Combines text search filtering with hide-missing status filtering.
+        Both filters must pass for a row to be visible.
 
         Column structure:
             0: Included, 1: Status, 2: Application, 3: Tags, 4: Size, 5: Path
-
-        Args:
-            text: Search text to filter by (case-insensitive)
         """
-        text = text.lower().strip()
+        text = ""
+        if self._filter_input:
+            text = self._filter_input.text().lower().strip()
+
+        hide_missing = False
+        if self._hide_missing_checkbox:
+            hide_missing = self._hide_missing_checkbox.isChecked()
 
         for row in range(self.dotfile_table.rowCount()):
-            # Get items from searchable columns
-            app_item = self.dotfile_table.item(row, 2)  # Application column
-            tags_item = self.dotfile_table.item(row, 3)  # Tags column
-            path_item = self.dotfile_table.item(row, 5)  # Path column
+            # Text filter check
+            text_matches = True
+            if text:
+                app_item = self.dotfile_table.item(row, 2)
+                tags_item = self.dotfile_table.item(row, 3)
+                path_item = self.dotfile_table.item(row, 5)
+                app_text = app_item.text().lower() if app_item else ""
+                tags_text = tags_item.text().lower() if tags_item else ""
+                path_text = path_item.text().lower() if path_item else ""
+                text_matches = (
+                    text in app_text or text in tags_text or text in path_text
+                )
 
-            # Extract text from items (handle None safely)
-            app_text = app_item.text().lower() if app_item else ""
-            tags_text = tags_item.text().lower() if tags_item else ""
-            path_text = path_item.text().lower() if path_item else ""
+            # Missing status filter check
+            status_matches = True
+            if hide_missing:
+                status_item = self.dotfile_table.item(row, 1)
+                if status_item and status_item.text() == "\u2717":
+                    status_matches = False
 
-            # Show row if any column matches, or if search text is empty
-            if not text:
-                matches = True
-            else:
-                matches = text in app_text or text in tags_text or text in path_text
-
-            self.dotfile_table.setRowHidden(row, not matches)
+            self.dotfile_table.setRowHidden(row, not (text_matches and status_matches))
 
     def _append_log(self, message: str, level: str = "info") -> None:
         """Append a color-coded log entry to the operation log.
