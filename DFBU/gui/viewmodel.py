@@ -53,8 +53,10 @@ from core.common_types import (
 )
 from core.yaml_config import YAMLConfigLoader
 from PySide6.QtCore import QObject, QSettings, QThread, Signal
+from ruamel.yaml import YAML
 from ruamel.yaml.error import YAMLError
 
+from gui.config_manager import create_rotating_backup
 from gui.config_workers import ConfigLoadWorker, ConfigSaveWorker
 from gui.input_validation import InputValidator
 from gui.model import DFBUModel
@@ -1539,7 +1541,9 @@ class DFBUViewModel(QObject):
 
     def command_export_config(self, dest_dir: Path) -> tuple[bool, str]:
         """
-        Export dotfiles.yaml and settings.yaml to the specified directory.
+        Export all configuration files to the specified directory.
+
+        Exports dotfiles.yaml, settings.yaml, session.yaml, and .dfbuignore.
 
         Args:
             dest_dir: Destination directory for the exported files
@@ -1554,7 +1558,12 @@ class DFBUViewModel(QObject):
             return False, f"Destination is not a directory: {dest_dir}"
 
         config_dir = self.model.config_path
-        files_to_export = ["dotfiles.yaml", "settings.yaml"]
+        files_to_export = [
+            "dotfiles.yaml",
+            "settings.yaml",
+            "session.yaml",
+            ".dfbuignore",
+        ]
         copied: list[str] = []
         errors: list[str] = []
 
@@ -1567,7 +1576,8 @@ class DFBUViewModel(QObject):
                     copied.append(filename)
                 except OSError as e:  # Includes PermissionError
                     errors.append(f"{filename}: {e}")
-            else:
+            # session.yaml and .dfbuignore are optional
+            elif filename in ("dotfiles.yaml", "settings.yaml"):
                 errors.append(f"{filename}: Source file not found")
 
         if errors:
@@ -1575,6 +1585,101 @@ class DFBUViewModel(QObject):
                 errors
             )
         return True, f"Exported {len(copied)} file(s) to {dest_dir}"
+
+    def command_import_config(self, source_dir: Path) -> tuple[bool, str]:
+        """
+        Import configuration files from a directory.
+
+        Validates source files, creates backups of current configs, then
+        copies the imported files into the config directory and reloads.
+
+        Imports: dotfiles.yaml, settings.yaml, and optionally session.yaml
+        and .dfbuignore.
+
+        Args:
+            source_dir: Directory containing configuration files to import
+
+        Returns:
+            Tuple of (success, message)
+        """
+        if not source_dir.exists():
+            return False, f"Source directory does not exist: {source_dir}"
+
+        if not source_dir.is_dir():
+            return False, f"Source is not a directory: {source_dir}"
+
+        # At minimum, dotfiles.yaml or settings.yaml must be present
+        importable_files = [
+            "dotfiles.yaml",
+            "settings.yaml",
+            "session.yaml",
+            ".dfbuignore",
+        ]
+        available = [f for f in importable_files if (source_dir / f).exists()]
+
+        if not available:
+            return False, (
+                "No configuration files found in the selected directory.\n"
+                "Expected: dotfiles.yaml, settings.yaml, session.yaml, or .dfbuignore"
+            )
+
+        # Validate YAML files before importing
+        yaml_files = [f for f in available if f.endswith(".yaml")]
+        validation_errors: list[str] = []
+        for filename in yaml_files:
+            try:
+                # Use a temporary YAML loader to validate the file
+                temp_yaml = YAML()
+                temp_yaml.preserve_quotes = True
+                temp_yaml.allow_duplicate_keys = True
+                with (source_dir / filename).open("r", encoding="utf-8") as fh:
+                    data: Any = temp_yaml.load(fh)  # pyright: ignore[reportUnknownMemberType]
+                if data is None and filename in ("dotfiles.yaml", "settings.yaml"):
+                    validation_errors.append(f"{filename}: File is empty")
+            except Exception as e:
+                validation_errors.append(f"{filename}: {e}")
+
+        if validation_errors:
+            return False, "Validation errors in source files:\n" + "\n".join(
+                validation_errors
+            )
+
+        # Create backups of current config files before overwriting
+        config_dir = self.model.config_path
+        backup_errors: list[str] = []
+        for filename in available:
+            current_file = config_dir / filename
+            if current_file.exists():
+                try:
+                    create_rotating_backup(current_file)
+                except Exception as e:
+                    backup_errors.append(f"Backup of {filename} failed: {e}")
+
+        if backup_errors:
+            return False, (
+                "Failed to create backups of current configs:\n"
+                + "\n".join(backup_errors)
+                + "\nImport aborted to protect existing configuration."
+            )
+
+        # Copy files from source to config directory
+        imported: list[str] = []
+        copy_errors: list[str] = []
+        for filename in available:
+            src = source_dir / filename
+            dest = config_dir / filename
+            try:
+                shutil.copy2(src, dest)
+                imported.append(filename)
+            except OSError as e:
+                copy_errors.append(f"{filename}: {e}")
+
+        if copy_errors:
+            return False, (
+                f"Imported {len(imported)} file(s), errors:\n" + "\n".join(copy_errors)
+            )
+
+        return True, f"Imported {len(imported)} file(s): {', '.join(imported)}"
 
     def get_config_dir(self) -> Path:
         """Return the path to the configuration directory."""

@@ -31,6 +31,9 @@ Classes:
     - YAMLConfigLoader: Load and save YAML configuration files
 """
 
+import logging
+import re
+from io import StringIO
 from pathlib import Path
 from typing import Any
 
@@ -40,6 +43,10 @@ from core.common_types import (
     SettingsDict,
 )
 from ruamel.yaml import YAML
+from ruamel.yaml.constructor import DuplicateKeyError
+
+
+logger = logging.getLogger(__name__)
 
 
 class YAMLConfigLoader:
@@ -126,6 +133,11 @@ class YAMLConfigLoader:
         """
         Load dotfiles library from dotfiles.yaml file.
 
+        Handles duplicate keys gracefully by merging entries with the same
+        application name. Also validates and cleans entries for common issues
+        like empty paths, missing descriptions, and duplicate paths within
+        a single entry.
+
         Returns:
             Dictionary mapping application names to DotFileDict entries
 
@@ -135,17 +147,22 @@ class YAMLConfigLoader:
         if not self.dotfiles_path.exists():
             raise FileNotFoundError(f"Dotfiles file not found: {self.dotfiles_path}")
 
-        with self.dotfiles_path.open("r", encoding="utf-8") as f:
-            data: Any = self._yaml.load(f)  # pyright: ignore[reportUnknownMemberType]
+        try:
+            with self.dotfiles_path.open("r", encoding="utf-8") as f:
+                data: Any = self._yaml.load(f)  # pyright: ignore[reportUnknownMemberType]
+        except DuplicateKeyError as e:
+            logger.warning(
+                "Duplicate keys found in dotfiles.yaml, attempting repair: %s", e
+            )
+            data = self._repair_duplicate_dotfiles()
 
         if data is None:
             return {}
 
-        # Validate each dotfile entry
-        for app_name, dotfile_data in data.items():
-            self._validate_dotfile(app_name, dotfile_data)
+        result = dict(data)
 
-        return dict(data)
+        # Validate and clean each dotfile entry
+        return self._validate_and_clean_dotfiles(result)
 
     def load_session(self) -> SessionDict:
         """
@@ -217,6 +234,320 @@ class YAMLConfigLoader:
 
         with self.session_path.open("w", encoding="utf-8") as f:
             self._yaml.dump(dict(session), f)  # pyright: ignore[reportUnknownMemberType]
+
+    # =========================================================================
+    # Dotfiles Validation and Repair
+    # =========================================================================
+
+    def _repair_duplicate_dotfiles(self) -> dict[str, Any]:
+        """
+        Repair dotfiles.yaml by merging duplicate top-level keys.
+
+        Scans the raw YAML file to extract all top-level entries (including
+        duplicates), merges entries with the same key by combining their paths
+        and keeping the most detailed description, then saves the cleaned file.
+
+        Returns:
+            Merged dictionary of dotfile entries
+        """
+        content = self.dotfiles_path.read_text(encoding="utf-8")
+
+        # Parse all top-level entries including duplicates
+        all_entries = self._extract_all_toplevel_entries(content)
+
+        # Group entries by key name
+        grouped: dict[str, list[dict[str, Any]]] = {}
+        for key, entry_data in all_entries:
+            grouped.setdefault(key, []).append(entry_data)
+
+        # Merge duplicates and build result
+        merged: dict[str, DotFileDict] = {}
+        duplicates_found: list[str] = []
+
+        for key, entries in grouped.items():
+            if len(entries) == 1:
+                merged[key] = entries[0]  # type: ignore[assignment]
+            else:
+                merged[key] = self._merge_dotfile_entries(key, entries)
+                duplicates_found.append(key)
+
+        if duplicates_found:
+            logger.warning(
+                "Merged %d duplicate dotfile entries: %s",
+                len(duplicates_found),
+                ", ".join(duplicates_found),
+            )
+            # Auto-save the de-duplicated file
+            self.save_dotfiles(merged)
+            logger.info("Saved de-duplicated dotfiles.yaml")
+
+        return merged
+
+    def _extract_all_toplevel_entries(
+        self, content: str
+    ) -> list[tuple[str, dict[str, Any]]]:
+        """
+        Extract all top-level YAML entries from raw content, preserving duplicates.
+
+        Splits the file at top-level key boundaries (lines starting with a
+        non-whitespace character followed by a colon) and parses each entry
+        individually.
+
+        Args:
+            content: Raw YAML file content
+
+        Returns:
+            List of (key_name, parsed_data) tuples, one per occurrence
+        """
+        entries: list[tuple[str, dict[str, Any]]] = []
+        lines = content.split("\n")
+
+        # Find boundaries of top-level entries
+        # A top-level key is a non-blank, non-comment line with no leading whitespace
+        # that contains a colon
+        toplevel_pattern = re.compile(r"^([^\s#][^:]*):(.*)$")
+        boundaries: list[tuple[int, str]] = []
+
+        for i, line in enumerate(lines):
+            match = toplevel_pattern.match(line)
+            if match:
+                key = match.group(1).strip()
+                boundaries.append((i, key))
+
+        # Extract each entry's YAML block and parse it individually
+        yaml_parser = YAML()
+        yaml_parser.preserve_quotes = True
+        yaml_parser.allow_duplicate_keys = True
+
+        for idx, (start_line, key) in enumerate(boundaries):
+            # Determine end of this entry (start of next entry or EOF)
+            if idx + 1 < len(boundaries):
+                end_line = boundaries[idx + 1][0]
+            else:
+                end_line = len(lines)
+
+            # Extract the block for this single entry
+            block_lines = lines[start_line:end_line]
+
+            # Strip trailing blank lines and comments between entries
+            while block_lines and (
+                not block_lines[-1].strip() or block_lines[-1].strip().startswith("#")
+            ):
+                block_lines.pop()
+
+            if not block_lines:
+                continue
+
+            block_content = "\n".join(block_lines) + "\n"
+
+            try:
+                parsed: Any = yaml_parser.load(StringIO(block_content))  # pyright: ignore[reportUnknownMemberType]
+                if parsed and key in parsed:
+                    entry_data = dict(parsed[key])
+                    entries.append((key, entry_data))
+            except Exception:
+                logger.warning(
+                    "Failed to parse entry '%s' at line %d, skipping",
+                    key,
+                    start_line + 1,
+                )
+
+        return entries
+
+    def _merge_dotfile_entries(
+        self, name: str, entries: list[dict[str, Any]]
+    ) -> DotFileDict:
+        """
+        Merge multiple dotfile entries with the same key into a single entry.
+
+        Combines paths from all entries (deduplicating), keeps the longest
+        description as the primary one, and merges tags.
+
+        Args:
+            name: Application name (the duplicate key)
+            entries: List of parsed dotfile dictionaries to merge
+
+        Returns:
+            Single merged DotFileDict
+        """
+        # Collect all paths across entries
+        all_paths: list[str] = []
+        descriptions: list[str] = []
+        all_tags: list[str] = []
+
+        for entry in entries:
+            # Collect paths
+            if "paths" in entry:
+                paths_val = entry["paths"]
+                if isinstance(paths_val, list):
+                    for p in paths_val:  # pyright: ignore[reportUnknownVariableType]
+                        if isinstance(p, str) and p not in all_paths:
+                            all_paths.append(p)
+            if "path" in entry:
+                path_val = entry["path"]
+                if isinstance(path_val, str) and path_val not in all_paths:
+                    all_paths.append(path_val)
+
+            # Collect descriptions
+            desc = entry.get("description", "")
+            if isinstance(desc, str) and desc:
+                descriptions.append(desc)
+
+            # Collect tags
+            tags = entry.get("tags", "")
+            if isinstance(tags, str) and tags:
+                for tag in tags.split(","):
+                    clean_tag = tag.strip()
+                    if clean_tag and clean_tag not in all_tags:
+                        all_tags.append(clean_tag)
+
+        # Build merged entry
+        # Pick the longest description as it's likely the most informative
+        best_description = max(descriptions, key=len) if descriptions else name
+
+        merged: DotFileDict = {"description": best_description}
+
+        if len(all_paths) == 1:
+            merged["path"] = all_paths[0]
+        elif all_paths:
+            merged["paths"] = all_paths
+
+        if all_tags:
+            merged["tags"] = ", ".join(all_tags)
+
+        logger.info(
+            "Merged duplicate '%s': combined %d entries into %d path(s)",
+            name,
+            len(entries),
+            len(all_paths),
+        )
+
+        return merged
+
+    def _validate_and_clean_dotfiles(
+        self, data: dict[str, Any]
+    ) -> dict[str, DotFileDict]:
+        """
+        Validate and clean all dotfile entries, fixing common issues.
+
+        Handles:
+        - Missing or empty descriptions (assigns default)
+        - Missing path/paths (logs warning, keeps entry with empty paths)
+        - Empty strings in paths lists (removed)
+        - Duplicate paths within a single entry (deduplicated)
+        - Non-string values in paths (converted to string)
+
+        Args:
+            data: Raw dotfile dictionary from YAML
+
+        Returns:
+            Cleaned dictionary of validated DotFileDict entries
+        """
+        cleaned: dict[str, DotFileDict] = {}
+
+        for app_name, entry in data.items():
+            if not isinstance(entry, dict):
+                logger.warning(
+                    "Dotfile '%s' has invalid format (expected mapping), skipping",
+                    app_name,
+                )
+                continue
+
+            clean_entry = self._clean_single_dotfile(
+                str(app_name),
+                dict(entry),  # pyright: ignore[reportUnknownArgumentType]
+            )
+            if clean_entry is not None:
+                cleaned[str(app_name)] = clean_entry
+
+        return cleaned
+
+    def _clean_single_dotfile(
+        self, app_name: str, data: dict[str, Any]
+    ) -> DotFileDict | None:
+        """
+        Validate and clean a single dotfile entry.
+
+        Args:
+            app_name: Name of the application
+            data: Raw dotfile entry data
+
+        Returns:
+            Cleaned DotFileDict, or None if entry is irrecoverably invalid
+        """
+        # Fix missing or empty description
+        description = data.get("description")
+        if not description or not isinstance(description, str):
+            logger.warning(
+                "Dotfile '%s' missing description, using app name as default",
+                app_name,
+            )
+            data["description"] = f"{app_name} configuration"
+
+        # Normalize and clean paths
+        has_path = "path" in data
+        has_paths = "paths" in data
+
+        if has_paths:
+            paths_raw = data["paths"]
+            if isinstance(paths_raw, list):
+                # Clean: remove empties, convert non-strings, deduplicate
+                clean_paths: list[str] = []
+                seen: set[str] = set()
+                for p in paths_raw:  # pyright: ignore[reportUnknownVariableType]
+                    p_str = str(p).strip() if p is not None else ""  # pyright: ignore[reportUnknownArgumentType]
+                    if p_str and p_str not in seen:
+                        clean_paths.append(p_str)
+                        seen.add(p_str)
+
+                if not clean_paths and not has_path:
+                    logger.warning(
+                        "Dotfile '%s' has empty paths list and no path, skipping",
+                        app_name,
+                    )
+                    return None
+                if not clean_paths:
+                    # paths was empty but path exists — remove empty paths key
+                    del data["paths"]
+                else:
+                    data["paths"] = clean_paths
+            elif isinstance(paths_raw, str):
+                # Single string in paths field — normalize to list
+                paths_raw = paths_raw.strip()
+                if paths_raw:
+                    data["paths"] = [paths_raw]
+                else:
+                    del data["paths"]
+            else:
+                logger.warning(
+                    "Dotfile '%s' has invalid paths type (%s), removing",
+                    app_name,
+                    type(paths_raw).__name__,
+                )
+                del data["paths"]
+
+        if has_path:
+            path_val = data["path"]
+            if not isinstance(path_val, str) or not str(path_val).strip():
+                if "paths" not in data:
+                    logger.warning(
+                        "Dotfile '%s' has empty path and no paths, skipping",
+                        app_name,
+                    )
+                    return None
+                del data["path"]
+            else:
+                data["path"] = str(path_val).strip()
+
+        # Must have at least one path
+        if "path" not in data and "paths" not in data:
+            logger.warning(
+                "Dotfile '%s' has neither 'path' nor 'paths', skipping",
+                app_name,
+            )
+            return None
+
+        return data  # type: ignore[return-value]
 
     def _validate_settings(self, data: dict[str, Any]) -> None:
         """

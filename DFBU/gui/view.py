@@ -643,6 +643,9 @@ class MainWindow(QMainWindow):
         self.export_config_btn: QPushButton = ui_widget.findChild(
             QPushButton, "exportConfigButton"
         )  # type: ignore[assignment]
+        self.import_config_btn: QPushButton = ui_widget.findChild(
+            QPushButton, "importConfigButton"
+        )  # type: ignore[assignment]
         # Empty state widgets
         self._backup_stacked_widget: QStackedWidget | None = ui_widget.findChild(
             QStackedWidget, "backupStackedWidget"
@@ -815,6 +818,7 @@ class MainWindow(QMainWindow):
         self.edit_config_btn.clicked.connect(self._on_edit_config)
         self.validate_config_btn.clicked.connect(self._on_validate_config)
         self.export_config_btn.clicked.connect(self._on_export_config)
+        self.import_config_btn.clicked.connect(self._on_import_config)
 
         # Filter input connection
         if self._filter_input:
@@ -1824,6 +1828,41 @@ class MainWindow(QMainWindow):
             self.status_bar.showMessage(message, STATUS_MESSAGE_TIMEOUT_MS)
         else:
             QMessageBox.warning(self, "Export Failed", message)
+
+    def _on_import_config(self) -> None:
+        """Import configuration files from a user-chosen directory."""
+        source_dir = QFileDialog.getExistingDirectory(
+            self,
+            "Select Directory Containing Configuration Files",
+            str(Path.home()),
+        )
+
+        if not source_dir:
+            return
+
+        # Confirm import with the user
+        reply = QMessageBox.question(
+            self,
+            "Import Configuration",
+            "This will replace your current configuration files with the "
+            "imported ones.\n\nA backup of your current configuration will be "
+            "created automatically.\n\nContinue?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+
+        success, message = self.viewmodel.command_import_config(Path(source_dir))
+
+        if success:
+            self.status_bar.showMessage(message, STATUS_MESSAGE_TIMEOUT_MS)
+            self._append_log(f"✓ Config imported: {message}")
+            # Reload configuration to reflect the imported files
+            self.viewmodel.command_load_config()
+        else:
+            QMessageBox.warning(self, "Import Failed", message)
 
     def _get_original_dotfile_index(self, table_row: int) -> int:
         """

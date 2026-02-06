@@ -119,6 +119,7 @@ def _initialize_user_config() -> None:
 
     When running as AppImage/frozen app, the bundled config files are read-only.
     This function copies them to the user's writable config directory on first run.
+    Verifies that all required config files are present after initialization.
 
     Files copied: settings.yaml, dotfiles.yaml, session.yaml, .dfbuignore
     """
@@ -129,20 +130,52 @@ def _initialize_user_config() -> None:
     # Create user config directory if it doesn't exist
     USER_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
-    # List of config files to copy from bundle to user directory
+    # Required config files that must be present for DFBU to function
     config_files = ["settings.yaml", "dotfiles.yaml", "session.yaml", ".dfbuignore"]
 
     for filename in config_files:
         user_file = USER_CONFIG_DIR / filename
         bundled_file = BUNDLED_CONFIG_PATH / filename
 
-        # Only copy if user file doesn't exist (preserve user customizations)
+        # Copy if user file doesn't exist (preserve user customizations)
         if not user_file.exists() and bundled_file.exists():
             try:
                 shutil.copy2(bundled_file, user_file)
-                logger.info(f"Copied default config: {filename} -> {user_file}")
+                logger.info("Copied default config: %s -> %s", filename, user_file)
             except (OSError, PermissionError) as e:
-                logger.warning(f"Failed to copy default config {filename}: {e}")
+                logger.warning("Failed to copy default config %s: %s", filename, e)
+
+    # Verify critical config files are present after initialization
+    missing = [f for f in config_files if not (USER_CONFIG_DIR / f).exists()]
+    if missing:
+        logger.error(
+            "Missing required config files after initialization: %s "
+            "(bundled path: %s, user path: %s)",
+            ", ".join(missing),
+            BUNDLED_CONFIG_PATH,
+            USER_CONFIG_DIR,
+        )
+        # Attempt fallback: re-copy missing files even if bundled source missing
+        for filename in missing:
+            bundled_file = BUNDLED_CONFIG_PATH / filename
+            if bundled_file.exists():
+                try:
+                    shutil.copy2(bundled_file, USER_CONFIG_DIR / filename)
+                    logger.info("Fallback copy succeeded: %s", filename)
+                except (OSError, PermissionError) as e:
+                    logger.error("Fallback copy failed for %s: %s", filename, e)
+            else:
+                logger.error(
+                    "Bundled config not found: %s (expected at %s)",
+                    filename,
+                    bundled_file,
+                )
+    else:
+        logger.info(
+            "All config files verified in %s (%d files)",
+            USER_CONFIG_DIR,
+            len(config_files),
+        )
 
 
 class Application:
@@ -209,9 +242,29 @@ class Application:
         _initialize_user_config()
 
     def _load_config_if_available(self) -> None:
-        """Load configuration from default path on startup."""
-        if DEFAULT_CONFIG_PATH.exists():
-            self.viewmodel.command_load_config()
+        """
+        Load configuration from default path on startup.
+
+        Verifies config path exists and contains required files before
+        attempting to load. Logs diagnostic information on failure.
+        """
+        if not DEFAULT_CONFIG_PATH.exists():
+            logger.warning("Config directory does not exist: %s", DEFAULT_CONFIG_PATH)
+            return
+
+        # Verify required config files exist before attempting load
+        required = ["settings.yaml", "dotfiles.yaml"]
+        missing = [f for f in required if not (DEFAULT_CONFIG_PATH / f).exists()]
+        if missing:
+            logger.error(
+                "Cannot load config — missing required files in %s: %s",
+                DEFAULT_CONFIG_PATH,
+                ", ".join(missing),
+            )
+            return
+
+        logger.info("Loading configuration from %s", DEFAULT_CONFIG_PATH)
+        self.viewmodel.command_load_config()
 
     def run(self) -> int:
         """

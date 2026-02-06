@@ -535,6 +535,16 @@ or load an existing configuration.</string>
                </widget>
               </item>
               <item>
+               <widget class="QPushButton" name="importConfigButton">
+                <property name="text">
+                 <string>Import Config</string>
+                </property>
+                <property name="toolTip">
+                 <string>Import configuration files from a backup or another system</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <spacer name="actionBarSpacer">
                 <property name="orientation">
                  <enum>Qt::Orientation::Horizontal</enum>
