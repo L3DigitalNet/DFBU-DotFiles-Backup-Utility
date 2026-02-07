@@ -30,7 +30,7 @@ Components:
 ├── VerificationManager (verification_manager.py)    # Backup integrity verification
 ├── ErrorHandler (error_handler.py)             # Structured error handling
 ├── SizeAnalyzer (size_analyzer.py)             # File size analysis, .dfbuignore
-├── BackupHistory (backup_history.py)           # Backup operation history
+├── BackupHistoryManager (backup_history.py)    # Backup operation history
 ├── ProfileManager (profile_manager.py)         # User profile management
 └── PreviewGenerator (preview_generator.py)     # Backup preview generation
 
