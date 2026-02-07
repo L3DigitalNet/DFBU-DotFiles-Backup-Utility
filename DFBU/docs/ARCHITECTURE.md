@@ -198,6 +198,11 @@ ConfigManager  FileOperations  BackupOrchestrator  StatisticsTracker
 
 - `MainWindow`: Main application window with tab interface
 - `AddDotfileDialog`: Dialog for adding dotfile entries
+- `ProfileDialog`: Profile create/edit dialog (v1.1.0+)
+- `RecoveryDialog`: Recovery options dialog (v0.9.0+)
+- `SizeWarningDialog`: File size warning dialog (v1.0.0+)
+- `HelpDialog`: Help/documentation dialog (v1.0.0+)
+- `TooltipManager`: Widget tooltip management (v1.0.0+)
 - `NumericTableWidgetItem`: Custom widget for numeric sorting
 
 #### ViewModel Layer (`viewmodel.py`)
@@ -259,6 +264,8 @@ ConfigManager  FileOperations  BackupOrchestrator  StatisticsTracker
 - `RestoreBackupManager`: Pre-restore safety backups (v0.6.0+)
 - `SizeAnalyzer`: File size analysis and .dfbuignore support (v1.0.0+)
 - `ProfileManager`: Named backup profile management (v1.1.0+)
+- `BackupHistoryManager`: Backup operation history tracking (v1.2.0+)
+- `PreviewGenerator`: Backup preview generation (v1.2.0+)
 
 ---
 
@@ -266,7 +273,7 @@ ConfigManager  FileOperations  BackupOrchestrator  StatisticsTracker
 
 ### DFBUModel (Facade Pattern)
 
-**Lines of Code**: 856
+**Lines of Code**: 1036
 
 **Purpose**: Provide unified interface to all Model components
 
@@ -283,6 +290,8 @@ ConfigManager  FileOperations  BackupOrchestrator  StatisticsTracker
 7. RestoreBackupManager (v0.6.0+)
 8. SizeAnalyzer (v1.0.0+)
 9. ProfileManager (v1.1.0+)
+10. BackupHistoryManager (v1.2.0+)
+11. PreviewGenerator (v1.2.0+)
 
 **Key Benefits**:
 
@@ -304,7 +313,7 @@ class DFBUModel:
     def toggle_dotfile_enabled(self, index: int) -> bool: ...
 
     # File operations
-    def expand_path(self, path_str: str) -> Path | None: ...
+    def expand_path(self, path_str: str) -> Path: ...
     def check_readable(self, path: Path) -> bool: ...
     def copy_file(self, src: Path, dest: Path) -> bool: ...
     def copy_directory(self, src: Path, dest: Path) -> bool: ...
@@ -397,7 +406,7 @@ excluded:
 
 ```python
 class FileOperations:
-    def expand_path(self, path_str: str) -> Path | None: ...
+    def expand_path(self, path_str: str) -> Path: ...
     def check_readable(self, path: Path) -> bool: ...
     def create_directory(self, path: Path) -> bool: ...
     def copy_file(self, src: Path, dest: Path) -> bool: ...
@@ -628,6 +637,63 @@ class ProfileManager:
     def delete_profile(self, name: str) -> bool: ...
     def list_profiles(self) -> list[str]: ...
     def set_active_profile(self, name: str | None) -> None: ...
+```
+
+### BackupHistoryManager (v1.2.0+)
+
+**Lines of Code**: 189
+
+**Purpose**: Backup operation history tracking and dashboard metrics
+
+**Responsibilities**:
+
+- Record backup operation results (items backed up, size, duration, success status)
+- Maintain persistent history in backup_history.yaml
+- Calculate aggregate dashboard metrics (total backups, success rate, average size)
+- Automatic history rotation (limited to 1000 entries)
+- Provide recent backup history for display
+
+**Key Methods**:
+
+```python
+class BackupHistoryManager:
+    def record_backup(
+        self,
+        items_backed: int,
+        size_bytes: int,
+        duration_seconds: float,
+        success: bool,
+    ) -> None: ...
+    def get_metrics(self) -> DashboardMetrics: ...
+    def get_recent_history(self, count: int = 10) -> list[BackupHistoryEntry]: ...
+    def get_entry_count(self) -> int: ...
+```
+
+### PreviewGenerator (v1.2.0+)
+
+**Lines of Code**: 218
+
+**Purpose**: Backup preview generation without executing actual backup
+
+**Responsibilities**:
+
+- Analyze source files and compare with existing backup
+- Categorize files as new, changed, or unchanged
+- Calculate total counts and sizes for preview
+- Support progress callbacks for non-blocking UI updates
+- Respect hostname and date subdirectory settings
+
+**Key Methods**:
+
+```python
+class PreviewGenerator:
+    def generate_preview(
+        self,
+        dotfiles: list[dict[str, Any]],
+        hostname_subdir: bool,
+        date_subdir: bool,
+        progress_callback: Callable[[int], None] | None = None,
+    ) -> BackupPreviewDict: ...
 ```
 
 ---
