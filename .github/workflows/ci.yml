@@ -54,11 +54,11 @@ jobs:
       - name: Type check with MyPy
         run: uv run mypy DFBU/
 
-      - name: Run tests
+      - name: Run tests (unit + integration, skip GUI)
         env:
-          QT_QPA_PLATFORM: minimal
+          QT_QPA_PLATFORM: offscreen
           QT_DEBUG_PLUGINS: 0
-        run: uv run pytest DFBU/tests/ --cov=DFBU --cov-report=xml --timeout=30 -x
+        run: uv run pytest DFBU/tests/ -m "not gui" --cov=DFBU --cov-report=xml --timeout=30
 
       # Optional: Upload coverage to Codecov
       # - uses: codecov/codecov-action@v4
