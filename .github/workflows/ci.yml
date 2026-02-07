@@ -58,6 +58,9 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
           QT_DEBUG_PLUGINS: 0
+          QT_QPA_PLATFORM_PLUGIN_PATH: ""
+          QT_LOGGING_RULES: "*.debug=false"
+          QT_ASSUME_STDERR_HAS_CONSOLE: 1
         run: uv run pytest DFBU/tests/ --cov=DFBU --cov-report=xml --timeout=30
 
       # Optional: Upload coverage to Codecov
