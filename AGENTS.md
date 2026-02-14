@@ -341,7 +341,7 @@ call. Local tools require multiple round-trips.
 | ----------------------- | ------------ | ------------------------------------------ |
 | Find code by meaning    | `hybrid`     | "authentication logic", "error handling"   |
 | Exact string/symbol     | `keyword`    | "UserAuthService", "API_KEY"               |
-| File patterns           | `pattern`    | "_.sql", "test\__.py"                      |
+| File patterns           | `pattern`    | "\_.sql", "test\_\_.py"                    |
 | ALL matches (grep-like) | `exhaustive` | "TODO", "FIXME" (find all occurrences)     |
 | Symbol renaming         | `refactor`   | "oldFunctionName" (word-boundary matching) |
 | Conceptual search       | `semantic`   | "how does caching work"                    |

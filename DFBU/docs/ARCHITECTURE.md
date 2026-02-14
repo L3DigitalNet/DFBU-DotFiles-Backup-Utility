@@ -1,10 +1,7 @@
 # DFBU Architecture Documentation
 
-**Version:** 1.2.0
-**Author:** Chris Purcell
-**Email:** <chris@l3digital.net>
-**Last Updated:** February 6, 2026
-**License:** MIT
+**Version:** 1.2.0 **Author:** Chris Purcell **Email:** <chris@l3digital.net> **Last
+Updated:** February 6, 2026 **License:** MIT
 
 ---
 
@@ -25,15 +22,18 @@
 
 ## Overview
 
-DFBU implements a clean, modern architecture based on established design patterns and SOLID principles.
+DFBU implements a clean, modern architecture based on established design patterns and
+SOLID principles.
 
-- **GUI Application** (`dfbu_gui.py`): Desktop application using MVVM pattern with PySide6
+- **GUI Application** (`dfbu_gui.py`): Desktop application using MVVM pattern with
+  PySide6
 
 This document covers the GUI architecture.
 
 ### Architecture Goals
 
-1. **Separation of Concerns**: Clear boundaries between UI, business logic, and data management
+1. **Separation of Concerns**: Clear boundaries between UI, business logic, and data
+   management
 2. **Testability**: Components designed for isolated testing without UI dependencies
 3. **Maintainability**: Small, focused classes following Single Responsibility Principle
 4. **Extensibility**: Open for extension without modifying existing code
@@ -67,7 +67,8 @@ Components are open for extension but closed for modification:
 
 Derived classes maintain base class contracts:
 
-- `NumericTableWidgetItem` extends `QTableWidgetItem` while maintaining all expected behaviors
+- `NumericTableWidgetItem` extends `QTableWidgetItem` while maintaining all expected
+  behaviors
 - Worker threads extend `QThread` with consistent lifecycle management
 
 #### Interface Segregation Principle (ISP)
@@ -991,8 +992,10 @@ warn_unused_configs = True
 
 **Error Handling Features**:
 
-1. **Error Categorization**: Errors classified by type (PERMISSION, NOT_FOUND, DISK_FULL, NETWORK, etc.)
-2. **Recovery Dialogs**: UI-integrated error recovery with user choices (Retry, Skip, Abort)
+1. **Error Categorization**: Errors classified by type (PERMISSION, NOT_FOUND,
+   DISK_FULL, NETWORK, etc.)
+2. **Recovery Dialogs**: UI-integrated error recovery with user choices (Retry, Skip,
+   Abort)
 3. **Retry Logic**: Automatic retry for transient failures with configurable attempts
 4. **User-Friendly Messages**: Detailed error explanations with remediation suggestions
 5. **Logging**: Comprehensive logging for debugging and audit trails
@@ -1117,7 +1120,8 @@ DFBU's architecture demonstrates:
 8. **Performance**: Non-blocking UI through threaded operations
 9. **Maintainability**: Small, focused components (all < 860 lines)
 
-This architecture supports both current development needs and future extensibility while maintaining code quality and developer experience.
+This architecture supports both current development needs and future extensibility while
+maintaining code quality and developer experience.
 
 ---
 
